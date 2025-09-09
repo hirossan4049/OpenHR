@@ -33,7 +33,7 @@ export async function GET() {
       },
     });
 
-    const formattedSkills = userSkills.map(userSkill => ({
+    const formattedSkills = userSkills.map((userSkill: typeof userSkills[0]) => ({
       id: userSkill.id,
       skillId: userSkill.skillId,
       name: userSkill.skill.name,

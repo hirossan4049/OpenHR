@@ -11,10 +11,11 @@ const skillUpdateSchema = z.object({
 // PUT /api/skills/[skillId] - Update user skill
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { skillId: string } }
+  { params }: { params: Promise<{ skillId: string }> }
 ) {
   try {
     const session = await auth();
+    const { skillId } = await params;
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -29,7 +30,7 @@ export async function PUT(
     // Verify the skill belongs to the user
     const existingUserSkill = await db.userSkill.findFirst({
       where: {
-        id: params.skillId,
+        id: skillId,
         userId: session.user.id,
       },
     });
@@ -42,7 +43,7 @@ export async function PUT(
     }
 
     const updatedUserSkill = await db.userSkill.update({
-      where: { id: params.skillId },
+      where: { id: skillId },
       data: {
         level: validatedData.level,
         yearsOfExp: validatedData.yearsOfExp,
@@ -85,10 +86,11 @@ export async function PUT(
 // DELETE /api/skills/[skillId] - Remove user skill
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { skillId: string } }
+  { params }: { params: Promise<{ skillId: string }> }
 ) {
   try {
     const session = await auth();
+    const { skillId } = await params;
     
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -100,7 +102,7 @@ export async function DELETE(
     // Verify the skill belongs to the user
     const existingUserSkill = await db.userSkill.findFirst({
       where: {
-        id: params.skillId,
+        id: skillId,
         userId: session.user.id,
       },
     });
@@ -113,7 +115,7 @@ export async function DELETE(
     }
 
     await db.userSkill.delete({
-      where: { id: params.skillId },
+      where: { id: skillId },
     });
 
     return NextResponse.json({ message: "Skill removed successfully" });
