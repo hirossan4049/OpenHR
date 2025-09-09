@@ -155,7 +155,7 @@ The authentication system includes comprehensive tests covering:
 
 Run tests with:
 ```bash
-npm test
+bun test
 ```
 
 ## Usage
@@ -179,7 +179,7 @@ npm test
 ### For Developers
 
 1. **Adding New OAuth Providers:**
-   - Install the provider package: `npm install next-auth/providers/[provider]`
+   - Install the provider package: `bun add next-auth/providers/[provider]`
    - Add provider configuration to `src/server/auth/config.ts`
    - Add environment variables to `src/env.js`
    - Update `.env.example` with new variables
@@ -227,7 +227,7 @@ npm test
    - Ensure database schema is up to date
 
 3. **Development Setup:**
-   - Run `npm install` to install dependencies
+   - Run `bun install` to install dependencies
    - Set up `.env` file with required variables
    - Run `npx prisma generate` to generate Prisma client
    - Run `npx prisma db push` to sync database schema
