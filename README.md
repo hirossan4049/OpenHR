@@ -1,6 +1,6 @@
-# Create T3 App
+# OpenHR
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+This is an HR management application built with the [T3 Stack](https://create.t3.gg/), bootstrapped with `create-t3-app`.
 
 ## What's next? How do I make an app with this?
 
@@ -14,6 +14,19 @@ If you are not familiar with the different technologies used in this project, pl
 - [Drizzle](https://orm.drizzle.team)
 - [Tailwind CSS](https://tailwindcss.com)
 - [tRPC](https://trpc.io)
+
+## Documentation
+
+### Copilot Agent Documentation
+For developers working on this project with AI assistance, see our comprehensive guides:
+- [Copilot Agent Documentation (Japanese)](docs/COPILOT_AGENT.md)
+- [Copilot Agent Documentation (English)](docs/COPILOT_AGENT_EN.md)
+
+These guides cover:
+- T3 Stack specific Copilot best practices
+- HR domain-specific prompting strategies
+- Code patterns and implementation examples
+- AI integration guidelines
 
 ## Learn More
 
