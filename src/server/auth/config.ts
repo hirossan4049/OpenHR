@@ -1,6 +1,11 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import DiscordProvider from "next-auth/providers/discord";
+import GitHubProvider from "next-auth/providers/github";
+import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
+import { compare } from "bcryptjs";
+import { z } from "zod";
 
 import { db } from "~/server/db";
 
@@ -19,10 +24,13 @@ declare module "next-auth" {
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    id: string;
+    email: string | null;
+    name: string | null;
+    image: string | null;
+    password?: string | null;
+  }
 }
 
 /**
@@ -33,6 +41,64 @@ declare module "next-auth" {
 export const authConfig = {
   providers: [
     DiscordProvider,
+    GitHubProvider({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    }),
+    GoogleProvider({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
+    CredentialsProvider({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+
+        if (parsedCredentials.success) {
+          const { email, password } = parsedCredentials.data;
+          
+          try {
+            const user = await db.user.findUnique({
+              where: { email },
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                image: true,
+                password: true,
+              }
+            });
+
+            if (!user) return null;
+
+            // For OAuth users, password might be null
+            if (!user.password) return null;
+
+            const passwordsMatch = await compare(password, user.password);
+
+            if (passwordsMatch) {
+              return {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                image: user.image,
+              };
+            }
+          } catch (error) {
+            console.error("Error during authentication:", error);
+            return null;
+          }
+        }
+
+        return null;
+      },
+    }),
     /**
      * ...add more providers here.
      *
