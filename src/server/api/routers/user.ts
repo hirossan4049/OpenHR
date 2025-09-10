@@ -2,8 +2,7 @@ import { z } from "zod";
 
 import {
   createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
+  publicProcedure
 } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
@@ -23,9 +22,10 @@ export const userRouter = createTRPCRouter({
       // Build search conditions
       if (search) {
         where.OR = [
-          { name: { contains: search, mode: "insensitive" } },
-          { bio: { contains: search, mode: "insensitive" } },
-          { grade: { contains: search, mode: "insensitive" } },
+          { name: { contains: search } },
+          { bio: { contains: search } },
+          { grade: { contains: search } },
+          { userSkills: { some: { skill: { name: { contains: search } } } } },
         ];
       }
 
