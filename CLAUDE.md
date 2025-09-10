@@ -42,7 +42,7 @@ bun run start           # Start production server
 
 npxではなくbunxを使用。
 shadcnでGitHub風のUI.
-
+next-intlを使用している。文言はmessages/*.jsonに追加。
 ## Architecture Overview
 
 ### App Router Structure

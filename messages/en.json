@@ -28,6 +28,28 @@
     "manageProjects": "Manage Projects",
     "systemSettings": "System Settings"
   },
+  "SkillManagement": {
+    "title": "Skills",
+    "description": "Manage your technical and soft skills.",
+    "columnSkill": "Skill",
+    "columnLevel": "Level",
+    "columnYears": "Years",
+    "columnActions": "Actions",
+    "empty": "No skills added yet.",
+    "addSectionTitle": "Add New Skill",
+    "placeholderName": "e.g., React, Python...",
+    "placeholderYears": "Years",
+    "placeholderSelectLevel": "Select level",
+    "buttonAdd": "Add Skill",
+    "buttonAdding": "Adding...",
+    "buttonConfirm": "Confirm",
+    "buttonRemoving": "Removing...",
+    "buttonCancel": "Cancel",
+    "successAdd": "Skill added successfully!",
+    "errorAdd": "Failed to add skill.",
+    "errorRemove": "Failed to remove skill. Please try again.",
+    "exists": "Skill already exists"
+  },
   "HomePage": {
     "title": "OpenHR TMS",
     "firstStepsTitle": "First Steps →",

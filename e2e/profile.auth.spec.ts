@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Profile (authenticated)', () => {
   test('should show profile link on home', async ({ page }) => {
@@ -25,12 +25,12 @@ test.describe('Profile (authenticated)', () => {
     await page.getByLabel('GitHub Profile URL').fill('https://github.com/e2e-user');
 
     await page.getByRole('button', { name: 'Save Profile' }).click();
-    
+
     await expect(page.getByRole('heading', { name: 'E2E User Updated' })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('This is my updated bio via E2E.')).toBeVisible();
     await expect(page.getByText('Senior')).toBeVisible();
     await expect(page.getByText('e2e@example.com')).toBeVisible();
-    
+
     const githubLink = page.getByRole('link', { name: 'GitHub Profile' });
     await expect(githubLink).toBeVisible();
     await expect(githubLink).toHaveAttribute('href', 'https://github.com/e2e-user');
@@ -45,7 +45,7 @@ test.describe('Profile (authenticated)', () => {
     await expect(page.getByRole('heading', { name: 'Skills', level: 3 })).toBeVisible({ timeout: 10000 });
 
     await page.getByPlaceholder('e.g., React, Python...').fill(skillName);
-    
+
     await page.locator('button[role="combobox"]:near(:text("Add New Skill"))').click();
     await page.getByRole('option', { name: 'Advanced' }).click();
 
@@ -54,17 +54,18 @@ test.describe('Profile (authenticated)', () => {
 
     const skillRow = page.locator('tr').filter({ hasText: skillName });
     await expect(skillRow).toBeVisible({ timeout: 5000 });
-    
+
     await expect(skillRow.locator('[role=combobox]')).toHaveText('Advanced');
     await expect(skillRow.getByRole('spinbutton')).toHaveValue('3');
 
     await skillRow.locator('[role=combobox]').click();
     await page.getByRole('option', { name: 'Expert' }).click();
-    
+
     await expect(skillRow.locator('[role=combobox]')).toHaveText('Expert', { timeout: 5000 });
 
     await skillRow.getByRole('button', { name: 'Remove skill' }).click();
-    
+    // 新しい確認ボタンをクリック
+    await skillRow.getByRole('button', { name: 'Confirm' }).click();
     await expect(page.getByText(skillName)).not.toBeVisible({ timeout: 5000 });
   });
 });

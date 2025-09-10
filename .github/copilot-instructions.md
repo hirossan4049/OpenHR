@@ -13,6 +13,7 @@ This is a T3 Stack project. Please follow the existing conventions and patterns 
 - **Language:** TypeScript
 - npxではなくbunxを使用。
 - shadcnでGitHub風のUI.
+- next-intlを使用している。文言はmessages/*.jsonに追加。
 
 ## Development
 

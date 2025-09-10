@@ -28,6 +28,28 @@
     "manageProjects": "プロジェクト管理",
     "systemSettings": "システム設定"
   },
+  "SkillManagement": {
+    "title": "スキル",
+    "description": "技術スキル・ソフトスキルを管理します。",
+    "columnSkill": "スキル",
+    "columnLevel": "レベル",
+    "columnYears": "年数",
+    "columnActions": "操作",
+    "empty": "まだスキルが追加されていません。",
+    "addSectionTitle": "新しいスキルを追加",
+    "placeholderName": "例: React, Python...",
+    "placeholderYears": "年数",
+    "placeholderSelectLevel": "レベルを選択",
+    "buttonAdd": "スキル追加",
+    "buttonAdding": "追加中...",
+    "buttonConfirm": "確認",
+    "buttonRemoving": "削除中...",
+    "buttonCancel": "キャンセル",
+    "successAdd": "スキルを追加しました！",
+    "errorAdd": "スキルの追加に失敗しました。",
+    "errorRemove": "スキルの削除に失敗しました。再度お試しください。",
+    "exists": "既に存在するスキルです"
+  },
   "HomePage": {
     "title": "OpenHR TMS",
     "firstStepsTitle": "最初のステップ →",

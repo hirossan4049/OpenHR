@@ -1,11 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Plus, X } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Label } from "~/components/ui/label";
-import { X, Plus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -14,6 +13,15 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 import {
   Table,
   TableBody,
@@ -22,13 +30,6 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
 
 const skillSchema = z.object({
   name: z.string().min(1, "Skill name is required"),
@@ -66,6 +67,10 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   const [errors, setErrors] = useState<Partial<Record<keyof SkillData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [pendingRemovalId, setPendingRemovalId] = useState<string | null>(null);
+  const [removingSkillId, setRemovingSkillId] = useState<string | null>(null);
+  const [removeError, setRemoveError] = useState<string | null>(null);
+  const t = useTranslations("SkillManagement");
 
   useEffect(() => {
     onSkillsChange?.(skills);
@@ -77,9 +82,9 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
 
     try {
       const validatedSkill = skillSchema.parse(newSkill);
-      
+
       if (skills.some(skill => skill.name.toLowerCase() === validatedSkill.name.toLowerCase())) {
-        setErrors({ name: "Skill already exists" });
+        setErrors({ name: t("exists") });
         return;
       }
 
@@ -139,14 +144,31 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
     }
   };
 
-  const handleRemoveSkill = async (skillId: string) => {
+  const requestRemoveSkill = (skillId: string) => {
+    setPendingRemovalId(skillId);
+    setRemoveError(null);
+  };
+
+  const confirmRemoveSkill = async () => {
+    if (!pendingRemovalId) return;
+    setRemovingSkillId(pendingRemovalId);
+    setRemoveError(null);
     try {
-      const response = await fetch(`/api/skills/${skillId}`, { method: "DELETE" });
+      const response = await fetch(`/api/skills/${pendingRemovalId}`, { method: "DELETE" });
       if (!response.ok) throw new Error("Failed to remove skill");
-      setSkills(prev => prev.filter(s => s.id !== skillId));
+      setSkills(prev => prev.filter(s => s.id !== pendingRemovalId));
     } catch (error) {
       console.error("Error removing skill:", error);
+      setRemoveError("Failed to remove skill. Please try again.");
+    } finally {
+      setRemovingSkillId(null);
+      setPendingRemovalId(null);
     }
+  };
+
+  const cancelRemove = () => {
+    setPendingRemovalId(null);
+    setRemoveError(null);
   };
 
   const handleNewSkillChange = (field: keyof SkillData, value: string | number) => {
@@ -160,18 +182,18 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Skills</CardTitle>
-        <CardDescription>Manage your technical and soft skills.</CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="border rounded-md">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[40%]">Skill</TableHead>
-                <TableHead>Level</TableHead>
-                <TableHead>Years</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[40%]">{t("columnSkill")}</TableHead>
+                <TableHead>{t("columnLevel")}</TableHead>
+                <TableHead>{t("columnYears")}</TableHead>
+                <TableHead className="text-right">{t("columnActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -185,7 +207,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                         onValueChange={(value) => handleUpdateSkill(skill.id, { level: Number(value) })}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select level" />
+                          <SelectValue placeholder={t("placeholderSelectLevel")} />
                         </SelectTrigger>
                         <SelectContent>
                           {levelOptions.map(opt => (
@@ -202,24 +224,46 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                         value={skill.yearsOfExp || 0}
                         onChange={(e) => handleUpdateSkill(skill.id, { yearsOfExp: Number(e.target.value) })}
                         className="w-20"
+                        aria-label={t("columnYears")}
                       />
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveSkill(skill.id)}
-                        aria-label="Remove skill"
-                      >
-                        <X className="h-4 w-4 text-destructive" />
-                      </Button>
+                      {pendingRemovalId === skill.id ? (
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={confirmRemoveSkill}
+                            disabled={removingSkillId === skill.id}
+                          >
+                            {removingSkillId === skill.id ? t("buttonRemoving") : t("buttonConfirm")}
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={cancelRemove}
+                            disabled={removingSkillId === skill.id}
+                          >
+                            {t("buttonCancel")}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => requestRemoveSkill(skill.id)}
+                          aria-label="Remove skill"
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
                   <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                    No skills added yet.
+                    {t("empty")}
                   </TableCell>
                 </TableRow>
               )}
@@ -229,36 +273,36 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
       </CardContent>
       <CardFooter className="border-t pt-6">
         <div className="w-full">
-          <h4 className="text-sm font-medium mb-3">Add New Skill</h4>
+          <h4 className="text-sm font-medium mb-3">{t("addSectionTitle")}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="skillName" className="sr-only">Skill Name</Label>
+              <Label htmlFor="skillName" className="sr-only">{t("columnSkill")}</Label>
               <Input
                 id="skillName"
                 value={newSkill.name}
                 onChange={(e) => handleNewSkillChange("name", e.target.value)}
-                placeholder="e.g., React, Python..."
+                placeholder={t("placeholderName")}
               />
               {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name}</p>}
             </div>
             <div>
-              <Label htmlFor="skillLevel" className="sr-only">Level</Label>
+              <Label htmlFor="skillLevel" className="sr-only">{t("columnLevel")}</Label>
               <Select
-                  value={String(newSkill.level)}
-                  onValueChange={(value) => handleNewSkillChange("level", Number(value))}
-                >
-                  <SelectTrigger id="skillLevel">
-                    <SelectValue placeholder="Select level" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {levelOptions.map(opt => (
-                      <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                value={String(newSkill.level)}
+                onValueChange={(value) => handleNewSkillChange("level", Number(value))}
+              >
+                <SelectTrigger id="skillLevel">
+                  <SelectValue placeholder={t("placeholderSelectLevel")} />
+                </SelectTrigger>
+                <SelectContent>
+                  {levelOptions.map(opt => (
+                    <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             <div>
-              <Label htmlFor="skillYears" className="sr-only">Years</Label>
+              <Label htmlFor="skillYears" className="sr-only">{t("columnYears")}</Label>
               <Input
                 id="skillYears"
                 type="number"
@@ -266,7 +310,8 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                 max="50"
                 value={newSkill.yearsOfExp || 0}
                 onChange={(e) => handleNewSkillChange("yearsOfExp", Number(e.target.value))}
-                placeholder="Years"
+                placeholder={t("placeholderYears")}
+                aria-label={t("columnYears")}
               />
             </div>
           </div>
@@ -276,11 +321,12 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
               disabled={isLoading || !newSkill.name.trim()}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {isLoading ? "Adding..." : "Add Skill"}
+              {isLoading ? t("buttonAdding") : t("buttonAdd")}
             </Button>
-            <div className="text-sm">
-              {saveStatus === "success" && <p className="text-green-600">Skill added successfully!</p>}
-              {saveStatus === "error" && <p className="text-destructive">Failed to add skill.</p>}
+            <div className="text-sm space-y-1 text-right">
+              {saveStatus === "success" && <p className="text-green-600">{t("successAdd")}</p>}
+              {saveStatus === "error" && <p className="text-destructive">{t("errorAdd")}</p>}
+              {removeError && <p className="text-destructive">{t("errorRemove")}</p>}
             </div>
           </div>
         </div>
