@@ -48,7 +48,10 @@
     "successAdd": "Skill added successfully!",
     "errorAdd": "Failed to add skill.",
     "errorRemove": "Failed to remove skill. Please try again.",
-    "exists": "Skill already exists"
+    "exists": "Skill already exists",
+    "noSkillsFound": "No skills found.",
+    "searchSkills": "Search skills...",
+    "createSkill": "Create \"{search}\""
   },
   "HomePage": {
     "title": "OpenHR TMS",

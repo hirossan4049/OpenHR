@@ -48,7 +48,10 @@
     "successAdd": "スキルを追加しました！",
     "errorAdd": "スキルの追加に失敗しました。",
     "errorRemove": "スキルの削除に失敗しました。再度お試しください。",
-    "exists": "既に存在するスキルです"
+    "exists": "既に存在するスキルです",
+    "noSkillsFound": "スキルが見つかりません。",
+    "searchSkills": "スキルを検索...",
+    "createSkill": "「{search}」を作成"
   },
   "HomePage": {
     "title": "OpenHR TMS",

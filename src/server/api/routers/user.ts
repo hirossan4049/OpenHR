@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure
 } from "~/server/api/trpc";
+import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
 
 export const userRouter = createTRPCRouter({
   // Get all members for directory with optional search filters
@@ -126,4 +127,77 @@ export const userRouter = createTRPCRouter({
 
     return skills;
   }),
+
+  // Search skills with aliases support
+  searchSkills: publicProcedure
+    .input(skillSearchSchema)
+    .query(async ({ ctx, input }) => {
+      const { query, limit } = input;
+      const search = query.toLowerCase();
+
+      const skills = await ctx.db.skill.findMany({
+        where: {
+          OR: [
+            { name: { contains: search, mode: "insensitive" } },
+            { slug: { contains: search, mode: "insensitive" } },
+            { aliases: { contains: search, mode: "insensitive" } },
+          ],
+        },
+        orderBy: [
+          { verified: "desc" }, // Verified skills first
+          { name: "asc" },
+        ],
+        take: limit,
+      });
+
+      return skills.map(skill => ({
+        id: skill.id,
+        name: skill.name,
+        slug: skill.slug,
+        logoUrl: skill.logoUrl,
+        aliases: skill.aliases ? JSON.parse(skill.aliases) : [],
+        verified: skill.verified,
+        category: skill.category,
+      }));
+    }),
+
+  // Suggest new skill creation
+  suggestSkill: publicProcedure
+    .input(skillSuggestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { name, category } = input;
+      
+      // Generate slug from name
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
+
+      // Check if skill already exists
+      const existingSkill = await ctx.db.skill.findFirst({
+        where: {
+          OR: [
+            { name: { equals: name, mode: "insensitive" } },
+            { slug: slug },
+          ],
+        },
+      });
+
+      if (existingSkill) {
+        return { skill: existingSkill, created: false };
+      }
+
+      // Create new unverified skill
+      const newSkill = await ctx.db.skill.create({
+        data: {
+          name,
+          slug,
+          category: category || null,
+          verified: false, // New skills start as unverified
+        },
+      });
+
+      return { skill: newSkill, created: true };
+    }),
 });

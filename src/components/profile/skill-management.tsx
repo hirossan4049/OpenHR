@@ -30,6 +30,8 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
+import { CreatableSkillSelect, type SkillOption } from "~/components/ui/creatable-skill-select";
+import { api } from "~/trpc/react";
 
 const skillSchema = z.object({
   name: z.string().min(1, "Skill name is required"),
@@ -64,6 +66,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
     level: 3, // Default to Intermediate
     yearsOfExp: 0,
   });
+  const [selectedSkillId, setSelectedSkillId] = useState<string>("");
   const [errors, setErrors] = useState<Partial<Record<keyof SkillData, string>>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
@@ -72,9 +75,51 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   const [removeError, setRemoveError] = useState<string | null>(null);
   const t = useTranslations("SkillManagement");
 
+  // tRPC queries for skill search and suggestions
+  const [searchQuery, setSearchQuery] = useState("");
+  const { data: searchResults = [], isLoading: isSearching } = api.user.searchSkills.useQuery(
+    { query: searchQuery || "react" }, // Default search to show some results
+    { enabled: true }
+  );
+  
+  const suggestSkillMutation = api.user.suggestSkill.useMutation();
+
   useEffect(() => {
     onSkillsChange?.(skills);
   }, [skills, onSkillsChange]);
+
+  // Handle skill creation from CreatableSkillSelect
+  const handleCreateSkill = async (skillName: string) => {
+    try {
+      const result = await suggestSkillMutation.mutateAsync({
+        name: skillName,
+        category: undefined,
+      });
+      
+      if (result.created) {
+        // Skill was created, now use it
+        setSelectedSkillId(result.skill.id);
+        setNewSkill(prev => ({ ...prev, name: result.skill.name }));
+      } else {
+        // Skill already existed, use the existing one
+        setSelectedSkillId(result.skill.id);
+        setNewSkill(prev => ({ ...prev, name: result.skill.name }));
+      }
+    } catch (error) {
+      console.error("Error creating skill:", error);
+      setSaveStatus("error");
+    }
+  };
+
+  // Handle skill selection from dropdown
+  const handleSkillSelect = (skillId: string) => {
+    setSelectedSkillId(skillId);
+    // Find the skill in search results or existing skills
+    const selectedSkill = searchResults.find(s => s.id === skillId);
+    if (selectedSkill) {
+      setNewSkill(prev => ({ ...prev, name: selectedSkill.name }));
+    }
+  };
 
   const handleAddSkill = async () => {
     setErrors({});
@@ -104,6 +149,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
       const newUserSkill = await response.json();
       setSkills(prev => [...prev, newUserSkill]);
       setNewSkill({ name: "", level: 3, yearsOfExp: 0 });
+      setSelectedSkillId("");
       setSaveStatus("success");
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -276,12 +322,17 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
           <h4 className="text-sm font-medium mb-3">{t("addSectionTitle")}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="skillName" className="sr-only">{t("columnSkill")}</Label>
-              <Input
-                id="skillName"
-                value={newSkill.name}
-                onChange={(e) => handleNewSkillChange("name", e.target.value)}
+              <Label htmlFor="skillSelect" className="sr-only">{t("columnSkill")}</Label>
+              <CreatableSkillSelect
+                skills={searchResults}
+                value={selectedSkillId}
+                onValueChange={handleSkillSelect}
+                onCreateSkill={handleCreateSkill}
                 placeholder={t("placeholderName")}
+                emptyText={t("noSkillsFound", { defaultValue: "No skills found." })}
+                searchPlaceholder={t("searchSkills", { defaultValue: "Search skills..." })}
+                createText={t("createSkill", { defaultValue: "Create \"{search}\"" })}
+                isLoading={isSearching || suggestSkillMutation.isPending}
               />
               {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name}</p>}
             </div>
@@ -318,7 +369,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
           <div className="mt-4 flex justify-between items-center">
             <Button
               onClick={handleAddSkill}
-              disabled={isLoading || !newSkill.name.trim()}
+              disabled={isLoading || !selectedSkillId || !newSkill.name.trim()}
             >
               <Plus className="mr-2 h-4 w-4" />
               {isLoading ? t("buttonAdding") : t("buttonAdd")}
