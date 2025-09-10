@@ -71,10 +71,7 @@ export async function POST(request: NextRequest) {
       where: {
         userId: session.user.id,
         skill: {
-          name: {
-            equals: validatedData.name,
-            mode: 'insensitive'
-          }
+          name: validatedData.name
         }
       }
     });
@@ -89,10 +86,7 @@ export async function POST(request: NextRequest) {
     // Find or create the skill
     let skill = await db.skill.findFirst({
       where: {
-        name: {
-          equals: validatedData.name,
-          mode: 'insensitive'
-        }
+        name: validatedData.name
       }
     });
 
