@@ -61,9 +61,15 @@ model User {
     emailVerified DateTime?
     image         String?
     password      String?   // For email/password authentication
+    // Profile information
+    bio           String?
+    grade         String?
+    contact       String?
+    githubUrl     String?
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+    userSkills    UserSkill[]
 }
 
 model VerificationToken {
@@ -72,4 +78,28 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Skill {
+    id          String      @id @default(cuid())
+    name        String      @unique
+    category    String?
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
+    userSkills  UserSkill[]
+}
+
+model UserSkill {
+    id            String   @id @default(cuid())
+    userId        String
+    skillId       String
+    level         Int      // 1-5 scale or similar
+    yearsOfExp    Int?     // Years of experience
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    
+    user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, skillId])
 }

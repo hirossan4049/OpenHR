@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 
@@ -16,6 +17,7 @@ interface AuthFormProps {
 }
 
 export function LoginForm({ onToggleMode }: AuthFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState<LoginFormData>({
     email: "",
     password: "",
@@ -37,10 +39,15 @@ export function LoginForm({ onToggleMode }: AuthFormProps) {
         email: validatedData.email,
         password: validatedData.password,
         redirect: false,
+        callbackUrl: "/",
       });
 
-      if (result?.error) {
+      if ((result as any)?.error) {
         setGeneralError("Invalid email or password");
+      } else {
+        // Navigate to home so SSR reflects logged-in state
+        router.push("/");
+        router.refresh();
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
