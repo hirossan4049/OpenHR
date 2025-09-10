@@ -134,15 +134,18 @@ export const authConfig = {
       }
       return token;
     },
-    session: ({ session, user, token }: any) => ({
-      ...session,
-      user: {
-        ...(session.user ?? {}),
-        id: user?.id ?? token?.sub ?? (session.user?.id as string | undefined),
-        name: (session.user?.name as string | undefined) ?? (token?.name as string | undefined),
-        email: (session.user?.email as string | undefined) ?? (token?.email as string | undefined),
-        image: (session.user?.image as string | undefined) ?? (token?.picture as string | undefined),
-      },
-    }),
+    session: ({ session, user, token }: any) => {
+      const baseUser = session.user || {};
+      return {
+        ...session,
+        user: {
+          ...baseUser,
+          id: user?.id ?? token?.sub ?? (session.user?.id as string | undefined),
+          name: (session.user?.name as string | undefined) ?? (token?.name as string | undefined),
+          email: (session.user?.email as string | undefined) ?? (token?.email as string | undefined),
+          image: (session.user?.image as string | undefined) ?? (token?.picture as string | undefined),
+        },
+      };
+    },
   },
 } satisfies NextAuthConfig;

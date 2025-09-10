@@ -1,11 +1,9 @@
-
 "use client";
 
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Users, Folder, Settings } from "lucide-react";
-import { Link } from "~/navigation";
 
 export function AdminDashboard() {
   const t = useTranslations("AdminDashboard");
@@ -45,10 +43,10 @@ export function AdminDashboard() {
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Manage user accounts, roles, and permissions.</p>
             <Button asChild>
-              <Link href="/admin/users">
+              <a href="/admin/users">
                 <Users className="mr-2 h-4 w-4" />
                 {t("manageUsers")}
-              </Link>
+              </a>
             </Button>
           </CardContent>
         </Card>
@@ -59,10 +57,10 @@ export function AdminDashboard() {
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Oversee and manage all projects and events.</p>
             <Button asChild>
-              <Link href="/admin/projects">
+              <a href="/admin/projects">
                 <Folder className="mr-2 h-4 w-4" />
                 {t("manageProjects")}
-              </Link>
+              </a>
             </Button>
           </CardContent>
         </Card>
@@ -73,10 +71,10 @@ export function AdminDashboard() {
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">Configure system-wide settings and preferences.</p>
             <Button asChild>
-              <Link href="/admin/settings">
+              <a href="/admin/settings">
                 <Settings className="mr-2 h-4 w-4" />
                 {t("systemSettings")}
-              </Link>
+              </a>
             </Button>
           </CardContent>
         </Card>

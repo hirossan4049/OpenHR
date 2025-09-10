@@ -1,10 +1,9 @@
 "use client";
 
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { Search, PlusCircle, User } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import { Search, PlusCircle, GitFork, Star, User } from "lucide-react";
 import { Link } from "~/navigation";
 import { useTranslations } from "next-intl";
 
@@ -68,9 +67,9 @@ export function ProjectList() {
             <li key={project.id} className="p-4 hover:bg-muted/50">
               <div className="flex items-start justify-between">
                 <div className="flex-grow">
-                  <Link href={`/projects/${project.id}`} className="font-semibold text-primary hover:underline">
+                  <a href={`/projects/${project.id}`} className="font-semibold text-primary hover:underline">
                     {project.title}
-                  </Link>
+                  </a>
                   <p className="text-sm text-muted-foreground mt-1">
                     {project.description}
                   </p>

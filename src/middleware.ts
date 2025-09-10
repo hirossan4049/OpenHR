@@ -10,5 +10,6 @@ export default createMiddleware({
  
 export const config = {
   // Skip all paths that are not internationalized
-  matcher: ['/((?!api|_next|.*\..*).*)']
+  // Pattern from Next.js docs: exclude api, _next, and files with extensions
+  matcher: ['/((?!api|_next|.*\\..*).*)']
 };
