@@ -40,6 +40,8 @@ bun run build           # Build for production
 bun run start           # Start production server
 ```
 
+npxではなくbunxを使用。
+
 ## Architecture Overview
 
 ### App Router Structure

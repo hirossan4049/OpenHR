@@ -11,6 +11,7 @@ This is a T3 Stack project. Please follow the existing conventions and patterns 
 - **Database:** SQLite
 - **Styling:** Tailwind CSS
 - **Language:** TypeScript
+- npxではなくbunxを使用。
 
 ## Development
 

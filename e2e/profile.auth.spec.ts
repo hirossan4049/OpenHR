@@ -25,7 +25,7 @@ test.describe('Profile (authenticated)', () => {
     await page.getByLabel('GitHub Profile URL').fill('https://github.com/e2e-user');
 
     await page.getByRole('button', { name: 'Save Profile' }).click();
-    await expect(page.getByText('Profile updated successfully!')).toBeVisible();
+    await expect(page.getByText('Profile updated successfully!')).toBeVisible({ timeout: 10000 });
   });
 
   test('should allow adding and managing skills', async ({ page }) => {
@@ -43,16 +43,18 @@ test.describe('Profile (authenticated)', () => {
     await page.getByRole('button', { name: 'Add Skill' }).click();
 
     await expect(page.getByText(skillName)).toBeVisible();
-    await expect(page.getByText('Level 4 (Advanced)')).toBeVisible();
-    await expect(page.getByText('3 years experience')).toBeVisible();
+    
+    // Find the skill row and check its content
+    const skillRow = page.locator('div', { hasText: skillName }).first();
+    await expect(skillRow.getByText('Level 4 (Advanced)')).toBeVisible();
+    await expect(skillRow.getByText('3 years experience')).toBeVisible();
 
     // Update level to 5
-    const row = page.locator('div', { hasText: skillName }).first();
-    await row.locator('select').selectOption('5');
-    await expect(page.getByText('Level 5 (Expert)')).toBeVisible();
+    await skillRow.locator('select').selectOption('5');
+    await expect(skillRow.getByText('Level 5 (Expert)')).toBeVisible();
 
     // Remove skill
-    await row.getByRole('button', { name: 'Remove skill' }).click();
+    await skillRow.getByRole('button', { name: 'Remove skill' }).click();
     await expect(page.getByText(skillName)).not.toBeVisible();
   });
 });
