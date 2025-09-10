@@ -1,10 +1,15 @@
+"use client";
+
 import { Bell, Menu, PlusCircle } from "lucide-react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "~/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
 
 export function Header() {
+  const t = useTranslations("Header");
+
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
       <div className="container flex h-16 items-center justify-between">
@@ -14,17 +19,17 @@ export function Header() {
           </Link>
           <nav className="hidden items-center gap-4 text-sm font-medium md:flex">
             <Link href="/dashboard" className="text-muted-foreground transition-colors hover:text-foreground">
-              Dashboard
+              {t("dashboard")}
             </Link>
             <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
-              Projects
+              {t("projects")}
             </Link>
             <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
-              Members
+              {t("members")}
             </Link>
             {/* Admin only */}
             <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
-              Admin
+              {t("admin")}
             </Link>
           </nav>
         </div>
@@ -35,7 +40,7 @@ export function Header() {
             <Button size="sm" asChild>
               <Link href="/projects/new">
                 <PlusCircle className="mr-2 h-4 w-4" />
-                Create Project
+                {t("createProject")}
               </Link>
             </Button>
             <Button variant="ghost" size="icon">
@@ -43,7 +48,7 @@ export function Header() {
             </Button>
           </div>
 
-          <Link href="/profile">
+          <Link href="/profile" data-testid="profile-link">
             <Avatar className="h-8 w-8">
               <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
               <AvatarFallback>CN</AvatarFallback>
@@ -55,30 +60,30 @@ export function Header() {
               <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle Menu</span>
+                  <span className="sr-only">{t("toggleMenu")}</span>
                 </Button>
               </SheetTrigger>
               <SheetContent side="right">
                 <div className="grid gap-4 py-6">
                   <Link href="/dashboard" className="text-muted-foreground transition-colors hover:text-foreground">
-                    Dashboard
+                    {t("dashboard")}
                   </Link>
                   <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
-                    Projects
+                    {t("projects")}
                   </Link>
                   <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
-                    Members
+                    {t("members")}
                   </Link>
                   {/* Admin only */}
                   <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
-                    Admin
+                    {t("admin")}
                   </Link>
                   <div className="border-t pt-4">
                     {/* Organizer/Admin only */}
                     <Button size="sm" asChild className="w-full">
                       <Link href="/projects/new">
                         <PlusCircle className="mr-2 h-4 w-4" />
-                        Create Project
+                        {t("createProject")}
                       </Link>
                     </Button>
                   </div>

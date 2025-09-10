@@ -1,8 +1,8 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { ProfileEditForm } from "~/components/profile/profile-edit-form";
 import { SkillManagement } from "~/components/profile/skill-management";
 import { Button } from "~/components/ui/button";
@@ -28,6 +28,7 @@ interface UserSkill {
 }
 
 export function ProfilePage() {
+  const t = useTranslations("ProfilePage");
   const { data: session, status } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [skills, setSkills] = useState<UserSkill[]>([]);
@@ -141,7 +142,7 @@ export function ProfilePage() {
                 )}
               </div>
               <Button className="mt-6 w-full" onClick={() => setIsEditing(true)}>
-                Edit Profile
+                {t("editProfile")}
               </Button>
             </CardContent>
           </Card>
@@ -151,9 +152,9 @@ export function ProfilePage() {
         <div className="md:col-span-2">
           <Tabs defaultValue="skills">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="skills">Skills</TabsTrigger>
-              <TabsTrigger value="projects">Projects</TabsTrigger>
-              <TabsTrigger value="activity">Activity</TabsTrigger>
+              <TabsTrigger value="skills">{t("skills")}</TabsTrigger>
+              <TabsTrigger value="projects">{t("projects")}</TabsTrigger>
+              <TabsTrigger value="activity">{t("activity")}</TabsTrigger>
             </TabsList>
             <TabsContent value="skills">
                 <SkillManagement
@@ -164,7 +165,7 @@ export function ProfilePage() {
             <TabsContent value="projects">
               <Card>
                 <CardHeader>
-                  <CardTitle>Projects</CardTitle>
+                  <CardTitle>{t("projects")}</CardTitle>
                   <CardDescription>Projects you have participated in.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -175,7 +176,7 @@ export function ProfilePage() {
             <TabsContent value="activity">
               <Card>
                 <CardHeader>
-                  <CardTitle>Activity</CardTitle>
+                  <CardTitle>{t("activity")}</CardTitle>
                   <CardDescription>Your recent activity in the community.</CardDescription>
                 </CardHeader>
                 <CardContent>

@@ -41,6 +41,7 @@ bun run start           # Start production server
 ```
 
 npxではなくbunxを使用。
+shadcnでGitHub風のUI.
 
 ## Architecture Overview
 

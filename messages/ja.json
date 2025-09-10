@@ -1,0 +1,44 @@
+{
+  "Header": {
+    "dashboard": "ダッシュボード",
+    "projects": "プロジェクト",
+    "members": "メンバー",
+    "admin": "管理",
+    "createProject": "プロジェクト作成",
+    "toggleMenu": "メニューを開く"
+  },
+  "ProfilePage": {
+    "editProfile": "プロフィール編集",
+    "skills": "スキル",
+    "projects": "プロジェクト",
+    "activity": "アクティビティ"
+  },
+  "ProjectList": {
+    "title": "プロジェクト",
+    "createProject": "プロジェクト作成",
+    "searchPlaceholder": "プロジェクトを検索...",
+    "members": "{count}人",
+    "by": "主催: {organizer}"
+  },
+  "AdminDashboard": {
+    "title": "管理者ダッシュボード",
+    "totalMembers": "総メンバー数",
+    "activeProjects": "アクティブなプロジェクト",
+    "manageUsers": "ユーザー管理",
+    "manageProjects": "プロジェクト管理",
+    "systemSettings": "システム設定"
+  },
+  "HomePage": {
+    "title": "OpenHR TMS",
+    "firstStepsTitle": "最初のステップ →",
+    "firstStepsDescription": "データベースと認証を設定するために必要なすべての基本情報。",
+    "documentationTitle": "ドキュメント →",
+    "documentationDescription": "Create T3 App、使用ライブラリ、デプロイ方法について詳しく学ぶ。",
+    "loadingTRPC": "tRPCクエリを読み込み中...",
+    "loggedInAs": "{name}としてログイン中",
+    "myProfile": "マイプロフィール",
+    "signOut": "サインアウト",
+    "accessDenied": "アクセス拒否",
+    "signInToViewProfile": "プロフィールを表示するにはサインインしてください。"
+  }
+}

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Button } from "~/components/ui/button";
@@ -6,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { Search, PlusCircle, GitFork, Star, User } from "lucide-react";
-import Link from "next/link";
+import { Link } from "~/navigation";
+import { useTranslations } from "next-intl";
 
 // Placeholder data
 const projects = [
@@ -37,15 +37,17 @@ const projects = [
 ];
 
 export function ProjectList() {
+  const t = useTranslations("ProjectList");
+
   return (
     <div className="container py-8">
       {/* Page Header */}
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">Projects</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <Button asChild>
           <Link href="/projects/new">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Project
+            {t("createProject")}
           </Link>
         </Button>
       </div>
@@ -54,7 +56,7 @@ export function ProjectList() {
       <div className="mb-6">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Search projects..." className="pl-10" />
+          <Input placeholder={t("searchPlaceholder")} className="pl-10" />
         </div>
         {/* Add filter buttons here if needed */}
       </div>
@@ -82,10 +84,10 @@ export function ProjectList() {
                   <div className="flex items-center gap-3">
                      <div className="flex items-center gap-1">
                        <User className="h-4 w-4" />
-                       <span>{project.members} members</span>
+                       <span>{t("members", { count: project.members })}</span>
                      </div>
                      <div className="flex items-center gap-1">
-                       <span className="font-medium">by {project.organizer}</span>
+                       <span className="font-medium">{t("by", { organizer: project.organizer })}</span>
                      </div>
                   </div>
                 </div>

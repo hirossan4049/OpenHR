@@ -1,0 +1,44 @@
+{
+  "Header": {
+    "dashboard": "Dashboard",
+    "projects": "Projects",
+    "members": "Members",
+    "admin": "Admin",
+    "createProject": "Create Project",
+    "toggleMenu": "Toggle Menu"
+  },
+  "ProfilePage": {
+    "editProfile": "Edit Profile",
+    "skills": "Skills",
+    "projects": "Projects",
+    "activity": "Activity"
+  },
+  "ProjectList": {
+    "title": "Projects",
+    "createProject": "Create Project",
+    "searchPlaceholder": "Search projects...",
+    "members": "{count, plural, one {# member} other {# members}}",
+    "by": "by {organizer}"
+  },
+  "AdminDashboard": {
+    "title": "Admin Dashboard",
+    "totalMembers": "Total Members",
+    "activeProjects": "Active Projects",
+    "manageUsers": "Manage Users",
+    "manageProjects": "Manage Projects",
+    "systemSettings": "System Settings"
+  },
+  "HomePage": {
+    "title": "OpenHR TMS",
+    "firstStepsTitle": "First Steps →",
+    "firstStepsDescription": "Just the basics - Everything you need to know to set up your database and authentication.",
+    "documentationTitle": "Documentation →",
+    "documentationDescription": "Learn more about Create T3 App, the libraries it uses, and how to deploy it.",
+    "loadingTRPC": "Loading tRPC query...",
+    "loggedInAs": "Logged in as {name}",
+    "myProfile": "My Profile",
+    "signOut": "Sign out",
+    "accessDenied": "Access Denied",
+    "signInToViewProfile": "Please sign in to view your profile."
+  }
+}
