@@ -2,12 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { z } from "zod";
-
-const skillSchema = z.object({
-  name: z.string().min(1, "Skill name is required"),
-  level: z.number().min(1).max(5),
-  yearsOfExp: z.number().min(0).max(50).optional(),
-});
+import { skillCreateSchema } from "~/lib/validation/skill";
 
 // GET /api/skills - Get user skills
 export async function GET() {
@@ -64,7 +59,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validatedData = skillSchema.parse(body);
+    const validatedData = skillCreateSchema.parse(body);
 
     // Check if user already has this skill
     const existingUserSkill = await db.userSkill.findFirst({

@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 import { z } from "zod";
-
-const skillUpdateSchema = z.object({
-  level: z.number().min(1).max(5),
-  yearsOfExp: z.number().min(0).max(50).optional(),
-});
+import { skillUpdateSchema } from "~/lib/validation/skill";
 
 // PUT /api/skills/[skillId] - Update user skill
 export async function PUT(
