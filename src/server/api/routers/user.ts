@@ -133,29 +133,37 @@ export const userRouter = createTRPCRouter({
     .input(skillSearchSchema)
     .query(async ({ ctx, input }) => {
       const { query, limit } = input;
-      const search = query.toLowerCase();
+      const q = query.trim();
+      const qLower = q.toLowerCase();
 
-      const skills = await ctx.db.skill.findMany({
-        where: {
-          OR: [
-            { name: { contains: search, mode: "insensitive" } },
-            { slug: { contains: search, mode: "insensitive" } },
-            { aliases: { contains: search, mode: "insensitive" } },
-          ],
-        },
+      // Fetch a reasonable superset and filter in memory to ensure case-insensitive matching across JSON aliases
+      const all = await ctx.db.skill.findMany({
         orderBy: [
-          { verified: "desc" }, // Verified skills first
+          { verified: "desc" },
           { name: "asc" },
         ],
-        take: limit,
+        take: 1000,
       });
 
-      return skills.map(skill => ({
+      const filtered = all.filter((s) => {
+        let aliases: string[] = [];
+        try {
+          aliases = s.aliases ? (JSON.parse(s.aliases) as string[]) : [];
+        } catch {
+          aliases = [];
+        }
+        const haystack = [s.name ?? "", s.slug ?? "", ...aliases].join(" ").toLowerCase();
+        return haystack.includes(qLower);
+      });
+
+      const results = filtered.slice(0, limit);
+
+      return results.map((skill) => ({
         id: skill.id,
         name: skill.name,
         slug: skill.slug,
         logoUrl: skill.logoUrl,
-        aliases: skill.aliases ? JSON.parse(skill.aliases) : [],
+        aliases: (() => { try { return skill.aliases ? JSON.parse(skill.aliases) : []; } catch { return []; } })(),
         verified: skill.verified,
         category: skill.category,
       }));
@@ -178,7 +186,7 @@ export const userRouter = createTRPCRouter({
       const existingSkill = await ctx.db.skill.findFirst({
         where: {
           OR: [
-            { name: { equals: name, mode: "insensitive" } },
+            { name: { equals: name } },
             { slug: slug },
           ],
         },

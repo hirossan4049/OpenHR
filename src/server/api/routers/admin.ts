@@ -99,7 +99,7 @@ export const adminRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // TODO: Add admin role check
       
-      const { sourceId, targetId, keepTarget } = input;
+      const { sourceId, targetId, keepTarget: _keepTarget } = input;
       
       return ctx.db.$transaction(async (tx) => {
         // Move all user skills from source to target

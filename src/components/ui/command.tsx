@@ -84,7 +84,7 @@ CommandGroup.displayName = "CommandGroup"
 
 const CommandItem = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
+  Omit<React.HTMLAttributes<HTMLDivElement>, "onSelect"> & {
     disabled?: boolean
     onSelect?: (value: string) => void
     value?: string

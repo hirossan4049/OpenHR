@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Check, Edit2, Merge, Plus, Search, Trash2, Upload, X } from "lucide-react";
+import { Check, Edit2, Search, Trash2 } from "lucide-react";
 import Image from "next/image";
 
 import { Button } from "~/components/ui/button";
@@ -20,7 +20,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
@@ -31,7 +30,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "~/components/ui/dialog";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
@@ -41,8 +39,8 @@ interface SkillMaster {
   id: string;
   name: string;
   slug: string;
-  category?: string;
-  logoUrl?: string;
+  category: string | null;
+  logoUrl: string | null;
   aliases?: string[];
   verified: boolean;
   createdAt: Date;
@@ -58,6 +56,7 @@ export function AdminSkillManagement() {
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [editingSkill, setEditingSkill] = useState<SkillMaster | null>(null);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [hiddenLogoIds, setHiddenLogoIds] = useState<Set<string>>(new Set());
   
   // Fetch skills with usage statistics
   const { data: skills = [], isLoading, refetch } = api.admin.getAllSkillsWithStats.useQuery();
@@ -74,24 +73,27 @@ export function AdminSkillManagement() {
   const deleteSkillMutation = api.admin.deleteSkill.useMutation({
     onSuccess: () => refetch(),
   });
-  
-  const mergeSkillsMutation = api.admin.mergeSkills.useMutation({
-    onSuccess: () => refetch(),
-  });
+  // Note: merge skills mutation available in API but not used here
 
   // Filter skills based on search and category
   const filteredSkills = skills.filter((skill) => {
     const matchesSearch = !searchQuery || 
       skill.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       skill.slug.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      skill.aliases?.some(alias => alias.toLowerCase().includes(searchQuery.toLowerCase()));
+      skill.aliases?.some((alias: string) => alias.toLowerCase().includes(searchQuery.toLowerCase()));
     
     const matchesCategory = !selectedCategory || skill.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
 
-  const categories = Array.from(new Set(skills.map(s => s.category).filter(Boolean)));
+  const categories = Array.from(
+    new Set(
+      skills
+        .map((s) => s.category)
+        .filter((c): c is string => Boolean(c))
+    )
+  );
 
   const handleEditSkill = (skill: SkillMaster) => {
     setEditingSkill(skill);
@@ -197,19 +199,20 @@ export function AdminSkillManagement() {
                   filteredSkills.map((skill) => (
                     <TableRow key={skill.id}>
                       <TableCell>
-                        {skill.logoUrl ? (
+                        {skill.logoUrl && !hiddenLogoIds.has(skill.id) ? (
                           <Image
                             src={skill.logoUrl}
                             alt={skill.name}
                             width={24}
                             height={24}
                             className="rounded"
+                            onError={() => setHiddenLogoIds(prev => {
+                              const next = new Set(prev);
+                              next.add(skill.id);
+                              return next;
+                            })}
                           />
-                        ) : (
-                          <div className="w-6 h-6 bg-muted rounded flex items-center justify-center text-xs">
-                            {skill.name.charAt(0)}
-                          </div>
-                        )}
+                        ) : null}
                       </TableCell>
                       <TableCell>
                         <div>

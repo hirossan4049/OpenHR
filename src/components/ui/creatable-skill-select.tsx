@@ -24,10 +24,10 @@ export interface SkillOption {
   id: string
   name: string
   slug: string
-  logoUrl?: string
+  logoUrl?: string | null
   aliases?: string[]
   verified?: boolean
-  category?: string
+  category?: string | null
 }
 
 interface CreatableSkillSelectProps {
@@ -35,6 +35,7 @@ interface CreatableSkillSelectProps {
   value?: string
   onValueChange?: (value: string) => void
   onCreateSkill?: (name: string) => void
+  onSearchChange?: (query: string) => void
   placeholder?: string
   emptyText?: string
   searchPlaceholder?: string
@@ -49,6 +50,7 @@ export function CreatableSkillSelect({
   value,
   onValueChange,
   onCreateSkill,
+  onSearchChange,
   placeholder = "Select skill...",
   emptyText = "No skills found.",
   searchPlaceholder = "Search skills...",
@@ -59,6 +61,7 @@ export function CreatableSkillSelect({
 }: CreatableSkillSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
+  const [hiddenLogoIds, setHiddenLogoIds] = React.useState<Set<string>>(new Set())
 
   const selectedSkill = skills.find((skill) => skill.id === value)
 
@@ -112,13 +115,18 @@ export function CreatableSkillSelect({
         >
           {selectedSkill ? (
             <div className="flex items-center gap-2">
-              {selectedSkill.logoUrl && (
+              {selectedSkill.logoUrl && !hiddenLogoIds.has(selectedSkill.id) && (
                 <Image
                   src={selectedSkill.logoUrl}
                   alt={selectedSkill.name}
                   width={16}
                   height={16}
                   className="rounded-sm"
+                  onError={() => setHiddenLogoIds(prev => {
+                    const next = new Set(prev)
+                    next.add(selectedSkill.id)
+                    return next
+                  })}
                 />
               )}
               <span>{selectedSkill.name}</span>
@@ -137,7 +145,11 @@ export function CreatableSkillSelect({
           <CommandInput
             placeholder={searchPlaceholder}
             value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value
+              setSearchValue(v)
+              onSearchChange?.(v)
+            }}
           />
           <CommandList>
             {filteredSkills.length === 0 && !shouldShowCreate && (
@@ -158,13 +170,18 @@ export function CreatableSkillSelect({
                       value === skill.id ? "opacity-100" : "opacity-0"
                     )}
                   />
-                  {skill.logoUrl && (
+                  {skill.logoUrl && !hiddenLogoIds.has(skill.id) && (
                     <Image
                       src={skill.logoUrl}
                       alt={skill.name}
                       width={16}
                       height={16}
                       className="rounded-sm"
+                      onError={() => setHiddenLogoIds(prev => {
+                        const next = new Set(prev)
+                        next.add(skill.id)
+                        return next
+                      })}
                     />
                   )}
                   <div className="flex flex-col flex-1">

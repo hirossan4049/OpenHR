@@ -30,7 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "~/components/ui/table";
-import { CreatableSkillSelect, type SkillOption } from "~/components/ui/creatable-skill-select";
+import { CreatableSkillSelect } from "~/components/ui/creatable-skill-select";
 import { api } from "~/trpc/react";
 
 const skillSchema = z.object({
@@ -78,8 +78,8 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   // tRPC queries for skill search and suggestions
   const [searchQuery, setSearchQuery] = useState("");
   const { data: searchResults = [], isLoading: isSearching } = api.user.searchSkills.useQuery(
-    { query: searchQuery || "react" }, // Default search to show some results
-    { enabled: true }
+    { query: searchQuery, limit: 20 },
+    { enabled: searchQuery.length >= 1 }
   );
   
   const suggestSkillMutation = api.user.suggestSkill.useMutation();
@@ -319,16 +319,31 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
       </CardContent>
       <CardFooter className="border-t pt-6">
         <div className="w-full">
-          <h4 className="text-sm font-medium mb-3">{t("addSectionTitle")}</h4>
+          <h4 className="text-sm font-medium mb-3">{t("addSectionTitle", { defaultValue: "Add New Skill" })}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 space-y-2">
+              <Label htmlFor="skillName" className="sr-only">{t("columnSkill")}</Label>
+              <Input
+                id="skillName"
+                placeholder={t("placeholderName", { defaultValue: "e.g., React, Python..." })}
+                value={newSkill.name}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  setNewSkill(prev => ({ ...prev, name: v }));
+                  setSearchQuery(v);
+                  // Clear any previously selected suggestion when manually typing
+                  setSelectedSkillId("");
+                }}
+                aria-label={t("columnSkill")}
+              />
               <Label htmlFor="skillSelect" className="sr-only">{t("columnSkill")}</Label>
               <CreatableSkillSelect
                 skills={searchResults}
                 value={selectedSkillId}
                 onValueChange={handleSkillSelect}
                 onCreateSkill={handleCreateSkill}
-                placeholder={t("placeholderName")}
+                onSearchChange={setSearchQuery}
+                placeholder={t("placeholderName", { defaultValue: "e.g., React, Python..." })}
                 emptyText={t("noSkillsFound", { defaultValue: "No skills found." })}
                 searchPlaceholder={t("searchSkills", { defaultValue: "Search skills..." })}
                 createText={t("createSkill", { defaultValue: "Create \"{search}\"" })}
@@ -369,10 +384,10 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
           <div className="mt-4 flex justify-between items-center">
             <Button
               onClick={handleAddSkill}
-              disabled={isLoading || !selectedSkillId || !newSkill.name.trim()}
+              disabled={isLoading || !newSkill.name.trim()}
             >
               <Plus className="mr-2 h-4 w-4" />
-              {isLoading ? t("buttonAdding") : t("buttonAdd")}
+              {isLoading ? t("buttonAdding", { defaultValue: "Adding..." }) : t("buttonAdd", { defaultValue: "Add Skill" })}
             </Button>
             <div className="text-sm space-y-1 text-right">
               {saveStatus === "success" && <p className="text-green-600">{t("successAdd")}</p>}
