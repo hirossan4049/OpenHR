@@ -62,5 +62,31 @@
     "signOut": "Sign out",
     "accessDenied": "Access Denied",
     "signInToViewProfile": "Please sign in to view your profile."
+  },
+  "MembersDirectory": {
+    "title": "Members Directory",
+    "description": "Search and browse team member profiles and skills.",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search by name, skills, or bio...",
+    "skillFilterLabel": "Filter by Skill",
+    "allSkills": "All Skills",
+    "resultsCount": "{count, plural, one {# member found} other {# members found}}",
+    "noResults": "No members found",
+    "noResultsDescription": "Try adjusting your search criteria and try again.",
+    "noName": "No name",
+    "moreSkills": "more skills",
+    "previousPage": "Previous",
+    "nextPage": "Next",
+    "pageInfo": "Page {current} of {total}"
+  },
+  "MemberDetail": {
+    "backToDirectory": "Back to Directory",
+    "memberNotFound": "Member Not Found",
+    "memberNotFoundDescription": "The specified member doesn't exist or you don't have permission to view their profile.",
+    "noName": "No name",
+    "aboutSection": "About",
+    "skillsSection": "Skills",
+    "noSkills": "No skills registered yet.",
+    "uncategorized": "Other"
   }
 }

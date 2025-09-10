@@ -62,5 +62,31 @@
     "signOut": "サインアウト",
     "accessDenied": "アクセス拒否",
     "signInToViewProfile": "プロフィールを表示するにはサインインしてください。"
+  },
+  "MembersDirectory": {
+    "title": "メンバーディレクトリ",
+    "description": "チームメンバーのプロフィールとスキルを検索・閲覧できます。",
+    "searchLabel": "検索",
+    "searchPlaceholder": "名前、スキル、自己紹介で検索...",
+    "skillFilterLabel": "スキルでフィルタ",
+    "allSkills": "すべてのスキル",
+    "resultsCount": "{count}人のメンバーが見つかりました",
+    "noResults": "メンバーが見つかりません",
+    "noResultsDescription": "検索条件を変更して再度お試しください。",
+    "noName": "名前未設定",
+    "moreSkills": "個のスキル",
+    "previousPage": "前のページ",
+    "nextPage": "次のページ",
+    "pageInfo": "{current} / {total} ページ"
+  },
+  "MemberDetail": {
+    "backToDirectory": "ディレクトリに戻る",
+    "memberNotFound": "メンバーが見つかりません",
+    "memberNotFoundDescription": "指定されたメンバーは存在しないか、アクセス権限がありません。",
+    "noName": "名前未設定",
+    "aboutSection": "自己紹介",
+    "skillsSection": "スキル",
+    "noSkills": "スキルがまだ登録されていません。",
+    "uncategorized": "その他"
   }
 }

@@ -26,6 +26,10 @@ export const pathnames = {
     en: '/members',
     ja: '/members'
   },
+  '/members/[id]': {
+    en: '/members/[id]',
+    ja: '/members/[id]'
+  },
   '/admin': {
     en: '/admin',
     ja: '/admin'
