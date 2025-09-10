@@ -18,6 +18,8 @@
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:reuse": "PLAYWRIGHT_NO_SERVER=1 playwright test",
+    "test:e2e:chromium": "PLAYWRIGHT_NO_SERVER=1 playwright test --project=chromium",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

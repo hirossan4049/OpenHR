@@ -1,13 +1,14 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
-import DiscordProvider from "next-auth/providers/discord";
-import GitHubProvider from "next-auth/providers/github";
-import GoogleProvider from "next-auth/providers/google";
-import CredentialsProvider from "next-auth/providers/credentials";
+import Discord from "next-auth/providers/discord";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
+import Credentials from "next-auth/providers/credentials";
 import { compare } from "bcryptjs";
 import { z } from "zod";
 
 import { db } from "~/server/db";
+import { env } from "~/env";
 
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
@@ -39,17 +40,22 @@ declare module "next-auth" {
  * @see https://next-auth.js.org/configuration/options
  */
 export const authConfig = {
+  trustHost: true,
+  debug: process.env.NODE_ENV === 'development',
   providers: [
-    DiscordProvider,
-    GitHubProvider({
-      clientId: process.env.AUTH_GITHUB_ID!,
-      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+    Discord({
+      clientId: env.AUTH_DISCORD_ID!,
+      clientSecret: env.AUTH_DISCORD_SECRET!,
     }),
-    GoogleProvider({
-      clientId: process.env.AUTH_GOOGLE_ID!,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    GitHub({
+      clientId: env.AUTH_GITHUB_ID!,
+      clientSecret: env.AUTH_GITHUB_SECRET!,
     }),
-    CredentialsProvider({
+    Google({
+      clientId: env.AUTH_GOOGLE_ID!,
+      clientSecret: env.AUTH_GOOGLE_SECRET!,
+    }),
+    Credentials({
       name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
@@ -61,7 +67,9 @@ export const authConfig = {
           .safeParse(credentials);
 
         if (parsedCredentials.success) {
-          const { email, password } = parsedCredentials.data;
+          // Normalize email to avoid case/whitespace mismatches
+          const email = parsedCredentials.data.email.trim().toLowerCase();
+          const { password } = parsedCredentials.data;
           
           try {
             const user = await db.user.findUnique({
@@ -75,7 +83,9 @@ export const authConfig = {
               }
             });
 
-            if (!user) return null;
+            if (!user) {
+              return null;
+            }
 
             // For OAuth users, password might be null
             if (!user.password) return null;
@@ -110,12 +120,28 @@ export const authConfig = {
      */
   ],
   adapter: PrismaAdapter(db),
+  // Temporarily use JWT sessions to isolate DB-session issues in E2E
+  session: { strategy: 'jwt' },
   callbacks: {
-    session: ({ session, user }) => ({
+    // Support both database and jwt session strategies
+    jwt: ({ token, user }: any) => {
+      // On sign in, persist basic user info into the token
+      if (user) {
+        token.sub = user.id ?? token.sub;
+        if (user.email) token.email = user.email;
+        if (user.name) token.name = user.name;
+        if (user.image) token.picture = user.image;
+      }
+      return token;
+    },
+    session: ({ session, user, token }: any) => ({
       ...session,
       user: {
-        ...session.user,
-        id: user.id,
+        ...(session.user ?? {}),
+        id: user?.id ?? token?.sub ?? (session.user?.id as string | undefined),
+        name: (session.user?.name as string | undefined) ?? (token?.name as string | undefined),
+        email: (session.user?.email as string | undefined) ?? (token?.email as string | undefined),
+        image: (session.user?.image as string | undefined) ?? (token?.picture as string | undefined),
       },
     }),
   },

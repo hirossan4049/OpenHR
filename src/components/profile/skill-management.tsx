@@ -195,6 +195,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemoveSkill(skill.id)}
+                  aria-label="Remove skill"
                   className="text-red-600 hover:text-red-800"
                 >
                   <X className="h-4 w-4" />

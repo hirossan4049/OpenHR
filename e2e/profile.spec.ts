@@ -13,48 +13,51 @@ test.describe('Profile Management', () => {
   });
 
   test('should show authentication forms for unauthenticated users', async ({ page }) => {
-    // Check that auth forms are shown
-    await expect(page.locator('text=Sign In')).toBeVisible();
-    await expect(page.locator('text=Create Account')).toBeVisible();
-    
-    // Check OAuth buttons are present
-    await expect(page.locator('text=GitHub')).toBeVisible();
-    await expect(page.locator('text=Google')).toBeVisible();
-    await expect(page.locator('text=Discord')).toBeVisible();
+    // Prefer role-based, accessible selectors to avoid strict mode conflicts
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign In' })).toBeVisible();
+
+    // Registration is not visible yet; verify the toggle button exists
+    await expect(page.getByRole('button', { name: "Don't have an account? Sign up" })).toBeVisible();
+
+    // OAuth buttons
+    await expect(page.getByRole('button', { name: 'GitHub' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Google' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Discord' })).toBeVisible();
   });
 
   test('should allow toggling between login and registration forms', async ({ page }) => {
     // Should start with login form
-    await expect(page.locator('text=Sign In')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
-    await expect(page.locator('input[name="password"]')).toBeVisible();
-    
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByLabel('Email')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
+
     // Toggle to registration
-    await page.click('text=Don\'t have an account? Sign up');
-    
+    await page.getByRole('button', { name: "Don't have an account? Sign up" }).click();
+
     // Should show registration form
-    await expect(page.locator('text=Create Account')).toBeVisible();
-    await expect(page.locator('input[name="name"]')).toBeVisible();
-    await expect(page.locator('input[name="confirmPassword"]')).toBeVisible();
-    
+    await expect(page.getByRole('heading', { name: 'Create Account' })).toBeVisible();
+    await expect(page.getByLabel('Name')).toBeVisible();
+    await expect(page.getByLabel('Confirm Password')).toBeVisible();
+
     // Toggle back to login
-    await page.click('text=Already have an account? Sign in');
-    
+    await page.getByRole('button', { name: 'Already have an account? Sign in' }).click();
+
     // Should show login form again
-    await expect(page.locator('text=Sign In')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
+    await expect(page.getByLabel('Email')).toBeVisible();
   });
 
   test('should validate form inputs', async ({ page }) => {
     // Toggle to registration
-    await page.click('text=Don\'t have an account? Sign up');
-    
+    await page.getByRole('button', { name: "Don't have an account? Sign up" }).click();
+
     // Try to submit empty form
-    await page.click('button[type="submit"]');
-    
-    // Should show validation errors (though specific behavior depends on implementation)
-    await expect(page.locator('input[name="name"]')).toBeVisible();
-    await expect(page.locator('input[name="email"]')).toBeVisible();
+    await page.getByRole('button', { name: 'Create Account' }).click();
+
+    // Should show validation errors (client-side required or zod)
+    await expect(page.getByLabel('Name')).toBeVisible();
+    await expect(page.getByLabel('Email')).toBeVisible();
   });
 
   // Note: The following tests would require a test database and proper authentication setup
@@ -143,13 +146,12 @@ test.describe('Profile Management', () => {
 test.describe('Navigation and UI', () => {
   test('should have proper navigation structure', async ({ page }) => {
     await page.goto('/');
-    
-    // Check main title
-    await expect(page.locator('text=OpenHR TMS')).toBeVisible();
-    
-    // Check that helpful links are present
-    await expect(page.locator('text=First Steps')).toBeVisible();
-    await expect(page.locator('text=Documentation')).toBeVisible();
+
+    // Main title visible
+    await expect(page.getByRole('heading', { name: /OpenHR\s*TMS/i })).toBeVisible();
+
+    // For unauthenticated users, auth heading should be visible
+    await expect(page.getByRole('heading', { name: 'Sign In' })).toBeVisible();
   });
 
   test.skip('should show profile link for authenticated users', async ({ page: _ }) => {

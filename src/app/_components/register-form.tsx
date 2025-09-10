@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { z } from "zod";
 
@@ -21,6 +22,7 @@ interface AuthFormProps {
 }
 
 export function RegisterForm({ onToggleMode }: AuthFormProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState<RegisterFormData>({
     name: "",
     email: "",
@@ -58,10 +60,15 @@ export function RegisterForm({ onToggleMode }: AuthFormProps) {
         email: validatedData.email,
         password: validatedData.password,
         redirect: false,
+        callbackUrl: "/",
       });
 
-      if (result?.error) {
+      if ((result as any)?.error) {
         setGeneralError("Registration successful but login failed. Please try logging in manually.");
+      } else {
+        // Navigate to home so SSR reflects logged-in state (or to profile if preferred)
+        router.push("/");
+        router.refresh();
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
