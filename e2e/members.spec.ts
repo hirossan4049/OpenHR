@@ -53,7 +53,7 @@ test.describe('Members Directory', () => {
     
     // The no results state should be visible if no members match
     const noResults = page.getByText('No members found');
-    const tryAgain = page.getByText('Try adjusting your search criteria and try again');
+    const _tryAgain = page.getByText('Try adjusting your search criteria and try again');
     
     // Either there are results or no results message should be shown
     const hasResults = await page.getByTestId('member-card').count() > 0;
@@ -210,7 +210,7 @@ test.describe('Performance and Loading States', () => {
     
     // Look for skeleton loading components
     // Note: This might be very fast in local development
-    const skeletons = page.locator('.animate-pulse');
+    const _skeletons = page.locator('.animate-pulse');
     
     await response;
     
