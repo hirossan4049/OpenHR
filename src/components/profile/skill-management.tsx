@@ -6,6 +6,29 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { X, Plus } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
 
 const skillSchema = z.object({
   name: z.string().min(1, "Skill name is required"),
@@ -25,11 +48,19 @@ interface SkillManagementProps {
   onSkillsChange?: (skills: UserSkill[]) => void;
 }
 
+const levelOptions = [
+  { value: 1, label: "Beginner" },
+  { value: 2, label: "Basic" },
+  { value: 3, label: "Intermediate" },
+  { value: 4, label: "Advanced" },
+  { value: 5, label: "Expert" },
+];
+
 export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillManagementProps) {
   const [skills, setSkills] = useState<UserSkill[]>(initialSkills);
   const [newSkill, setNewSkill] = useState<SkillData>({
     name: "",
-    level: 1,
+    level: 3, // Default to Intermediate
     yearsOfExp: 0,
   });
   const [errors, setErrors] = useState<Partial<Record<keyof SkillData, string>>>({});
@@ -47,7 +78,6 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
     try {
       const validatedSkill = skillSchema.parse(newSkill);
       
-      // Check if skill already exists
       if (skills.some(skill => skill.name.toLowerCase() === validatedSkill.name.toLowerCase())) {
         setErrors({ name: "Skill already exists" });
         return;
@@ -57,9 +87,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
 
       const response = await fetch("/api/skills", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validatedSkill),
       });
 
@@ -70,7 +98,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
 
       const newUserSkill = await response.json();
       setSkills(prev => [...prev, newUserSkill]);
-      setNewSkill({ name: "", level: 1, yearsOfExp: 0 });
+      setNewSkill({ name: "", level: 3, yearsOfExp: 0 });
       setSaveStatus("success");
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -99,15 +127,11 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
 
       const response = await fetch(`/api/skills/${skillId}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(validatedSkill),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to update skill");
-      }
+      if (!response.ok) throw new Error("Failed to update skill");
 
       setSkills(prev => prev.map(s => s.id === skillId ? { ...s, ...updates } : s));
     } catch (error) {
@@ -117,14 +141,8 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
 
   const handleRemoveSkill = async (skillId: string) => {
     try {
-      const response = await fetch(`/api/skills/${skillId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to remove skill");
-      }
-
+      const response = await fetch(`/api/skills/${skillId}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to remove skill");
       setSkills(prev => prev.filter(s => s.id !== skillId));
     } catch (error) {
       console.error("Error removing skill:", error);
@@ -139,106 +157,108 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
     setSaveStatus("idle");
   };
 
-  const getLevelLabel = (level: number) => {
-    const labels = ["", "Beginner", "Basic", "Intermediate", "Advanced", "Expert"];
-    return labels[level] || "Unknown";
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-xl font-semibold text-gray-900">Skills</h3>
-        
-        {/* Existing Skills */}
-        <div className="mb-6 space-y-3">
-          {skills.length === 0 ? (
-            <p className="text-gray-500">No skills added yet. Add your first skill below!</p>
-          ) : (
-            skills.map((skill) => (
-              <div key={skill.id} className="flex items-center justify-between rounded-md border border-gray-200 p-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-4">
-                    <span className="font-medium text-gray-900">{skill.name}</span>
-                    <span className="text-sm text-gray-600">
-                      Level {skill.level} ({getLevelLabel(skill.level)})
-                    </span>
-                    {skill.yearsOfExp !== undefined && skill.yearsOfExp > 0 && (
-                      <span className="text-sm text-gray-600">
-                        {skill.yearsOfExp} year{skill.yearsOfExp !== 1 ? 's' : ''} experience
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <select
-                      value={skill.level}
-                      onChange={(e) => handleUpdateSkill(skill.id, { level: Number(e.target.value) })}
-                      className="rounded border border-gray-300 px-2 py-1 text-sm"
-                    >
-                      {[1, 2, 3, 4, 5].map(level => (
-                        <option key={level} value={level}>
-                          {level} - {getLevelLabel(level)}
-                        </option>
-                      ))}
-                    </select>
-                    <input
-                      type="number"
-                      min="0"
-                      max="50"
-                      value={skill.yearsOfExp || 0}
-                      onChange={(e) => handleUpdateSkill(skill.id, { yearsOfExp: Number(e.target.value) })}
-                      className="w-20 rounded border border-gray-300 px-2 py-1 text-sm"
-                      placeholder="Years"
-                    />
-                  </div>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveSkill(skill.id)}
-                  aria-label="Remove skill"
-                  className="text-red-600 hover:text-red-800"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            ))
-          )}
+    <Card>
+      <CardHeader>
+        <CardTitle>Skills</CardTitle>
+        <CardDescription>Manage your technical and soft skills.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="border rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[40%]">Skill</TableHead>
+                <TableHead>Level</TableHead>
+                <TableHead>Years</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {skills.length > 0 ? (
+                skills.map((skill) => (
+                  <TableRow key={skill.id}>
+                    <TableCell className="font-medium">{skill.name}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={String(skill.level)}
+                        onValueChange={(value) => handleUpdateSkill(skill.id, { level: Number(value) })}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {levelOptions.map(opt => (
+                            <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="50"
+                        value={skill.yearsOfExp || 0}
+                        onChange={(e) => handleUpdateSkill(skill.id, { yearsOfExp: Number(e.target.value) })}
+                        className="w-20"
+                      />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleRemoveSkill(skill.id)}
+                        aria-label="Remove skill"
+                      >
+                        <X className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                    No skills added yet.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
-
-        {/* Add New Skill */}
-        <div className="border-t pt-4">
-          <h4 className="mb-3 font-medium text-gray-900">Add New Skill</h4>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+      </CardContent>
+      <CardFooter className="border-t pt-6">
+        <div className="w-full">
+          <h4 className="text-sm font-medium mb-3">Add New Skill</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
-              <Label htmlFor="skillName" className="text-gray-700">Skill Name</Label>
+              <Label htmlFor="skillName" className="sr-only">Skill Name</Label>
               <Input
                 id="skillName"
                 value={newSkill.name}
                 onChange={(e) => handleNewSkillChange("name", e.target.value)}
-                placeholder="e.g., React, Python, Design..."
+                placeholder="e.g., React, Python..."
               />
-              {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
+              {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name}</p>}
             </div>
-            
             <div>
-              <Label htmlFor="skillLevel" className="text-gray-700">Level</Label>
-              <select
-                id="skillLevel"
-                value={newSkill.level}
-                onChange={(e) => handleNewSkillChange("level", Number(e.target.value))}
-                className="h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
-              >
-                {[1, 2, 3, 4, 5].map(level => (
-                  <option key={level} value={level}>
-                    {level} - {getLevelLabel(level)}
-                  </option>
-                ))}
-              </select>
-              {errors.level && <p className="mt-1 text-sm text-red-600">{errors.level}</p>}
+              <Label htmlFor="skillLevel" className="sr-only">Level</Label>
+              <Select
+                  value={String(newSkill.level)}
+                  onValueChange={(value) => handleNewSkillChange("level", Number(value))}
+                >
+                  <SelectTrigger id="skillLevel">
+                    <SelectValue placeholder="Select level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {levelOptions.map(opt => (
+                      <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
             </div>
-            
             <div>
-              <Label htmlFor="skillYears" className="text-gray-700">Years</Label>
+              <Label htmlFor="skillYears" className="sr-only">Years</Label>
               <Input
                 id="skillYears"
                 type="number"
@@ -246,36 +266,25 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                 max="50"
                 value={newSkill.yearsOfExp || 0}
                 onChange={(e) => handleNewSkillChange("yearsOfExp", Number(e.target.value))}
-                placeholder="0"
+                placeholder="Years"
               />
-              {errors.yearsOfExp && <p className="mt-1 text-sm text-red-600">{errors.yearsOfExp}</p>}
             </div>
           </div>
-          
-          <div className="mt-4">
+          <div className="mt-4 flex justify-between items-center">
             <Button
               onClick={handleAddSkill}
               disabled={isLoading || !newSkill.name.trim()}
-              className="flex items-center gap-2"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="mr-2 h-4 w-4" />
               {isLoading ? "Adding..." : "Add Skill"}
             </Button>
+            <div className="text-sm">
+              {saveStatus === "success" && <p className="text-green-600">Skill added successfully!</p>}
+              {saveStatus === "error" && <p className="text-destructive">Failed to add skill.</p>}
+            </div>
           </div>
-
-          {saveStatus === "success" && (
-            <div className="mt-3 rounded-md bg-green-50 p-3">
-              <p className="text-sm text-green-800">Skill added successfully!</p>
-            </div>
-          )}
-
-          {saveStatus === "error" && (
-            <div className="mt-3 rounded-md bg-red-50 p-3">
-              <p className="text-sm text-red-800">Failed to add skill. Please try again.</p>
-            </div>
-          )}
         </div>
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }

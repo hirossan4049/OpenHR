@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,6 +6,10 @@ import { useSession } from "next-auth/react";
 import { ProfileEditForm } from "~/components/profile/profile-edit-form";
 import { SkillManagement } from "~/components/profile/skill-management";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
+import { Github, Mail, User } from "lucide-react";
 
 interface UserProfile {
   name: string;
@@ -39,7 +44,7 @@ export function ProfilePage() {
     try {
       const [profileResponse, skillsResponse] = await Promise.all([
         fetch("/api/profile"),
-        fetch("/api/skills")
+        fetch("/api/skills"),
       ]);
 
       if (profileResponse.ok) {
@@ -65,10 +70,10 @@ export function ProfilePage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-center">
-          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-purple-600 border-t-transparent"></div>
-          <p className="text-gray-600">Loading profile...</p>
+          <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          <p className="text-muted-foreground">Loading profile...</p>
         </div>
       </div>
     );
@@ -76,10 +81,10 @@ export function ProfilePage() {
 
   if (status === "unauthenticated") {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-center">
-          <h1 className="mb-4 text-2xl font-bold text-gray-900">Access Denied</h1>
-          <p className="text-gray-600">Please sign in to view your profile.</p>
+          <h1 className="mb-4 text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground">Please sign in to view your profile.</p>
         </div>
       </div>
     );
@@ -87,83 +92,98 @@ export function ProfilePage() {
 
   if (isEditing) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="container mx-auto px-4">
-          <ProfileEditForm
-            initialData={profile || undefined}
-            onSave={handleProfileSave}
-            onCancel={() => setIsEditing(false)}
-          />
-        </div>
+      <div className="container py-8">
+        <ProfileEditForm
+          initialData={profile || undefined}
+          onSave={handleProfileSave}
+          onCancel={() => setIsEditing(false)}
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-4xl">
-          {/* Profile Header */}
-          <div className="mb-8 rounded-lg bg-white p-6 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                {session?.user?.image && (
-                  <img
-                    src={session.user.image}
-                    alt="Profile"
-                    className="h-16 w-16 rounded-full"
-                  />
-                )}
-                <div>
-                  <h1 className="text-2xl font-bold text-gray-900">
-                    {profile?.name || session?.user?.name || "Your Profile"}
-                  </h1>
-                  <p className="text-gray-600">{session?.user?.email}</p>
-                  {profile?.grade && (
-                    <p className="text-sm text-gray-500">{profile.grade}</p>
-                  )}
-                </div>
+    <div className="container py-8">
+      <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+        {/* Left Column */}
+        <div className="md:col-span-1">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex flex-col items-center text-center">
+                <Avatar className="mb-4 h-24 w-24">
+                  <AvatarImage src={session?.user?.image ?? undefined} />
+                  <AvatarFallback>
+                    {profile?.name?.charAt(0) ?? session?.user?.name?.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <h1 className="text-2xl font-bold">{profile?.name ?? session?.user?.name}</h1>
+                <p className="text-muted-foreground">{profile?.grade}</p>
+                <p className="mt-2 text-sm text-muted-foreground text-center">{profile?.bio}</p>
               </div>
-              <Button onClick={() => setIsEditing(true)}>
+              <div className="mt-6 space-y-2 text-sm">
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">{session?.user?.email}</span>
+                </div>
+                {profile?.contact && (
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">{profile.contact}</span>
+                  </div>
+                )}
+                {profile?.githubUrl && (
+                  <div className="flex items-center gap-2">
+                    <Github className="h-4 w-4 text-muted-foreground" />
+                    <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                      GitHub Profile
+                    </a>
+                  </div>
+                )}
+              </div>
+              <Button className="mt-6 w-full" onClick={() => setIsEditing(true)}>
                 Edit Profile
               </Button>
-            </div>
-            
-            {profile?.bio && (
-              <div className="mt-4">
-                <h3 className="font-medium text-gray-900">About</h3>
-                <p className="mt-1 text-gray-700">{profile.bio}</p>
-              </div>
-            )}
-            
-            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-              {profile?.contact && (
-                <div>
-                  <h4 className="font-medium text-gray-900">Contact</h4>
-                  <p className="text-gray-700">{profile.contact}</p>
-                </div>
-              )}
-              {profile?.githubUrl && (
-                <div>
-                  <h4 className="font-medium text-gray-900">GitHub</h4>
-                  <a
-                    href={profile.githubUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-600 hover:text-purple-800"
-                  >
-                    {profile.githubUrl}
-                  </a>
-                </div>
-              )}
-            </div>
-          </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          {/* Skills Section */}
-          <SkillManagement
-            initialSkills={skills}
-            onSkillsChange={setSkills}
-          />
+        {/* Right Column */}
+        <div className="md:col-span-2">
+          <Tabs defaultValue="skills">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="skills">Skills</TabsTrigger>
+              <TabsTrigger value="projects">Projects</TabsTrigger>
+              <TabsTrigger value="activity">Activity</TabsTrigger>
+            </TabsList>
+            <TabsContent value="skills">
+                <SkillManagement
+                  initialSkills={skills}
+                  onSkillsChange={setSkills}
+                />
+            </TabsContent>
+            <TabsContent value="projects">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Projects</CardTitle>
+                  <CardDescription>Projects you have participated in.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">No projects to display yet.</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="activity">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Activity</CardTitle>
+                  <CardDescription>Your recent activity in the community.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">No recent activity.</p>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </div>
