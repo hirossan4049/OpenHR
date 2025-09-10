@@ -1,25 +1,28 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { ArrowLeft, Github, Mail, User } from "lucide-react";
-import { use } from "react";
-import { api } from "~/trpc/react";
-import { Link } from "~/navigation";
+import { useTranslations } from "next-intl";
+import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Link } from "~/navigation";
+import { api } from "~/trpc/react";
 
-interface MemberDetailPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function MemberDetailPage({ params }: MemberDetailPageProps) {
-  const { id } = use(params);
+export default function MemberDetailPage() {
+  const params = useParams();
+  const id = (params as { id?: string })?.id ?? "";
   const t = useTranslations("MemberDetail");
 
-  const { data: member, isLoading, error } = api.user.getMemberById.useQuery({ id });
+  const { data: member, isLoading, error } = api.user.getMemberById.useQuery(
+    { id },
+    {
+      enabled: Boolean(id),
+      retry: false,
+    }
+  );
 
   const getLevelBadgeVariant = (level: number) => {
     if (level >= 4) return "default";
@@ -34,7 +37,7 @@ export default function MemberDetailPage({ params }: MemberDetailPageProps) {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8" data-testid="member-loading">
         <div className="mb-6">
           <Skeleton className="h-10 w-32 mb-4" />
           <Skeleton className="h-8 w-64" />
@@ -72,7 +75,7 @@ export default function MemberDetailPage({ params }: MemberDetailPageProps) {
 
   if (error || !member) {
     return (
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-8" data-testid="member-not-found">
         <div className="mb-6">
           <Button variant="ghost" asChild>
             <Link href="/members">
@@ -134,9 +137,9 @@ export default function MemberDetailPage({ params }: MemberDetailPageProps) {
                 {member.githubUrl && (
                   <div className="flex items-center gap-3">
                     <Github className="h-4 w-4 text-muted-foreground" />
-                    <a 
-                      href={member.githubUrl} 
-                      target="_blank" 
+                    <a
+                      href={member.githubUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-blue-600 hover:underline"
                     >
@@ -190,7 +193,7 @@ export default function MemberDetailPage({ params }: MemberDetailPageProps) {
                       <h4 className="font-medium mb-2">{category}</h4>
                       <div className="flex flex-wrap gap-2">
                         {(skills as any[]).map((skill: any) => (
-                          <Badge 
+                          <Badge
                             key={skill.id}
                             variant={getLevelBadgeVariant(skill.level)}
                           >

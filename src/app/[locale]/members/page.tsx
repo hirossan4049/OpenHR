@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Filter, Search, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { Search, Filter, Users } from "lucide-react";
-import { api } from "~/trpc/react";
-import { Link } from "~/navigation";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -13,6 +11,8 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Skeleton } from "~/components/ui/skeleton";
+import { Link } from "~/navigation";
+import { api } from "~/trpc/react";
 
 export default function MembersDirectoryPage() {
   const t = useTranslations("MembersDirectory");
@@ -68,6 +68,7 @@ export default function MembersDirectoryPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               id="search"
+              data-testid="search-input"
               placeholder={t("searchPlaceholder")}
               value={search}
               onChange={(e) => handleSearchChange(e.target.value)}
@@ -78,7 +79,7 @@ export default function MembersDirectoryPage() {
         <div className="min-w-[200px]">
           <Label htmlFor="skill-filter">{t("skillFilterLabel")}</Label>
           <Select value={skillFilter || "all"} onValueChange={handleSkillFilterChange}>
-            <SelectTrigger id="skill-filter">
+            <SelectTrigger id="skill-filter" data-testid="skill-filter-trigger">
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
@@ -127,7 +128,7 @@ export default function MembersDirectoryPage() {
       ) : (
         <>
           {membersData?.members.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-12" data-testid="no-results">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h3 className="text-lg font-semibold mb-2">{t("noResults")}</h3>
               <p className="text-muted-foreground">{t("noResultsDescription")}</p>
@@ -135,7 +136,7 @@ export default function MembersDirectoryPage() {
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               {membersData?.members.map((member: any) => (
-                <Card key={member.id} className="hover:shadow-md transition-shadow">
+                <Card key={member.id} className="hover:shadow-md transition-shadow" data-testid="member-card">
                   <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage src={member.image || undefined} alt={member.name || ""} />
@@ -145,11 +146,11 @@ export default function MembersDirectoryPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <CardTitle className="text-lg truncate">
-                        <Link 
+                        <Link
                           href={{
                             pathname: "/members/[id]" as const,
                             params: { id: member.id }
-                          }} 
+                          }}
                           className="hover:underline"
                         >
                           {member.name || t("noName")}
@@ -168,8 +169,8 @@ export default function MembersDirectoryPage() {
                     )}
                     <div className="flex flex-wrap gap-1">
                       {member.skills.slice(0, 3).map((skill: any) => (
-                        <Badge 
-                          key={skill.id} 
+                        <Badge
+                          key={skill.id}
                           variant={getLevelBadgeVariant(skill.level)}
                           className="text-xs"
                         >
@@ -193,19 +194,21 @@ export default function MembersDirectoryPage() {
             <div className="mt-8 flex justify-center gap-2">
               <Button
                 variant="outline"
+                data-testid="pagination-prev"
                 disabled={currentPage === 0}
                 onClick={() => setCurrentPage(currentPage - 1)}
               >
                 {t("previousPage")}
               </Button>
               <span className="flex items-center px-4 text-sm text-muted-foreground">
-                {t("pageInfo", { 
-                  current: currentPage + 1, 
-                  total: Math.ceil((membersData.total || 0) / pageSize) 
+                {t("pageInfo", {
+                  current: currentPage + 1,
+                  total: Math.ceil((membersData.total || 0) / pageSize)
                 })}
               </span>
               <Button
                 variant="outline"
+                data-testid="pagination-next"
                 disabled={!membersData.hasMore}
                 onClick={() => setCurrentPage(currentPage + 1)}
               >
