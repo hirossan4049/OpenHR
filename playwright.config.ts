@@ -46,10 +46,11 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup'],
+      testIgnore: ['e2e/*.auth.spec.ts'], // Skip auth tests for non-auth projects
     },
     {
       name: 'chromium-auth',
-      testMatch: ['e2e/*.auth.spec.ts'],
+      testMatch: ['e2e/*.auth.spec.ts'], // Only auth tests
       use: { ...devices['Desktop Chrome'], storageState: 'e2e/.auth/user.json' },
       dependencies: ['setup'],
     },
@@ -57,10 +58,24 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
       dependencies: ['setup'],
+      testIgnore: ['e2e/*.auth.spec.ts'], // Skip auth tests for non-auth projects
+    },
+    {
+      name: 'firefox-auth',
+      testMatch: ['e2e/*.auth.spec.ts'], // Only auth tests
+      use: { ...devices['Desktop Firefox'], storageState: 'e2e/.auth/user.json' },
+      dependencies: ['setup'],
     },
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      dependencies: ['setup'],
+      testIgnore: ['e2e/*.auth.spec.ts'], // Skip auth tests for non-auth projects
+    },
+    {
+      name: 'webkit-auth',
+      testMatch: ['e2e/*.auth.spec.ts'], // Only auth tests
+      use: { ...devices['Desktop Safari'], storageState: 'e2e/.auth/user.json' },
       dependencies: ['setup'],
     },
   ],
