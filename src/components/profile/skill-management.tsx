@@ -91,6 +91,8 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   // Handle skill creation from CreatableSkillSelect
   const handleCreateSkill = async (skillName: string) => {
     try {
+      // Optimistically set the name so the Add button enables
+      setNewSkill(prev => ({ ...prev, name: skillName }));
       const result = await suggestSkillMutation.mutateAsync({
         name: skillName,
         category: undefined,
@@ -322,21 +324,6 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
           <h4 className="text-sm font-medium mb-3">{t("addSectionTitle", { defaultValue: "Add New Skill" })}</h4>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="skillName" className="sr-only">{t("columnSkill")}</Label>
-              <Input
-                id="skillName"
-                placeholder={t("placeholderName", { defaultValue: "e.g., React, Python..." })}
-                value={newSkill.name}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  setNewSkill(prev => ({ ...prev, name: v }));
-                  setSearchQuery(v);
-                  // Clear any previously selected suggestion when manually typing
-                  setSelectedSkillId("");
-                }}
-                aria-label={t("columnSkill")}
-              />
-              <Label htmlFor="skillSelect" className="sr-only">{t("columnSkill")}</Label>
               <CreatableSkillSelect
                 skills={searchResults}
                 value={selectedSkillId}
@@ -346,9 +333,11 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                 placeholder={t("placeholderName", { defaultValue: "e.g., React, Python..." })}
                 emptyText={t("noSkillsFound", { defaultValue: "No skills found." })}
                 searchPlaceholder={t("searchSkills", { defaultValue: "Search skills..." })}
-                createText={t("createSkill", { defaultValue: "Create \"{search}\"" })}
+                createText={t("createSkill", { search: "{search}", defaultValue: "Create \"{search}\"" })}
                 isLoading={isSearching || suggestSkillMutation.isPending}
+                ariaLabel={t("columnSkill")}
               />
+              {/* Input removed: Select is the primary entry */}
               {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name}</p>}
             </div>
             <div>
@@ -357,9 +346,9 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                 value={String(newSkill.level)}
                 onValueChange={(value) => handleNewSkillChange("level", Number(value))}
               >
-                <SelectTrigger id="skillLevel">
-                  <SelectValue placeholder={t("placeholderSelectLevel")} />
-                </SelectTrigger>
+            <SelectTrigger id="skillLevel" aria-label={t("columnLevel")}>
+              <SelectValue placeholder={t("placeholderSelectLevel")} />
+            </SelectTrigger>
                 <SelectContent>
                   {levelOptions.map(opt => (
                     <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>

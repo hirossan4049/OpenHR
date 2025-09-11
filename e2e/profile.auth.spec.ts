@@ -44,12 +44,19 @@ test.describe('Profile (authenticated)', () => {
 
     await expect(page.getByRole('heading', { name: 'Skills', level: 3 })).toBeVisible({ timeout: 10000 });
 
-    await page.getByPlaceholder('e.g., React, Python...').fill(skillName);
+    // Open Skill select and type to search/create
+    await page.getByRole('combobox', { name: 'Skill' }).click();
+    const searchInput = page.getByPlaceholder('Search skills...');
+    await searchInput.fill(skillName);
+    // Press Enter to select the first item (Create "<skillName>")
+    await searchInput.press('Enter');
 
-    await page.locator('button[role="combobox"]:near(:text("Add New Skill"))').click();
+    // Set Level
+    await page.getByRole('combobox', { name: 'Level' }).click();
     await page.getByRole('option', { name: 'Advanced' }).click();
 
     await page.getByPlaceholder('Years').fill('3');
+    await expect(page.getByRole('button', { name: 'Add Skill' })).toBeEnabled();
     await page.getByRole('button', { name: 'Add Skill' }).click();
 
     const skillRow = page.locator('tr').filter({ hasText: skillName });

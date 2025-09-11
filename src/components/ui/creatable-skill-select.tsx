@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
 import { Check, ChevronsUpDown, Plus } from "lucide-react"
 import Image from "next/image"
+import * as React from "react"
 
-import { cn } from "~/lib/utils"
 import { Button } from "~/components/ui/button"
 import {
   Command,
@@ -19,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover"
+import { cn } from "~/lib/utils"
 
 export interface SkillOption {
   id: string
@@ -43,6 +43,7 @@ interface CreatableSkillSelectProps {
   disabled?: boolean
   className?: string
   isLoading?: boolean
+  ariaLabel?: string
 }
 
 export function CreatableSkillSelect({
@@ -58,6 +59,7 @@ export function CreatableSkillSelect({
   disabled = false,
   className,
   isLoading = false,
+  ariaLabel,
 }: CreatableSkillSelectProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState("")
@@ -73,19 +75,19 @@ export function CreatableSkillSelect({
     return skills.filter((skill) => {
       // Search in name
       if (skill.name.toLowerCase().includes(search)) return true
-      
+
       // Search in slug
       if (skill.slug.toLowerCase().includes(search)) return true
-      
+
       // Search in aliases
       if (skill.aliases?.some(alias => alias.toLowerCase().includes(search))) return true
-      
+
       return false
     })
   }, [skills, searchValue])
 
   // Check if we should show create option
-  const shouldShowCreate = searchValue && 
+  const shouldShowCreate = searchValue &&
     !filteredSkills.some(skill => skill.name.toLowerCase() === searchValue.toLowerCase()) &&
     onCreateSkill
 
@@ -110,6 +112,7 @@ export function CreatableSkillSelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
+          aria-label={ariaLabel}
           className={cn("w-full justify-between", className)}
           disabled={disabled || isLoading}
         >
@@ -150,12 +153,22 @@ export function CreatableSkillSelect({
               setSearchValue(v)
               onSearchChange?.(v)
             }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault()
+                if (shouldShowCreate) {
+                  handleCreate()
+                } else if (filteredSkills.length > 0) {
+                  handleSelect(filteredSkills[0]!.id)
+                }
+              }
+            }}
           />
           <CommandList>
             {filteredSkills.length === 0 && !shouldShowCreate && (
               <CommandEmpty>{emptyText}</CommandEmpty>
             )}
-            
+
             <CommandGroup>
               {filteredSkills.map((skill) => (
                 <CommandItem
@@ -204,7 +217,7 @@ export function CreatableSkillSelect({
                   )}
                 </CommandItem>
               ))}
-              
+
               {shouldShowCreate && (
                 <CommandItem
                   value={`create-${searchValue}`}
