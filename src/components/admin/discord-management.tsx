@@ -255,7 +255,7 @@ function DiscordMembersDialog({
     { enabled: open }
   );
 
-  const utils = api.useUtils?.() as any;
+  const utils = api.useUtils?.() as ReturnType<typeof api.useUtils>;
   const { mutateAsync: linkDiscordMember, isPending: isLinking } = api.admin.linkDiscordMember.useMutation({
     onSuccess: () => {
       // Refetch members after linking
