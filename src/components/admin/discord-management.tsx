@@ -12,6 +12,33 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 
+interface GuildSync {
+  id: string;
+  guildId: string;
+  guildName: string | null;
+  status: string;
+  lastSyncedAt: Date | null;
+  _count: {
+    members: number;
+  };
+}
+
+interface DiscordMember {
+  id: string;
+  discordId: string;
+  username: string;
+  displayName: string | null;
+  discriminator: string | null;
+  avatar: string | null;
+  joinedAt: Date | null;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  } | null;
+}
+
 export function DiscordManagement() {
   const t = useTranslations("DiscordManagement");
   const [newGuildId, setNewGuildId] = useState("");
@@ -139,7 +166,7 @@ export function DiscordManagement() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {guildSyncs.map((guildSync) => (
+                {guildSyncs.map((guildSync: GuildSync) => (
                   <TableRow key={guildSync.guildId}>
                     <TableCell className="font-mono text-xs">{guildSync.guildId}</TableCell>
                     <TableCell>{guildSync.guildName || "-"}</TableCell>
@@ -161,7 +188,7 @@ export function DiscordManagement() {
                           size="sm"
                           variant="outline"
                           onClick={() => handleSyncGuild(guildSync.guildId)}
-                          disabled={syncGuildMutation.isLoading}
+                          disabled={syncGuildMutation.isPending}
                         >
                           <RefreshCw className="h-4 w-4" />
                           {t("syncNow")}
@@ -256,7 +283,7 @@ function DiscordMembersDialog({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {membersData.members.map((member) => (
+                {membersData.members.map((member: DiscordMember) => (
                   <TableRow key={member.id}>
                     <TableCell>
                       <div className="flex items-center gap-2">
