@@ -2,6 +2,7 @@
   "Header": {
     "dashboard": "ダッシュボード",
     "projects": "プロジェクト",
+    "myProjects": "マイプロジェクト",
     "members": "メンバー",
     "admin": "管理",
     "createProject": "プロジェクト作成",

@@ -2,6 +2,7 @@
   "Header": {
     "dashboard": "Dashboard",
     "projects": "Projects",
+    "myProjects": "My Projects",
     "members": "Members",
     "admin": "Admin",
     "createProject": "Create Project",

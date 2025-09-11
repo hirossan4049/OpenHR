@@ -24,6 +24,9 @@ export function Header() {
             <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
               {t("projects")}
             </Link>
+            <Link href="/my" className="text-muted-foreground transition-colors hover:text-foreground">
+              {t("myProjects")}
+            </Link>
             <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
               {t("members")}
             </Link>
@@ -70,6 +73,9 @@ export function Header() {
                   </Link>
                   <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
                     {t("projects")}
+                  </Link>
+                  <Link href="/my" className="text-muted-foreground transition-colors hover:text-foreground">
+                    {t("myProjects")}
                   </Link>
                   <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
                     {t("members")}
