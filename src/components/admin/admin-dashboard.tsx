@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Users, Folder, Settings, Code } from "lucide-react";
+import { Users, Folder, Settings, Code, MessageSquare } from "lucide-react";
 
 export function AdminDashboard() {
   const t = useTranslations("AdminDashboard");
@@ -74,6 +74,20 @@ export function AdminDashboard() {
               <a href="/admin/skills">
                 <Code className="mr-2 h-4 w-4" />
                 {t("manageSkills")}
+              </a>
+            </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("manageDiscord")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">Sync Discord server members and manage integrations.</p>
+            <Button asChild>
+              <a href="/admin/discord">
+                <MessageSquare className="mr-2 h-4 w-4" />
+                {t("manageDiscord")}
               </a>
             </Button>
           </CardContent>

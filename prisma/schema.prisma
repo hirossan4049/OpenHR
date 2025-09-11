@@ -70,6 +70,7 @@ model User {
     sessions      Session[]
     posts         Post[]
     userSkills    UserSkill[]
+    discordMembers DiscordMember[] // Discord members linked to this user
 }
 
 model VerificationToken {
@@ -106,4 +107,44 @@ model UserSkill {
     skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
     
     @@unique([userId, skillId])
+}
+
+// Discord server member information
+model DiscordMember {
+    id               String    @id @default(cuid())
+    discordId        String    // Discord user ID
+    guildId          String    // Discord server/guild ID
+    username         String    // Discord username
+    discriminator    String?   // Discord discriminator (legacy)
+    displayName      String?   // Discord display name
+    avatar           String?   // Discord avatar hash
+    joinedAt         DateTime? // When user joined the Discord server
+    userId           String?   // Link to OpenHR User if connected
+    syncedAt         DateTime  @default(now())
+    syncStatus       String    @default("active") // active, left, error
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+    
+    user             User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+    guildSync        GuildSync @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+    
+    @@unique([discordId, guildId])
+    @@index([guildId])
+    @@index([userId])
+}
+
+// Discord server synchronization status
+model GuildSync {
+    id             String        @id @default(cuid())
+    guildId        String        @unique // Discord server/guild ID
+    guildName      String?       // Discord server name
+    lastSyncedAt   DateTime?     // Last successful sync
+    status         String        @default("pending") // pending, syncing, completed, error
+    totalMembers   Int?          // Total members found in last sync
+    syncedMembers  Int?          // Successfully synced members
+    lastError      String?       // Last error message
+    createdAt      DateTime      @default(now())
+    updatedAt      DateTime      @updatedAt
+    
+    members        DiscordMember[]
 }
