@@ -10,8 +10,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
-import { api } from "~/trpc/react";
 import { toast } from "~/components/ui/use-toast";
+import { api } from "~/trpc/react";
 
 interface GuildSync {
   id: string;
@@ -256,7 +256,7 @@ function DiscordMembersDialog({
     { enabled: open }
   );
 
-  const utils = api.useUtils?.() as ReturnType<typeof api.useUtils>;
+  const utils = api.useUtils?.();
   const { mutateAsync: linkDiscordMember, isPending: isLinking } = api.admin.linkDiscordMember.useMutation({
     onSuccess: () => {
       // Refetch members after linking
