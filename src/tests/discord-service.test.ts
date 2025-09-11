@@ -1,4 +1,5 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import type { DiscordGuildMember } from "~/server/services/discord";
 
 // Mock environment variables
 jest.mock('~/env', () => ({
@@ -7,19 +8,19 @@ jest.mock('~/env', () => ({
   }
 }));
 
-// Mock fetch
-// Cast to satisfy TS while preserving runtime behavior for Jest
-(globalThis as any).fetch = jest.fn() as unknown as typeof fetch;
+// Mock fetch (type-safe) without re-declaring global symbol
+let mockFetch: jest.MockedFunction<typeof global.fetch>;
 
 import { DiscordService } from '~/server/services/discord';
 
 describe('DiscordService', () => {
   let discordService: DiscordService;
-  const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
   beforeEach(() => {
     discordService = new DiscordService();
-    mockFetch.mockClear();
+    // Fresh mock per test
+    mockFetch = jest.fn() as jest.MockedFunction<typeof global.fetch>;
+    global.fetch = mockFetch as unknown as typeof global.fetch;
   });
 
   describe('getGuild', () => {
@@ -94,7 +95,7 @@ describe('DiscordService', () => {
         { user: { id: '1', username: 'user1', discriminator: '0001' } },
         { user: { id: '2', username: 'user2', discriminator: '0002' } }
       ];
-      const mockMembers2: any[] = []; // Empty array to simulate end of pagination
+      const mockMembers2: DiscordGuildMember[] = []; // Empty array to simulate end of pagination
 
       // First page
       mockFetch.mockResolvedValueOnce({

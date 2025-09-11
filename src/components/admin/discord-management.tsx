@@ -11,6 +11,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { api } from "~/trpc/react";
+import { toast } from "~/components/ui/use-toast";
 
 interface GuildSync {
   id: string;
@@ -282,7 +283,7 @@ function DiscordMembersDialog({
       await unlinkDiscordMember({ discordMemberId });
     } catch (e) {
       console.error(e);
-      if (typeof window !== 'undefined') alert('Failed to unlink user');
+      toast({ variant: 'destructive', description: t('unlinkFailed') });
     }
   };
 
@@ -316,14 +317,14 @@ function DiscordMembersDialog({
           />
 
           {isLoading ? (
-            <div className="text-center py-4">Loading...</div>
+            <div className="text-center py-4">{t("loading")}</div>
           ) : membersError ? (
             <div className="text-center py-4 text-destructive">
               {t("error")}: {membersError.message}
             </div>
           ) : !membersData?.members.length ? (
             <div className="text-center py-4 text-muted-foreground">
-              No members found.
+              {t("noMembers")}
             </div>
           ) : (
             <Table>
@@ -401,29 +402,29 @@ function DiscordMembersDialog({
       <Dialog open={!!linkingMemberId} onOpenChange={(o) => { if (!o) { setLinkingMemberId(null); setUserSearch(""); } }}>
         <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>ユーザーと連携</DialogTitle>
-            <DialogDescription>連携先のユーザーを検索して選択してください。</DialogDescription>
+            <DialogTitle>{t("linkDialogTitle")}</DialogTitle>
+            <DialogDescription>{t("linkDialogDescription")}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4">
             <Input
-              placeholder="ユーザー名やプロフィールを検索"
+              placeholder={t("userSearchPlaceholder")}
               value={userSearch}
               onChange={(e) => setUserSearch(e.target.value)}
             />
 
             {usersLoading ? (
-              <div className="text-center py-4">Loading...</div>
+              <div className="text-center py-4">{t("loading")}</div>
             ) : !userCandidates?.members?.length ? (
-              <div className="text-center py-4 text-muted-foreground">該当するユーザーが見つかりません。</div>
+              <div className="text-center py-4 text-muted-foreground">{t("noCandidates")}</div>
             ) : (
               <div className="max-h-[50vh] overflow-y-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>ユーザー</TableHead>
-                      <TableHead>学年</TableHead>
-                      <TableHead>操作</TableHead>
+                      <TableHead>{t("user")}</TableHead>
+                      <TableHead>{t("grade")}</TableHead>
+                      <TableHead>{t("actions")}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -444,12 +445,12 @@ function DiscordMembersDialog({
                                 setUserSearch("");
                               } catch (e) {
                                 console.error(e);
-                                if (typeof window !== 'undefined') alert('連携に失敗しました');
+                                toast({ variant: 'destructive', description: t("linkFailed") });
                               }
                             }}
                             disabled={isLinking}
                           >
-                            連携
+                            {t("link")}
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -461,7 +462,7 @@ function DiscordMembersDialog({
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setLinkingMemberId(null)}>キャンセル</Button>
+            <Button variant="outline" onClick={() => setLinkingMemberId(null)}>{t("cancel")}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

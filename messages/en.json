@@ -164,6 +164,18 @@
     "guildIdHelper": "Enter Discord server ID (17-19 digit number)",
     "invalidGuildId": "Invalid server ID",
     "addGuildButton": "Add Server",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "loading": "Loading...",
+    "error": "Error",
+    "noMembers": "No members found.",
+    "linkDialogTitle": "Link User",
+    "linkDialogDescription": "Search and choose a user to link.",
+    "userSearchPlaceholder": "Search by name or profile",
+    "noCandidates": "No matching users found.",
+    "user": "User",
+    "grade": "Grade",
+    "link": "Link",
+    "linkFailed": "Failed to link user",
+    "unlinkFailed": "Failed to unlink user"
   }
 }

@@ -10,6 +10,14 @@ import { z } from "zod";
 import { db } from "~/server/db";
 import { env } from "~/env";
 
+// Helper to update all references from one userId to another within a transaction
+async function updateUserId(tx: any, fromUserId: string, toUserId: string) {
+  if (fromUserId === toUserId) return;
+  await tx.post.updateMany({ where: { createdById: fromUserId }, data: { createdById: toUserId } });
+  await tx.userSkill.updateMany({ where: { userId: fromUserId }, data: { userId: toUserId } });
+  await tx.discordMember.updateMany({ where: { userId: fromUserId }, data: { userId: toUserId } });
+}
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -141,9 +149,7 @@ export const authConfig = {
             if (prevUserId === user.id) continue;
 
             // Re-point related data to the real user
-            await tx.post.updateMany({ where: { createdById: prevUserId }, data: { createdById: user.id } });
-            await tx.userSkill.updateMany({ where: { userId: prevUserId }, data: { userId: user.id } });
-            await tx.discordMember.updateMany({ where: { userId: prevUserId }, data: { userId: user.id } });
+            await updateUserId(tx, prevUserId, user.id);
 
             // Best-effort cleanup of placeholder user
             try {

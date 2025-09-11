@@ -1,6 +1,12 @@
 import { db } from "~/server/db";
 import { discordService, type DiscordGuildMember } from "~/server/services/discord";
 
+export function getDiscordAvatarUrl(userId: string, avatarHash?: string | null, size: number = 128): string | null {
+  if (!avatarHash) return null;
+  const format = avatarHash.startsWith("a_") ? "gif" : "png";
+  return `https://cdn.discordapp.com/avatars/${userId}/${avatarHash}.${format}?size=${size}`;
+}
+
 export interface SyncResult {
   success: boolean;
   totalMembers: number;
@@ -118,9 +124,7 @@ export class DiscordMemberSyncService {
           const placeholder = await db.user.create({
             data: {
               name: member.user.global_name || member.nick || member.user.username || 'Discord User',
-              image: member.user.avatar
-                ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png?size=128`
-                : null,
+              image: getDiscordAvatarUrl(member.user.id, member.user.avatar, 128),
             }
           });
           targetUserId = placeholder.id;

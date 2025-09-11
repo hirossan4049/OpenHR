@@ -164,6 +164,18 @@
     "guildIdHelper": "DiscordサーバーのIDを入力してください（17-19桁の数字）",
     "invalidGuildId": "無効なサーバーIDです",
     "addGuildButton": "サーバー追加",
-    "cancel": "キャンセル"
+    "cancel": "キャンセル",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "noMembers": "メンバーが見つかりません。",
+    "linkDialogTitle": "ユーザーと連携",
+    "linkDialogDescription": "連携先のユーザーを検索して選択してください。",
+    "userSearchPlaceholder": "ユーザー名やプロフィールを検索",
+    "noCandidates": "該当するユーザーが見つかりません。",
+    "user": "ユーザー",
+    "grade": "学年",
+    "link": "連携",
+    "linkFailed": "連携に失敗しました",
+    "unlinkFailed": "連携解除に失敗しました"
   }
 }

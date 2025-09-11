@@ -146,7 +146,15 @@ export class DiscordService {
       }
 
       // Set up for next batch
-      after = batch[batch.length - 1]?.user?.id;
+      // Fallback: find the last element with a defined user.id to avoid undefined
+      let nextAfter: string | undefined = batch[batch.length - 1]?.user?.id;
+      if (!nextAfter) {
+        for (let i = batch.length - 1; i >= 0; i--) {
+          const uid = batch[i]?.user?.id;
+          if (uid) { nextAfter = uid; break; }
+        }
+      }
+      after = nextAfter || '';
       if (!after) {
         break;
       }
