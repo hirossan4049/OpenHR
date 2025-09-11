@@ -4,6 +4,7 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import { skillMasterSchema } from "~/lib/validation/skill";
+import { discordMemberSyncService } from "~/server/services/discord-member-sync";
 
 export const adminRouter = createTRPCRouter({
   // Get all skills with usage statistics (admin only)
@@ -171,5 +172,98 @@ export const adminRouter = createTRPCRouter({
       }
       
       return results;
+    }),
+
+  // ========== DISCORD MEMBER MANAGEMENT ==========
+
+  // Get all guilds with sync status
+  getGuildSyncs: protectedProcedure.query(async ({ ctx }) => {
+    // TODO: Add admin role check
+    
+    return ctx.db.guildSync.findMany({
+      include: {
+        _count: {
+          select: {
+            members: true,
+          },
+        },
+      },
+      orderBy: { lastSyncedAt: "desc" },
+    });
+  }),
+
+  // Get guild sync status
+  getGuildSyncStatus: protectedProcedure
+    .input(z.object({ guildId: z.string() }))
+    .query(async ({ input }) => {
+      return discordMemberSyncService.getGuildSyncStatus(input.guildId);
+    }),
+
+  // Sync Discord guild members
+  syncGuildMembers: protectedProcedure
+    .input(z.object({ guildId: z.string() }))
+    .mutation(async ({ input }) => {
+      // TODO: Add admin role check
+      
+      return discordMemberSyncService.syncGuildMembers(input.guildId);
+    }),
+
+  // Get Discord members for a guild
+  getGuildMembers: protectedProcedure
+    .input(
+      z.object({
+        guildId: z.string(),
+        search: z.string().optional(),
+        skip: z.number().min(0).default(0),
+        take: z.number().min(1).max(100).default(50),
+      })
+    )
+    .query(async ({ input }) => {
+      // TODO: Add admin role check
+      
+      return discordMemberSyncService.getGuildMembers(input.guildId, {
+        skip: input.skip,
+        take: input.take,
+        search: input.search,
+      });
+    }),
+
+  // Link Discord member to user
+  linkDiscordMember: protectedProcedure
+    .input(
+      z.object({
+        discordMemberId: z.string(),
+        userId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // TODO: Add admin role check
+      
+      return ctx.db.discordMember.update({
+        where: { id: input.discordMemberId },
+        data: { userId: input.userId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+        },
+      });
+    }),
+
+  // Unlink Discord member from user
+  unlinkDiscordMember: protectedProcedure
+    .input(z.object({ discordMemberId: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // TODO: Add admin role check
+      
+      return ctx.db.discordMember.update({
+        where: { id: input.discordMemberId },
+        data: { userId: null },
+      });
     }),
 });

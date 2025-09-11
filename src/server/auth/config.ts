@@ -10,6 +10,14 @@ import { z } from "zod";
 import { db } from "~/server/db";
 import { env } from "~/env";
 
+// Helper to update all references from one userId to another within a transaction
+async function updateUserId(tx: any, fromUserId: string, toUserId: string) {
+  if (fromUserId === toUserId) return;
+  await tx.post.updateMany({ where: { createdById: fromUserId }, data: { createdById: toUserId } });
+  await tx.userSkill.updateMany({ where: { userId: fromUserId }, data: { userId: toUserId } });
+  await tx.discordMember.updateMany({ where: { userId: fromUserId }, data: { userId: toUserId } });
+}
+
 /**
  * Module augmentation for `next-auth` types. Allows us to add custom properties to the `session`
  * object and keep type safety.
@@ -122,6 +130,43 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   // Temporarily use JWT sessions to isolate DB-session issues in E2E
   session: { strategy: 'jwt' },
+  events: {
+    // When an OAuth account is linked, ensure Discord members are associated to this user
+    async linkAccount({ user, account }: any) {
+      try {
+        if (!account || account.provider !== 'discord') return;
+        const discordId = account.providerAccountId as string;
+
+        // Find all DiscordMember records for this Discord user across guilds
+        const members = await db.discordMember.findMany({ where: { discordId } });
+        if (members.length === 0) return;
+
+        // If there are placeholder users previously linked, merge them into the authenticated user
+        const previousUserIds = Array.from(new Set(members.map((m) => m.userId).filter(Boolean))) as string[];
+
+        await db.$transaction(async (tx) => {
+          for (const prevUserId of previousUserIds) {
+            if (prevUserId === user.id) continue;
+
+            // Re-point related data to the real user
+            await updateUserId(tx, prevUserId, user.id);
+
+            // Best-effort cleanup of placeholder user
+            try {
+              await tx.user.delete({ where: { id: prevUserId } });
+            } catch {
+              // Ignore if user cannot be deleted due to constraints
+            }
+          }
+
+          // Ensure current Discord members are linked to this user
+          await tx.discordMember.updateMany({ where: { discordId }, data: { userId: user.id } });
+        });
+      } catch (e) {
+        console.error('Failed to auto-link Discord member on account link:', e);
+      }
+    },
+  },
   callbacks: {
     // Support both database and jwt session strategies
     jwt: ({ token, user }: any) => {
