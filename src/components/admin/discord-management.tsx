@@ -247,10 +247,49 @@ function DiscordMembersDialog({
 }) {
   const t = useTranslations("DiscordManagement");
   const [search, setSearch] = useState("");
+  const [linkingMemberId, setLinkingMemberId] = useState<string | null>(null);
+  const [userSearch, setUserSearch] = useState("");
 
   const { data: membersData, isLoading } = api.admin.getGuildMembers.useQuery(
     { guildId, search: search || undefined },
     { enabled: open }
+  );
+
+  const utils = api.useUtils?.() as any;
+  const { mutateAsync: linkDiscordMember, isPending: isLinking } = api.admin.linkDiscordMember.useMutation({
+    onSuccess: () => {
+      // Refetch members after linking
+      if (utils?.admin?.getGuildMembers?.invalidate) {
+        utils.admin.getGuildMembers.invalidate();
+      }
+    },
+  });
+  const { mutateAsync: unlinkDiscordMember, isPending: isUnlinking } = api.admin.unlinkDiscordMember.useMutation({
+    onSuccess: () => {
+      if (utils?.admin?.getGuildMembers?.invalidate) {
+        utils.admin.getGuildMembers.invalidate();
+      }
+    },
+  });
+
+  const handleLink = async (discordMemberId: string) => {
+    // Open selection dialog
+    setLinkingMemberId(discordMemberId);
+  };
+
+  const handleUnlink = async (discordMemberId: string) => {
+    try {
+      await unlinkDiscordMember({ discordMemberId });
+    } catch (e) {
+      console.error(e);
+      if (typeof window !== 'undefined') alert('Failed to unlink user');
+    }
+  };
+
+  // Candidates for linking
+  const { data: userCandidates, isLoading: usersLoading } = api.user.getMembers.useQuery(
+    { search: userSearch || undefined, limit: 20, offset: 0 },
+    { enabled: !!linkingMemberId }
   );
 
   const formatDiscordDate = (date: Date | null) => {
@@ -330,12 +369,12 @@ function DiscordMembersDialog({
                     <TableCell>{formatDiscordDate(member.joinedAt)}</TableCell>
                     <TableCell>
                       {member.user ? (
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleUnlink(member.id)} disabled={isUnlinking}>
                           <Unlink className="h-4 w-4" />
                           {t("unlinkUser")}
                         </Button>
                       ) : (
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => handleLink(member.id)} disabled={isLinking}>
                           <Link className="h-4 w-4" />
                           {t("linkUser")}
                         </Button>
@@ -354,6 +393,74 @@ function DiscordMembersDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+      {/* Link user selection dialog */}
+      <Dialog open={!!linkingMemberId} onOpenChange={(o) => { if (!o) { setLinkingMemberId(null); setUserSearch(""); } }}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>ユーザーと連携</DialogTitle>
+            <DialogDescription>連携先のユーザーを検索して選択してください。</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <Input
+              placeholder="ユーザー名やプロフィールを検索"
+              value={userSearch}
+              onChange={(e) => setUserSearch(e.target.value)}
+            />
+
+            {usersLoading ? (
+              <div className="text-center py-4">Loading...</div>
+            ) : !userCandidates?.members?.length ? (
+              <div className="text-center py-4 text-muted-foreground">該当するユーザーが見つかりません。</div>
+            ) : (
+              <div className="max-h-[50vh] overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ユーザー</TableHead>
+                      <TableHead>学年</TableHead>
+                      <TableHead>操作</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {userCandidates.members.map((u: any) => (
+                      <TableRow key={u.id}>
+                        <TableCell>
+                          <div className="font-medium">{u.name || "(no name)"}</div>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{u.grade || "-"}</TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              if (!linkingMemberId) return;
+                              try {
+                                await linkDiscordMember({ discordMemberId: linkingMemberId, userId: u.id });
+                                setLinkingMemberId(null);
+                                setUserSearch("");
+                              } catch (e) {
+                                console.error(e);
+                                if (typeof window !== 'undefined') alert('連携に失敗しました');
+                              }
+                            }}
+                            disabled={isLinking}
+                          >
+                            連携
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setLinkingMemberId(null)}>キャンセル</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
