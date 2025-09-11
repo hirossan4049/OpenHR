@@ -86,7 +86,7 @@ export class DiscordMemberSyncService {
     let linkedCount = 0;
 
     for (const member of members) {
-      if (!member.user) continue;
+      if (!member.user || member.user.bot) continue; // Exclude bots
 
       try {
         // Find existing user by Discord account (OAuth-linked)

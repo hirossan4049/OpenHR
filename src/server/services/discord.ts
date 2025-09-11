@@ -20,6 +20,7 @@ export interface DiscordGuildMember {
     id: string;
     username: string;
     discriminator: string;
+    bot?: boolean;
     global_name?: string;
     avatar?: string;
   };
