@@ -89,8 +89,8 @@ export class DiscordMemberSyncService {
       if (!member.user) continue;
 
       try {
-        // Find existing user by Discord account
-        const existingUser = await db.account.findFirst({
+        // Find existing user by Discord account (OAuth-linked)
+        const existingUserAccount = await db.account.findFirst({
           where: {
             provider: 'discord',
             providerAccountId: member.user.id
@@ -99,6 +99,32 @@ export class DiscordMemberSyncService {
             user: true
           }
         });
+
+        // Find any existing DiscordMember record to preserve previous linkage
+        const existingDiscordMember = await db.discordMember.findUnique({
+          where: {
+            discordId_guildId: {
+              discordId: member.user.id,
+              guildId: guildId
+            }
+          }
+        });
+
+        // Decide which userId to set
+        let targetUserId: string | null = existingUserAccount?.user.id || existingDiscordMember?.userId || null;
+
+        // If not linked to any user yet, provision a placeholder User for directory visibility
+        if (!targetUserId) {
+          const placeholder = await db.user.create({
+            data: {
+              name: member.user.global_name || member.nick || member.user.username || 'Discord User',
+              image: member.user.avatar
+                ? `https://cdn.discordapp.com/avatars/${member.user.id}/${member.user.avatar}.png?size=128`
+                : null,
+            }
+          });
+          targetUserId = placeholder.id;
+        }
 
         // Upsert Discord member record
         await db.discordMember.upsert({
@@ -114,7 +140,7 @@ export class DiscordMemberSyncService {
             displayName: member.user.global_name || member.nick || null,
             avatar: member.user.avatar || null,
             joinedAt: member.joined_at ? new Date(member.joined_at) : null,
-            userId: existingUser?.user.id || null,
+            userId: targetUserId,
             syncedAt: new Date(),
             syncStatus: 'active'
           },
@@ -126,14 +152,14 @@ export class DiscordMemberSyncService {
             displayName: member.user.global_name || member.nick || null,
             avatar: member.user.avatar || null,
             joinedAt: member.joined_at ? new Date(member.joined_at) : null,
-            userId: existingUser?.user.id || null,
+            userId: targetUserId,
             syncedAt: new Date(),
             syncStatus: 'active'
           }
         });
 
         syncedCount++;
-        if (existingUser?.user.id) {
+        if (targetUserId) {
           linkedCount++;
         }
 

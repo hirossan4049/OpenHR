@@ -250,7 +250,7 @@ function DiscordMembersDialog({
   const [linkingMemberId, setLinkingMemberId] = useState<string | null>(null);
   const [userSearch, setUserSearch] = useState("");
 
-  const { data: membersData, isLoading } = api.admin.getGuildMembers.useQuery(
+  const { data: membersData, isLoading, error: membersError } = api.admin.getGuildMembers.useQuery(
     { guildId, search: search || undefined },
     { enabled: open }
   );
@@ -317,6 +317,10 @@ function DiscordMembersDialog({
 
           {isLoading ? (
             <div className="text-center py-4">Loading...</div>
+          ) : membersError ? (
+            <div className="text-center py-4 text-destructive">
+              {t("error")}: {membersError.message}
+            </div>
           ) : !membersData?.members.length ? (
             <div className="text-center py-4 text-muted-foreground">
               No members found.
