@@ -4,6 +4,7 @@ import {
   createTRPCRouter,
   publicProcedure
 } from "~/server/api/trpc";
+import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
 
 export const userRouter = createTRPCRouter({
   // Get all members for directory with optional search filters
@@ -126,4 +127,85 @@ export const userRouter = createTRPCRouter({
 
     return skills;
   }),
+
+  // Search skills with aliases support
+  searchSkills: publicProcedure
+    .input(skillSearchSchema)
+    .query(async ({ ctx, input }) => {
+      const { query, limit } = input;
+      const q = query.trim();
+      const qLower = q.toLowerCase();
+
+      // Fetch a reasonable superset and filter in memory to ensure case-insensitive matching across JSON aliases
+      const all = await ctx.db.skill.findMany({
+        orderBy: [
+          { verified: "desc" },
+          { name: "asc" },
+        ],
+        take: 1000,
+      });
+
+      const filtered = all.filter((s) => {
+        let aliases: string[] = [];
+        try {
+          aliases = s.aliases ? (JSON.parse(s.aliases) as string[]) : [];
+        } catch {
+          aliases = [];
+        }
+        const haystack = [s.name ?? "", s.slug ?? "", ...aliases].join(" ").toLowerCase();
+        return haystack.includes(qLower);
+      });
+
+      const results = filtered.slice(0, limit);
+
+      return results.map((skill) => ({
+        id: skill.id,
+        name: skill.name,
+        slug: skill.slug,
+        logoUrl: skill.logoUrl,
+        aliases: (() => { try { return skill.aliases ? JSON.parse(skill.aliases) : []; } catch { return []; } })(),
+        verified: skill.verified,
+        category: skill.category,
+      }));
+    }),
+
+  // Suggest new skill creation
+  suggestSkill: publicProcedure
+    .input(skillSuggestionSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { name, category } = input;
+      
+      // Generate slug from name
+      const slug = name
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .trim();
+
+      // Check if skill already exists
+      const existingSkill = await ctx.db.skill.findFirst({
+        where: {
+          OR: [
+            { name: { equals: name } },
+            { slug: slug },
+          ],
+        },
+      });
+
+      if (existingSkill) {
+        return { skill: existingSkill, created: false };
+      }
+
+      // Create new unverified skill
+      const newSkill = await ctx.db.skill.create({
+        data: {
+          name,
+          slug,
+          category: category || null,
+          verified: false, // New skills start as unverified
+        },
+      });
+
+      return { skill: newSkill, created: true };
+    }),
 });

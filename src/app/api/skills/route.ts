@@ -5,16 +5,29 @@ import { z } from "zod";
 import { skillCreateSchema } from "~/lib/validation/skill";
 
 // GET /api/skills - Get user skills
-export async function GET() {
+function redirectToLogin(request: NextRequest) {
+  const res = NextResponse.redirect(new URL("/api/auth/signin", request.url));
+  const cookiesToClear = [
+    // NextAuth v4 legacy
+    "next-auth.session-token",
+    "__Secure-next-auth.session-token",
+    "next-auth.callback-url",
+    "next-auth.csrf-token",
+    // Auth.js v5 (NextAuth v5)
+    "authjs.session-token",
+    "__Secure-authjs.session-token",
+    "authjs.callback-url",
+    "authjs.csrf-token",
+  ];
+  cookiesToClear.forEach((name) => res.cookies.delete(name));
+  return res;
+}
+
+export async function GET(request: NextRequest) {
   try {
     const session = await auth();
     
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    if (!session?.user?.id) return redirectToLogin(request);
 
     const userSkills = await db.userSkill.findMany({
       where: { userId: session.user.id },
@@ -51,22 +64,32 @@ export async function POST(request: NextRequest) {
   try {
     const session = await auth();
     
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { message: "Unauthorized" },
-        { status: 401 }
-      );
-    }
+    if (!session?.user?.id) return redirectToLogin(request);
 
     const body = await request.json();
     const validatedData = skillCreateSchema.parse(body);
+
+    // Normalize name and slug
+    const name = validatedData.name.trim();
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .trim();
+
+    // Ensure the user exists in DB (tokens can outlive user records in dev)
+    const user = await db.user.findUnique({ where: { id: session.user.id } });
+    if (!user) return redirectToLogin(request);
 
     // Check if user already has this skill
     const existingUserSkill = await db.userSkill.findFirst({
       where: {
         userId: session.user.id,
         skill: {
-          name: validatedData.name
+          OR: [
+            { slug },
+            { name },
+          ]
         }
       }
     });
@@ -81,15 +104,20 @@ export async function POST(request: NextRequest) {
     // Find or create the skill
     let skill = await db.skill.findFirst({
       where: {
-        name: validatedData.name
+        OR: [
+          { slug },
+          { name },
+        ]
       }
     });
 
     if (!skill) {
       skill = await db.skill.create({
         data: {
-          name: validatedData.name,
+          name,
+          slug,
           category: null, // Can be enhanced later to categorize skills
+          verified: false,
         },
       });
     }

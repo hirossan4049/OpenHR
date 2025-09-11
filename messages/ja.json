@@ -26,6 +26,7 @@
     "activeProjects": "アクティブなプロジェクト",
     "manageUsers": "ユーザー管理",
     "manageProjects": "プロジェクト管理",
+    "manageSkills": "スキル管理",
     "systemSettings": "システム設定"
   },
   "SkillManagement": {
@@ -48,7 +49,10 @@
     "successAdd": "スキルを追加しました！",
     "errorAdd": "スキルの追加に失敗しました。",
     "errorRemove": "スキルの削除に失敗しました。再度お試しください。",
-    "exists": "既に存在するスキルです"
+    "exists": "既に存在するスキルです",
+    "noSkillsFound": "スキルが見つかりません。",
+    "searchSkills": "スキルを検索...",
+    "createSkill": "「{search}」を作成"
   },
   "HomePage": {
     "title": "OpenHR TMS",
@@ -88,5 +92,38 @@
     "skillsSection": "スキル",
     "noSkills": "スキルがまだ登録されていません。",
     "uncategorized": "その他"
+  },
+  "AdminSkillManagement": {
+    "title": "スキルマスター管理",
+    "description": "スキルマスターデータベースの管理・運用を行います。",
+    "searchLabel": "検索",
+    "searchPlaceholder": "スキル名、スラッグ、エイリアスで検索...",
+    "categoryFilter": "カテゴリでフィルタ",
+    "allCategories": "すべてのカテゴリ",
+    "columnLogo": "ロゴ",
+    "columnName": "名前",
+    "columnCategory": "カテゴリ",
+    "columnAliases": "エイリアス",
+    "columnUsage": "使用者数",
+    "columnStatus": "ステータス",
+    "columnActions": "操作",
+    "loading": "スキルを読み込み中...",
+    "noSkills": "スキルが見つかりません。",
+    "users": "人",
+    "verified": "認証済み",
+    "unverified": "未認証",
+    "editSkillTitle": "スキル編集",
+    "editSkillDescription": "スキル情報と認証ステータスを更新します。",
+    "fieldName": "名前",
+    "fieldSlug": "スラッグ",
+    "fieldCategory": "カテゴリ",
+    "fieldLogoUrl": "ロゴURL",
+    "fieldAliases": "エイリアス",
+    "fieldVerified": "認証済み",
+    "aliasesPlaceholder": "各エイリアスを改行で区切って入力",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "saving": "保存中...",
+    "confirmDelete": "このスキルを削除してもよろしいですか？この操作は取り消せません。"
   }
 }

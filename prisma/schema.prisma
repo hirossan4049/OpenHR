@@ -83,7 +83,11 @@ model VerificationToken {
 model Skill {
     id          String      @id @default(cuid())
     name        String      @unique
+    slug        String      @unique
     category    String?
+    logoUrl     String?
+    aliases     String?     // JSON array of alternative names
+    verified    Boolean     @default(false) // True for officially managed skills
     createdAt   DateTime    @default(now())
     updatedAt   DateTime    @updatedAt
     userSkills  UserSkill[]

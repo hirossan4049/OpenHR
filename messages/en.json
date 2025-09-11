@@ -26,6 +26,7 @@
     "activeProjects": "Active Projects",
     "manageUsers": "Manage Users",
     "manageProjects": "Manage Projects",
+    "manageSkills": "Manage Skills",
     "systemSettings": "System Settings"
   },
   "SkillManagement": {
@@ -48,7 +49,10 @@
     "successAdd": "Skill added successfully!",
     "errorAdd": "Failed to add skill.",
     "errorRemove": "Failed to remove skill. Please try again.",
-    "exists": "Skill already exists"
+    "exists": "Skill already exists",
+    "noSkillsFound": "No skills found.",
+    "searchSkills": "Search skills...",
+    "createSkill": "Create \"{search}\""
   },
   "HomePage": {
     "title": "OpenHR TMS",
@@ -88,5 +92,38 @@
     "skillsSection": "Skills",
     "noSkills": "No skills registered yet.",
     "uncategorized": "Other"
+  },
+  "AdminSkillManagement": {
+    "title": "Skill Master Management",
+    "description": "Manage and moderate the skill master database.",
+    "searchLabel": "Search",
+    "searchPlaceholder": "Search skills by name, slug, or aliases...",
+    "categoryFilter": "Filter by Category",
+    "allCategories": "All Categories",
+    "columnLogo": "Logo",
+    "columnName": "Name",
+    "columnCategory": "Category",
+    "columnAliases": "Aliases",
+    "columnUsage": "Usage",
+    "columnStatus": "Status",
+    "columnActions": "Actions",
+    "loading": "Loading skills...",
+    "noSkills": "No skills found.",
+    "users": "users",
+    "verified": "Verified",
+    "unverified": "Unverified",
+    "editSkillTitle": "Edit Skill",
+    "editSkillDescription": "Update skill information and verification status.",
+    "fieldName": "Name",
+    "fieldSlug": "Slug",
+    "fieldCategory": "Category",
+    "fieldLogoUrl": "Logo URL",
+    "fieldAliases": "Aliases",
+    "fieldVerified": "Verified",
+    "aliasesPlaceholder": "Enter each alias on a new line",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving...",
+    "confirmDelete": "Are you sure you want to delete this skill? This action cannot be undone."
   }
 }
