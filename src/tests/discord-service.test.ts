@@ -8,7 +8,8 @@ jest.mock('~/env', () => ({
 }));
 
 // Mock fetch
-global.fetch = jest.fn();
+// Cast to satisfy TS while preserving runtime behavior for Jest
+(globalThis as any).fetch = jest.fn() as unknown as typeof fetch;
 
 import { DiscordService } from '~/server/services/discord';
 

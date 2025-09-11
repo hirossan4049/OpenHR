@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { Eye, Link, Plus, RefreshCw, Unlink, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { RefreshCw, Users, Plus, Eye, Link, Unlink } from "lucide-react";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
+import { useState } from "react";
 import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "~/components/ui/table";
 import { api } from "~/trpc/react";
 
 interface GuildSync {
@@ -17,6 +17,7 @@ interface GuildSync {
   guildId: string;
   guildName: string | null;
   status: string;
+  lastError?: string | null;
   lastSyncedAt: Date | null;
   _count: {
     members: number;
@@ -79,7 +80,7 @@ export function DiscordManagement() {
       completed: { label: t("statusCompleted"), variant: "default" as const },
       error: { label: t("statusError"), variant: "destructive" as const },
     };
-    
+
     const statusInfo = statusMap[status as keyof typeof statusMap] || statusMap.pending;
     return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
   };
@@ -96,7 +97,7 @@ export function DiscordManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="container py-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">{t("title")}</h1>
@@ -133,7 +134,7 @@ export function DiscordManagement() {
               <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                 {t("cancel")}
               </Button>
-              <Button 
+              <Button
                 onClick={handleAddGuild}
                 disabled={!newGuildId || !/^\d{17,19}$/.test(newGuildId)}
               >
@@ -170,7 +171,16 @@ export function DiscordManagement() {
                   <TableRow key={guildSync.guildId}>
                     <TableCell className="font-mono text-xs">{guildSync.guildId}</TableCell>
                     <TableCell>{guildSync.guildName || "-"}</TableCell>
-                    <TableCell>{getStatusBadge(guildSync.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        {getStatusBadge(guildSync.status)}
+                        {guildSync.status === 'error' && guildSync.lastError && (
+                          <span className="text-xs text-destructive/80 truncate max-w-[280px]" title={guildSync.lastError}>
+                            {guildSync.lastError}
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
                     <TableCell>
                       {guildSync._count.members > 0 ? (
                         <span className="flex items-center gap-1">
@@ -226,14 +236,14 @@ export function DiscordManagement() {
 }
 
 // Members dialog component
-function DiscordMembersDialog({ 
-  guildId, 
-  open, 
-  onClose 
-}: { 
-  guildId: string; 
-  open: boolean; 
-  onClose: () => void; 
+function DiscordMembersDialog({
+  guildId,
+  open,
+  onClose
+}: {
+  guildId: string;
+  open: boolean;
+  onClose: () => void;
 }) {
   const t = useTranslations("DiscordManagement");
   const [search, setSearch] = useState("");
@@ -247,7 +257,7 @@ function DiscordMembersDialog({
     if (!date) return "-";
     return new Intl.DateTimeFormat("ja-JP", {
       year: "numeric",
-      month: "2-digit", 
+      month: "2-digit",
       day: "2-digit",
     }).format(new Date(date));
   };
@@ -258,14 +268,14 @@ function DiscordMembersDialog({
         <DialogHeader>
           <DialogTitle>{t("membersList")} - {guildId}</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4">
           <Input
             placeholder={t("searchMembers")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
-          
+
           {isLoading ? (
             <div className="text-center py-4">Loading...</div>
           ) : !membersData?.members.length ? (
@@ -337,7 +347,7 @@ function DiscordMembersDialog({
             </Table>
           )}
         </div>
-        
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             {t("cancel")}
