@@ -168,7 +168,7 @@ export class DiscordService {
     try {
       // Try to get the bot's member info from the guild
       const botUser = await this.makeRequest('/users/@me');
-      const botMember = await this.makeRequest(`/guilds/${guildId}/members/${botUser.id}`);
+      await this.makeRequest(`/guilds/${guildId}/members/${botUser.id}`);
       
       // For now, just check if we can access the guild and get member info
       // In a full implementation, you'd check specific permissions
