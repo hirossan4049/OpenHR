@@ -8,8 +8,10 @@ import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { PlusCircle, Settings, Users, MessageSquare, Calendar } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function MyProjectsPage() {
+  const t = useTranslations("MyPage");
   const { data: session } = useSession();
 
   const { data: myProjects, isLoading: loadingProjects } = api.project.getMyProjects.useQuery();
@@ -19,9 +21,9 @@ export default function MyProjectsPage() {
     return (
       <div className="container py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please sign in to view your projects</h1>
+          <h1 className="text-2xl font-bold mb-4">{t("signInPrompt")}</h1>
           <Link href="/auth/signin">
-            <Button>Sign In</Button>
+            <Button>{t("signIn")}</Button>
           </Link>
         </div>
       </div>
@@ -31,37 +33,37 @@ export default function MyProjectsPage() {
   return (
     <div className="container py-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold">My Projects & Applications</h1>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
         <Button asChild>
           <Link href="/projects/new">
             <PlusCircle className="mr-2 h-4 w-4" />
-            Create Project
+            {t("createProject")}
           </Link>
         </Button>
       </div>
 
       <Tabs defaultValue="organized" className="space-y-6">
         <TabsList>
-          <TabsTrigger value="organized">My Projects</TabsTrigger>
-          <TabsTrigger value="applications">My Applications</TabsTrigger>
+          <TabsTrigger value="organized">{t("tabProjects")}</TabsTrigger>
+          <TabsTrigger value="applications">{t("tabApplications")}</TabsTrigger>
         </TabsList>
 
         {/* My Projects Tab */}
         <TabsContent value="organized" className="space-y-4">
           {loadingProjects ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading your projects...
+              {t("loadingProjects")}
             </div>
           ) : !myProjects || myProjects.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-muted-foreground mb-4">
-                <h3 className="text-lg font-semibold">No projects yet</h3>
-                <p>Create your first project to start recruiting members</p>
+                <h3 className="text-lg font-semibold">{t("noProjects")}</h3>
+                <p>{t("noProjectsDescription")}</p>
               </div>
               <Button asChild>
                 <Link href="/projects/new">
                   <PlusCircle className="mr-2 h-4 w-4" />
-                  Create Project
+                  {t("createProject")}
                 </Link>
               </Button>
             </div>
@@ -88,7 +90,7 @@ export default function MyProjectsPage() {
                         <Button variant="outline" size="sm" asChild>
                           <Link href={{ pathname: "/projects/[id]/edit", params: { id: project.id } }}>
                             <Settings className="mr-1 h-4 w-4" />
-                            Edit
+                            {t("edit")}
                           </Link>
                         </Button>
                       </div>
@@ -102,20 +104,20 @@ export default function MyProjectsPage() {
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-1">
                         <Users className="h-4 w-4" />
-                        <span>{project._count.members} members</span>
+                        <span>{t("membersCount", { count: project._count.members })}</span>
                         {project.maxMembers && <span>/{project.maxMembers}</span>}
                       </div>
                       
                       {project._count.applications > 0 && (
                         <div className="flex items-center gap-1 text-blue-600">
                           <MessageSquare className="h-4 w-4" />
-                          <span>{project._count.applications} pending applications</span>
+                          <span>{t("pendingApplications", { count: project._count.applications })}</span>
                         </div>
                       )}
                       
                       <div className="flex items-center gap-1">
                         <Calendar className="h-4 w-4" />
-                        <span>Created {new Date(project.createdAt).toLocaleDateString()}</span>
+                        <span>{t("createdOn", { date: new Date(project.createdAt).toLocaleDateString() })}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -129,17 +131,17 @@ export default function MyProjectsPage() {
         <TabsContent value="applications" className="space-y-4">
           {loadingApplications ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading your applications...
+              {t("loadingApplications")}
             </div>
           ) : !myApplications || myApplications.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-muted-foreground mb-4">
-                <h3 className="text-lg font-semibold">No applications yet</h3>
-                <p>Browse projects and apply to join teams</p>
+                <h3 className="text-lg font-semibold">{t("noApplications")}</h3>
+                <p>{t("noApplicationsDescription")}</p>
               </div>
               <Button asChild>
                 <Link href="/projects">
-                  Browse Projects
+                  {t("browseProjects")}
                 </Link>
               </Button>
             </div>

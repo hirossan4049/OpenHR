@@ -16,6 +16,12 @@
   },
   "ProjectList": {
     "title": "プロジェクト",
+    "loading": "プロジェクトを読み込み中...",
+    "errorLoading": "プロジェクトの読み込みに失敗しました: {message}",
+    "typeProject": "プロジェクト",
+    "typeEvent": "イベント",
+    "until": "〜",
+    "moreCount": "+{count} 件",
     "createProject": "プロジェクト作成",
     "searchPlaceholder": "プロジェクトを検索...",
     "members": "{count}人",
@@ -34,6 +40,7 @@
     "preferred": "優遇"
   },
   "ProjectDetail": {
+    "loading": "プロジェクトを読み込み中...",
     "notFound": "プロジェクトが見つかりません",
     "notFoundDescription": "指定されたプロジェクトは存在しないか、アクセス権限がありません。",
     "backToList": "プロジェクト一覧に戻る",
@@ -50,6 +57,14 @@
     "alreadyMember": "参加中",
     "recruitmentClosed": "募集終了",
     "editProject": "プロジェクト編集",
+    "typeProject": "プロジェクト",
+    "typeEvent": "イベント",
+    "statusOpen": "募集中",
+    "statusClosed": "募集終了",
+    "infoTitle": "プロジェクト情報",
+    "statsTitle": "統計",
+    "status": "ステータス",
+    "created": "作成日",
     "manageApplications": "応募管理",
     "closeRecruitment": "募集を終了",
     "openRecruitment": "募集を再開",
@@ -293,5 +308,24 @@
     "link": "連携",
     "linkFailed": "連携に失敗しました",
     "unlinkFailed": "連携解除に失敗しました"
+  },
+  "MyPage": {
+    "title": "マイプロジェクトと応募",
+    "signInPrompt": "マイプロジェクトを表示するにはサインインしてください",
+    "signIn": "サインイン",
+    "createProject": "プロジェクト作成",
+    "tabProjects": "自分のプロジェクト",
+    "tabApplications": "自分の応募",
+    "loadingProjects": "プロジェクトを読み込み中...",
+    "noProjects": "まだプロジェクトがありません",
+    "noProjectsDescription": "最初のプロジェクトを作成してメンバー募集を始めましょう",
+    "edit": "編集",
+    "membersCount": "{count}人",
+    "pendingApplications": "{count}件の保留中の応募",
+    "createdOn": "作成日 {date}",
+    "loadingApplications": "応募状況を読み込み中...",
+    "noApplications": "まだ応募がありません",
+    "noApplicationsDescription": "プロジェクトを探して応募してみましょう",
+    "browseProjects": "プロジェクトを探す"
   }
 }

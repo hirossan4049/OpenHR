@@ -37,7 +37,7 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
   if (isLoading) {
     return (
       <div className="container py-8">
-        <div className="text-center">Loading project...</div>
+        <div className="text-center">{t("loading")}</div>
       </div>
     );
   }
@@ -87,10 +87,10 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
             <div className="flex items-center gap-3 mb-2">
               <h1 className="text-3xl font-bold">{project.title}</h1>
               <Badge variant={project.type === "event" ? "secondary" : "outline"}>
-                {project.type === "event" ? "Event" : "Project"}
+                {project.type === "event" ? t("typeEvent") : t("typeProject")}
               </Badge>
               <Badge variant={project.recruitmentStatus === "open" ? "default" : "secondary"}>
-                {project.recruitmentStatus === "open" ? "Open" : "Closed"}
+                {project.recruitmentStatus === "open" ? t("statusOpen") : t("statusClosed")}
               </Badge>
             </div>
             <p className="text-muted-foreground">{project.description}</p>
@@ -151,7 +151,7 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
           {/* Project Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Project Information</CardTitle>
+            <CardTitle>{t("infoTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {(project.startDate || project.endDate) && (
@@ -273,24 +273,24 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
           {/* Project Stats */}
           <Card>
             <CardHeader>
-              <CardTitle>Statistics</CardTitle>
+            <CardTitle>{t("statsTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Members</span>
+                <span className="text-sm text-muted-foreground">{t("members")}</span>
                 <span className="font-medium">
                   {project.members.length}
                   {project.maxMembers && ` / ${project.maxMembers}`}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Status</span>
+                <span className="text-sm text-muted-foreground">{t("status")}</span>
                 <Badge variant={project.recruitmentStatus === "open" ? "default" : "secondary"}>
-                  {project.recruitmentStatus === "open" ? "Open" : "Closed"}
+                  {project.recruitmentStatus === "open" ? t("statusOpen") : t("statusClosed")}
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Created</span>
+                <span className="text-sm text-muted-foreground">{t("created")}</span>
                 <span className="text-sm">{new Date(project.createdAt).toLocaleDateString()}</span>
               </div>
             </CardContent>

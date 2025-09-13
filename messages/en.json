@@ -16,6 +16,12 @@
   },
   "ProjectList": {
     "title": "Projects",
+    "loading": "Loading projects...",
+    "errorLoading": "Error loading projects: {message}",
+    "typeProject": "Project",
+    "typeEvent": "Event",
+    "until": "Until",
+    "moreCount": "+{count} more",
     "createProject": "Create Project",
     "searchPlaceholder": "Search projects...",
     "members": "{count, plural, one {# member} other {# members}}",
@@ -34,6 +40,7 @@
     "preferred": "Preferred"
   },
   "ProjectDetail": {
+    "loading": "Loading project...",
     "notFound": "Project Not Found",
     "notFoundDescription": "The specified project doesn't exist or you don't have permission to view it.",
     "backToList": "Back to Projects",
@@ -50,6 +57,14 @@
     "alreadyMember": "Member",
     "recruitmentClosed": "Closed",
     "editProject": "Edit Project",
+    "typeProject": "Project",
+    "typeEvent": "Event",
+    "statusOpen": "Open",
+    "statusClosed": "Closed",
+    "infoTitle": "Project Information",
+    "statsTitle": "Statistics",
+    "status": "Status",
+    "created": "Created",
     "manageApplications": "Manage Applications",
     "closeRecruitment": "Close Recruitment",
     "openRecruitment": "Open Recruitment",
@@ -293,5 +308,24 @@
     "link": "Link",
     "linkFailed": "Failed to link user",
     "unlinkFailed": "Failed to unlink user"
+  },
+  "MyPage": {
+    "title": "My Projects & Applications",
+    "signInPrompt": "Please sign in to view your projects",
+    "signIn": "Sign In",
+    "createProject": "Create Project",
+    "tabProjects": "My Projects",
+    "tabApplications": "My Applications",
+    "loadingProjects": "Loading your projects...",
+    "noProjects": "No projects yet",
+    "noProjectsDescription": "Create your first project to start recruiting members",
+    "edit": "Edit",
+    "membersCount": "{count} members",
+    "pendingApplications": "{count} pending applications",
+    "createdOn": "Created {date}",
+    "loadingApplications": "Loading your applications...",
+    "noApplications": "No applications yet",
+    "noApplicationsDescription": "Browse projects and apply to join teams",
+    "browseProjects": "Browse Projects"
   }
 }

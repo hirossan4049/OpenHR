@@ -80,14 +80,14 @@ export function ProjectList() {
       {/* Loading State */}
       {isLoading && (
         <div className="text-center py-8 text-muted-foreground">
-          Loading projects...
+          {t("loading")}
         </div>
       )}
 
       {/* Error State */}
       {error && (
         <div className="text-center py-8 text-destructive">
-          Error loading projects: {error.message}
+          {t("errorLoading", { message: error.message })}
         </div>
       )}
 
@@ -123,7 +123,7 @@ export function ProjectList() {
                         {project.title}
                       </Link>
                       <Badge variant={project.type === "event" ? "secondary" : "outline"}>
-                        {project.type === "event" ? "Event" : "Project"}
+                        {project.type === "event" ? t("typeEvent") : t("typeProject")}
                       </Badge>
                       <Badge variant={project.recruitmentStatus === "open" ? "default" : "secondary"}>
                         {project.recruitmentStatus === "open" ? t("statusOpen") : t("statusClosed")}
@@ -146,7 +146,7 @@ export function ProjectList() {
                         {project.endDate && (
                           <div className="flex items-center gap-1">
                             <MapPin className="h-4 w-4" />
-                            <span>Until {new Date(project.endDate).toLocaleDateString()}</span>
+                            <span>{t("until")} {new Date(project.endDate).toLocaleDateString()}</span>
                           </div>
                         )}
                       </div>
@@ -169,7 +169,7 @@ export function ProjectList() {
                         ))}
                         {project.requiredSkills.length > 5 && (
                           <Badge variant="outline" className="text-xs">
-                            +{project.requiredSkills.length - 5} more
+                            {t("moreCount", { count: project.requiredSkills.length - 5 })}
                           </Badge>
                         )}
                       </div>
