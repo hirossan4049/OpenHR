@@ -15,6 +15,7 @@ import { ApplicationManagement } from "./application-management";
 import { Input } from "~/components/ui/input";
 import { toast } from "~/components/ui/use-toast";
 import * as React from "react";
+// Free-text role input (no select)
 
 interface ProjectDetailProps {
   projectId: string;
@@ -264,7 +265,16 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
                         <p className="text-sm text-muted-foreground line-clamp-1">{member.user.bio}</p>
                       )}
                     </div>
-                    <Badge variant="outline">{member.role}</Badge>
+                    {isOrganizer && member.user.id !== project.organizer.id ? (
+                      <MemberRoleInput
+                        projectId={project.id}
+                        userId={member.user.id}
+                        value={member.role}
+                        onUpdated={() => void utils.project.getById.invalidate({ id: projectId })}
+                      />
+                    ) : (
+                      <Badge variant="outline">{member.role}</Badge>
+                    )}
                     {isOrganizer && member.user.id !== project.organizer.id && (
                       <OrganizerRemoveMemberButton projectId={project.id} userId={member.user.id} onRemoved={() => void utils.project.getById.invalidate({ id: projectId })} />
                     )}
@@ -418,5 +428,49 @@ function OrganizerRemoveMemberButton({ projectId, userId, onRemoved }: { project
     >
       {t("remove")}
     </Button>
+  );
+}
+
+function MemberRoleInput({ projectId, userId, value, onUpdated }: { projectId: string; userId: string; value: string; onUpdated?: () => void }) {
+  const t = useTranslations("ProjectDetail");
+  const utils = api.useUtils();
+  const [roleText, setRoleText] = React.useState(value || "");
+  const updateRole = api.project.updateMemberRole.useMutation({
+    onSuccess: async () => {
+      toast({ title: t("memberRoleUpdateSuccess"), variant: "success" });
+      await utils.project.getById.invalidate({ id: projectId });
+      onUpdated?.();
+    },
+    onError: () => {
+      toast({ title: t("memberRoleUpdateError"), variant: "destructive" });
+    },
+  });
+
+  const commit = () => {
+    const trimmed = roleText.trim();
+    if (!trimmed || trimmed === value) return;
+    updateRole.mutate({ projectId, userId, role: trimmed });
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        value={roleText}
+        onChange={(e) => setRoleText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            commit();
+          }
+        }}
+        placeholder={t("rolePlaceholder", { defaultValue: "Role (e.g., Frontend)" })}
+        className="h-8 w-40"
+        disabled={updateRole.isPending}
+      />
+      <Button size="sm" variant="outline" onClick={commit} disabled={updateRole.isPending}>
+        {t("save", { defaultValue: "Save" })}
+      </Button>
+    </div>
   );
 }

@@ -121,13 +121,22 @@ export const updateRecruitmentStatusSchema = z.object({
 export const addProjectMemberSchema = z.object({
   projectId: z.string(),
   userId: z.string(),
-  role: z.enum(["member", "moderator", "organizer"]).default("member").optional(),
+  // Allow free-text roles like "Frontend", "Backend", etc.
+  role: z.string().min(1).max(50).default("member").optional(),
 });
 
 // Remove member from project (organizer only)
 export const removeProjectMemberSchema = z.object({
   projectId: z.string(),
   userId: z.string(),
+});
+
+// Update member role (organizer only)
+export const updateProjectMemberRoleSchema = z.object({
+  projectId: z.string(),
+  userId: z.string(),
+  // Free-text role; organizer cannot target themselves (checked in router)
+  role: z.string().min(1).max(50),
 });
 
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
@@ -138,3 +147,4 @@ export type RespondToApplicationInput = z.infer<typeof respondToApplicationSchem
 export type UpdateRecruitmentStatusInput = z.infer<typeof updateRecruitmentStatusSchema>;
 export type AddProjectMemberInput = z.infer<typeof addProjectMemberSchema>;
 export type RemoveProjectMemberInput = z.infer<typeof removeProjectMemberSchema>;
+export type UpdateProjectMemberRoleInput = z.infer<typeof updateProjectMemberRoleSchema>;

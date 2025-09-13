@@ -63,10 +63,10 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
 
   // API queries and mutations
-  const { data: skills = [] } = api.user.searchSkills.useQuery({
-    query: skillSearchTerm,
-    limit: 20,
-  });
+  const { data: skills = [] } = api.user.searchSkills.useQuery(
+    { query: skillSearchTerm, limit: 20 },
+    { enabled: skillSearchTerm.length >= 1 }
+  );
 
   const suggestSkill = api.user.suggestSkill.useMutation({
     onError: () => {

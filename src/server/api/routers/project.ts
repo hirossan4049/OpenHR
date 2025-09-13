@@ -15,6 +15,7 @@ import {
   updateRecruitmentStatusSchema,
   addProjectMemberSchema,
   removeProjectMemberSchema,
+  updateProjectMemberRoleSchema,
 } from "~/lib/validation/project";
 
 export const projectRouter = createTRPCRouter({
@@ -406,6 +407,41 @@ export const projectRouter = createTRPCRouter({
       });
 
       return { success: true };
+    }),
+
+  // Update member role (organizer only)
+  updateMemberRole: protectedProcedure
+    .input(updateProjectMemberRoleSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId, role } = input;
+
+      const project = await ctx.db.project.findUnique({
+        where: { id: projectId },
+        select: { organizerId: true },
+      });
+      if (!project) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+      }
+      if (project.organizerId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only the organizer can update roles" });
+      }
+      if (userId === project.organizerId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot change organizer role" });
+      }
+
+      const membership = await ctx.db.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId } },
+      });
+      if (!membership) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Membership not found" });
+      }
+
+      const updated = await ctx.db.projectMember.update({
+        where: { id: membership.id },
+        data: { role },
+      });
+
+      return updated;
     }),
 
   // Apply to project
