@@ -71,6 +71,10 @@ model User {
     posts         Post[]
     userSkills    UserSkill[]
     discordMembers DiscordMember[] // Discord members linked to this user
+    // Project relations
+    organizedProjects Project[] @relation("ProjectOrganizer")
+    projectApplications ProjectApplication[] @relation("ProjectApplications")
+    projectMemberships ProjectMember[] @relation("ProjectMembers")
 }
 
 model VerificationToken {
@@ -92,6 +96,7 @@ model Skill {
     createdAt   DateTime    @default(now())
     updatedAt   DateTime    @updatedAt
     userSkills  UserSkill[]
+    projectRequiredSkills ProjectRequiredSkill[]
 }
 
 model UserSkill {
@@ -147,4 +152,85 @@ model GuildSync {
     updatedAt      DateTime      @updatedAt
     
     members        DiscordMember[]
+}
+
+// Project/Event model
+model Project {
+    id               String              @id @default(cuid())
+    title            String
+    description      String
+    type             String              @default("project") // "project" or "event"
+    recruitmentStatus String             @default("open") // "open" or "closed"
+    maxMembers       Int?                // Maximum number of members
+    startDate        DateTime?           // Project/Event start date
+    endDate          DateTime?           // Project/Event end date
+    
+    // Relations
+    organizerId      String
+    organizer        User                @relation("ProjectOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
+    
+    createdAt        DateTime            @default(now())
+    updatedAt        DateTime            @updatedAt
+    
+    // Related models
+    requiredSkills   ProjectRequiredSkill[]
+    applications     ProjectApplication[]
+    members          ProjectMember[]
+    
+    @@index([organizerId])
+    @@index([recruitmentStatus])
+    @@index([type])
+}
+
+// Required skills for a project
+model ProjectRequiredSkill {
+    id            String   @id @default(cuid())
+    projectId     String
+    skillId       String
+    minLevel      Int      @default(1) // Minimum skill level required (1-5)
+    priority      String   @default("required") // "required" or "preferred"
+    
+    project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    skill         Skill    @relation(fields: [skillId], references: [id], onDelete: Cascade)
+    
+    @@unique([projectId, skillId])
+    @@index([projectId])
+    @@index([skillId])
+}
+
+// Project applications
+model ProjectApplication {
+    id            String   @id @default(cuid())
+    projectId     String
+    applicantId   String
+    status        String   @default("pending") // "pending", "approved", "rejected"
+    message       String?  // Application message from user
+    response      String?  // Response from organizer
+    
+    project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    applicant     User     @relation("ProjectApplications", fields: [applicantId], references: [id], onDelete: Cascade)
+    
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    
+    @@unique([projectId, applicantId])
+    @@index([projectId])
+    @@index([applicantId])
+    @@index([status])
+}
+
+// Approved project members
+model ProjectMember {
+    id            String   @id @default(cuid())
+    projectId     String
+    userId        String
+    role          String   @default("member") // "member", "moderator", etc.
+    joinedAt      DateTime @default(now())
+    
+    project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    user          User     @relation("ProjectMembers", fields: [userId], references: [id], onDelete: Cascade)
+    
+    @@unique([projectId, userId])
+    @@index([projectId])
+    @@index([userId])
 }

@@ -24,6 +24,9 @@ export function Header() {
             <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
               {t("projects")}
             </Link>
+            <Link href="/my" className="text-muted-foreground transition-colors hover:text-foreground">
+              {t("myProjects")}
+            </Link>
             <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
               {t("members")}
             </Link>
@@ -58,7 +61,7 @@ export function Header() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" data-testid="mobile-menu">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">{t("toggleMenu")}</span>
                 </Button>
@@ -70,6 +73,9 @@ export function Header() {
                   </Link>
                   <Link href="/projects" className="text-muted-foreground transition-colors hover:text-foreground">
                     {t("projects")}
+                  </Link>
+                  <Link href="/my" className="text-muted-foreground transition-colors hover:text-foreground">
+                    {t("myProjects")}
                   </Link>
                   <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
                     {t("members")}

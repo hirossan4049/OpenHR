@@ -14,6 +14,14 @@ export const pathnames = {
     en: '/projects',
     ja: '/projects'
   },
+  '/projects/[id]': {
+    en: '/projects/[id]',
+    ja: '/projects/[id]'
+  },
+  '/projects/[id]/edit': {
+    en: '/projects/[id]/edit',
+    ja: '/projects/[id]/edit'
+  },
   '/projects/new': {
     en: '/projects/new',
     ja: '/projects/new'
@@ -30,9 +38,17 @@ export const pathnames = {
     en: '/members/[id]',
     ja: '/members/[id]'
   },
+  '/my': {
+    en: '/my',
+    ja: '/my'
+  },
   '/admin': {
     en: '/admin',
     ja: '/admin'
+  },
+  '/auth/signin': {
+    en: '/auth/signin',
+    ja: '/auth/signin'
   }
 } satisfies Record<string, Record<typeof locales[number], string>>;
  
