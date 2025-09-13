@@ -319,7 +319,7 @@ export const projectRouter = createTRPCRouter({
     }),
 
   // Apply to project
-  apply: protectedProcedure
+  applyToProject: protectedProcedure
     .input(createApplicationSchema)
     .mutation(async ({ ctx, input }) => {
       const { projectId, message } = input;

@@ -101,7 +101,7 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
             {isOrganizer && (
               <>
                 <Button variant="outline" asChild>
-                  <Link href={`/projects/${project.id}/edit`}>
+                  <Link href={{ pathname: "/projects/[id]/edit", params: { id: project.id } }}>
                     <Settings className="mr-2 h-4 w-4" />
                     {t("editProject")}
                   </Link>

@@ -20,7 +20,7 @@ export function ApplicationForm({ projectId, projectTitle, onClose, onSuccess }:
   const t = useTranslations("ApplicationForm");
   const [message, setMessage] = useState("");
 
-  const applyToProject = api.project.apply.useMutation({
+  const applyToProject = api.project.applyToProject.useMutation({
     onSuccess: () => {
       toast({ title: t("success"), variant: "success" });
       onSuccess();

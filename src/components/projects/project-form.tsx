@@ -13,6 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { toast } from "~/components/ui/use-toast";
+import { DatePicker } from "~/components/ui/date-picker";
 
 interface RequiredSkill {
   skillId: string;
@@ -45,10 +46,16 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const [type, setType] = useState<"project" | "event">(initialData?.type || "project");
   const [maxMembers, setMaxMembers] = useState<string>(initialData?.maxMembers?.toString() || "");
   const [startDate, setStartDate] = useState<string>(
-    initialData?.startDate ? initialData.startDate.toISOString().slice(0, 16) : ""
+    initialData?.startDate ? initialData.startDate.toISOString().slice(0, 10) : ""
   );
   const [endDate, setEndDate] = useState<string>(
-    initialData?.endDate ? initialData.endDate.toISOString().slice(0, 16) : ""
+    initialData?.endDate ? initialData.endDate.toISOString().slice(0, 10) : ""
+  );
+  const [startTime, setStartTime] = useState<string>(
+    initialData?.startDate ? new Date(initialData.startDate).toISOString().slice(11, 16) : ""
+  );
+  const [endTime, setEndTime] = useState<string>(
+    initialData?.endDate ? new Date(initialData.endDate).toISOString().slice(11, 16) : ""
   );
   const [requiredSkills, setRequiredSkills] = useState<RequiredSkill[]>(initialData?.requiredSkills || []);
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
@@ -62,7 +69,7 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const createProject = api.project.create.useMutation({
     onSuccess: (project) => {
       toast({ title: t("createSuccess"), variant: "success" });
-      router.push(`/projects/${project.id}`);
+      router.push({ pathname: "/projects/[id]", params: { id: project.id } });
     },
     onError: (error) => {
       toast({ title: t("createError"), variant: "destructive" });
@@ -73,7 +80,7 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const updateProject = api.project.update.useMutation({
     onSuccess: (project) => {
       toast({ title: t("updateSuccess"), variant: "success" });
-      router.push(`/projects/${project.id}`);
+      router.push({ pathname: "/projects/[id]", params: { id: project.id } });
     },
     onError: (error) => {
       toast({ title: t("updateError"), variant: "destructive" });
@@ -84,13 +91,35 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const combineLocalDateTime = (dateStr?: string, timeStr?: string) => {
+      if (!dateStr) return undefined;
+      const dateMatch = dateStr.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!dateMatch) return undefined;
+      const y = parseInt(dateMatch[1]!, 10);
+      const m = parseInt(dateMatch[2]!, 10);
+      const d = parseInt(dateMatch[3]!, 10);
+      if (!timeStr || !/^\d{2}:\d{2}$/.test(timeStr)) return new Date(y, m - 1, d);
+      const [hhStr, mmStr] = timeStr.split(":");
+      const hh = parseInt(hhStr!, 10);
+      const mm = parseInt(mmStr!, 10);
+      return new Date(y, m - 1, d, isNaN(hh) ? 0 : hh, isNaN(mm) ? 0 : mm);
+    };
+
     const formData = {
       title,
       description,
       type,
       maxMembers: maxMembers ? parseInt(maxMembers) : undefined,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
+      startDate: type === "event"
+        ? combineLocalDateTime(startDate, startTime)
+        : startDate
+          ? new Date(startDate)
+          : undefined,
+      endDate: type === "event"
+        ? combineLocalDateTime(endDate, endTime)
+        : endDate
+          ? new Date(endDate)
+          : undefined,
       requiredSkills: requiredSkills.map(skill => ({
         skillId: skill.skillId,
         minLevel: skill.minLevel,
@@ -104,6 +133,8 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
       createProject.mutate(formData);
     }
   };
+
+  const ymd = (d?: Date) => (d ? new Date(d.getFullYear(), d.getMonth(), d.getDate()).toISOString().slice(0, 10) : "");
 
   const addSkill = (skill: { id: string; name: string }) => {
     if (requiredSkills.find(s => s.skillId === skill.id)) {
@@ -217,22 +248,48 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="startDate">{t("fieldStartDate")}</Label>
-                <Input
-                  id="startDate"
-                  type="datetime-local"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <DatePicker
+                      date={startDate ? new Date(startDate) : undefined}
+                      onChange={(d) => setStartDate(ymd(d))}
+                      placeholder={t("fieldStartDate")}
+                    />
+                  </div>
+                  {type === "event" && (
+                    <Input
+                      id="startTime"
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      required={false}
+                      className="w-36"
+                    />
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="endDate">{t("fieldEndDate")}</Label>
-                <Input
-                  id="endDate"
-                  type="datetime-local"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <DatePicker
+                      date={endDate ? new Date(endDate) : undefined}
+                      onChange={(d) => setEndDate(ymd(d))}
+                      placeholder={t("fieldEndDate")}
+                    />
+                  </div>
+                  {type === "event" && (
+                    <Input
+                      id="endTime"
+                      type="time"
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                      required={false}
+                      className="w-36"
+                    />
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

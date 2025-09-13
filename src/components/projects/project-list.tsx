@@ -117,7 +117,7 @@ export function ProjectList() {
                   <div className="flex-grow">
                     <div className="flex items-center gap-2 mb-2">
                       <Link 
-                        href={`/projects/${project.id}`} 
+                        href={{ pathname: "/projects/[id]", params: { id: project.id } }} 
                         className="font-semibold text-primary hover:underline"
                       >
                         {project.title}

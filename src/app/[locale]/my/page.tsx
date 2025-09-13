@@ -73,7 +73,7 @@ export default function MyProjectsPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          <Link href={`/projects/${project.id}`} className="hover:underline">
+                          <Link href={{ pathname: "/projects/[id]", params: { id: project.id } }} className="hover:underline">
                             {project.title}
                           </Link>
                           <Badge variant={project.type === "event" ? "secondary" : "outline"}>
@@ -86,7 +86,7 @@ export default function MyProjectsPage() {
                       </div>
                       <div className="flex gap-2">
                         <Button variant="outline" size="sm" asChild>
-                          <Link href={`/projects/${project.id}/edit`}>
+                          <Link href={{ pathname: "/projects/[id]/edit", params: { id: project.id } }}>
                             <Settings className="mr-1 h-4 w-4" />
                             Edit
                           </Link>
@@ -151,7 +151,7 @@ export default function MyProjectsPage() {
                     <div className="flex items-start justify-between">
                       <div>
                         <CardTitle className="flex items-center gap-2">
-                          <Link href={`/projects/${application.project.id}`} className="hover:underline">
+                          <Link href={{ pathname: "/projects/[id]", params: { id: application.project.id } }} className="hover:underline">
                             {application.project.title}
                           </Link>
                           <Badge variant={application.project.type === "event" ? "secondary" : "outline"}>
