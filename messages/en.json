@@ -70,7 +70,9 @@
     "openRecruitment": "Open Recruitment",
     "pending": "Pending",
     "approved": "Approved",
-    "rejected": "Rejected"
+    "rejected": "Rejected",
+    "required": "Required",
+    "preferred": "Preferred"
   },
   "ProjectForm": {
     "createTitle": "Create Project",

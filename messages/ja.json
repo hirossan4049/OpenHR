@@ -70,7 +70,9 @@
     "openRecruitment": "募集を再開",
     "pending": "審査中",
     "approved": "承認済み",
-    "rejected": "却下済み"
+    "rejected": "却下済み",
+    "required": "必須",
+    "preferred": "優遇"
   },
   "ProjectForm": {
     "createTitle": "プロジェクト作成",
