@@ -13,6 +13,7 @@ import { Badge } from "~/components/ui/badge";
 import { X } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { toast } from "~/components/ui/use-toast";
+import { CreatableSkillSelect } from "~/components/ui/creatable-skill-select";
 import { DatePicker } from "~/components/ui/date-picker";
 
 interface RequiredSkill {
@@ -37,6 +38,7 @@ interface ProjectFormProps {
 
 export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const t = useTranslations("ProjectForm");
+  const tSkills = useTranslations("SkillManagement");
   const router = useRouter();
   const isEditing = !!projectId;
 
@@ -61,9 +63,15 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   const [skillSearchTerm, setSkillSearchTerm] = useState("");
 
   // API queries and mutations
-  const { data: skills } = api.user.searchSkills.useQuery({
+  const { data: skills = [] } = api.user.searchSkills.useQuery({
     query: skillSearchTerm,
-    limit: 10,
+    limit: 20,
+  });
+
+  const suggestSkill = api.user.suggestSkill.useMutation({
+    onError: () => {
+      toast({ title: t("createError"), variant: "destructive" });
+    },
   });
 
   const createProject = api.project.create.useMutation({
@@ -302,30 +310,28 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
             <CardDescription>{t("requiredSkillsDescription")}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Add Skill Search */}
+            {/* Add Skill Search (creatable) */}
             <div className="space-y-2">
               <Label>{t("addSkill")}</Label>
-              <div className="relative">
-                <Input
-                  value={skillSearchTerm}
-                  onChange={(e) => setSkillSearchTerm(e.target.value)}
-                  placeholder="Search skills..."
-                />
-                {skillSearchTerm && skills && skills.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-background border rounded-md shadow-lg z-10 max-h-40 overflow-y-auto">
-                    {skills.map((skill) => (
-                      <button
-                        key={skill.id}
-                        type="button"
-                        onClick={() => addSkill(skill)}
-                        className="w-full text-left px-3 py-2 hover:bg-muted transition-colors"
-                      >
-                        {skill.name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <CreatableSkillSelect
+                skills={skills}
+                value={""}
+                onValueChange={(skillId) => {
+                  const s = skills.find((sk) => sk.id === skillId);
+                  if (s) addSkill({ id: s.id, name: s.name });
+                }}
+                onCreateSkill={async (name) => {
+                  const res = await suggestSkill.mutateAsync({ name });
+                  const created = res.skill;
+                  addSkill({ id: created.id, name: created.name });
+                }}
+                onSearchChange={(q) => setSkillSearchTerm(q)}
+                placeholder={t("skillName")}
+                emptyText={tSkills("noSkillsFound")}
+                searchPlaceholder={t("addSkill")}
+                createText={tSkills("createSkill", { search: "{search}" })}
+                ariaLabel={t("addSkill")}
+              />
             </div>
 
             {/* Skills List */}
