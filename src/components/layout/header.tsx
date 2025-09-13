@@ -61,7 +61,7 @@ export function Header() {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" data-testid="mobile-menu">
                   <Menu className="h-5 w-5" />
                   <span className="sr-only">{t("toggleMenu")}</span>
                 </Button>

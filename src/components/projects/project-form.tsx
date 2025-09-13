@@ -229,7 +229,7 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
               <div className="space-y-2">
                 <Label htmlFor="type">{t("fieldType")}</Label>
                 <Select value={type} onValueChange={(value) => setType(value as "project" | "event")}>
-                  <SelectTrigger>
+                  <SelectTrigger data-testid="type-select">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

@@ -17,8 +17,10 @@
     "start": "next start",
     "test": "jest",
     "test:watch": "jest --watch",
+    "e2e:install": "playwright install --with-deps",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "PLAYWRIGHT_NO_SERVER=1 playwright test --headed",
     "typecheck": "tsc --noEmit"
   },
   "prisma": {
