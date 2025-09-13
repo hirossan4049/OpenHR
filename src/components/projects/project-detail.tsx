@@ -8,10 +8,13 @@ import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { ArrowLeft, Calendar, MapPin, Settings, Users, MessageSquare } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Settings, Users, MessageSquare, Plus } from "lucide-react";
 import { useState } from "react";
 import { ApplicationForm } from "./application-form";
 import { ApplicationManagement } from "./application-management";
+import { Input } from "~/components/ui/input";
+import { toast } from "~/components/ui/use-toast";
+import * as React from "react";
 
 interface ProjectDetailProps {
   projectId: string;
@@ -25,6 +28,12 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
 
   const { data: project, isLoading, error } = api.project.getById.useQuery({ id: projectId });
 
+  // tRPC utils for cache invalidation
+  const utils = api.useUtils();
+
+  // Organizer flag can be used in hooks below; safe when project is undefined
+  const isOrganizer = !!(session?.user?.id && project?.organizer?.id && session.user.id === project.organizer.id);
+
   const updateRecruitmentStatus = api.project.updateRecruitmentStatus.useMutation({
     onSuccess: () => {
       // Refetch project data
@@ -32,7 +41,25 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
     },
   });
 
-  const utils = api.useUtils();
+  // Add member (organizer only)
+  const addMember = api.project.addMember.useMutation({
+    onSuccess: () => {
+      toast({ title: t("memberAddSuccess"), variant: "success" });
+      setMemberSearch("");
+      void utils.project.getById.invalidate({ id: projectId });
+    },
+    onError: (err) => {
+      toast({ title: t("memberAddError"), variant: "destructive" });
+      console.error("Add member error:", err);
+    },
+  });
+
+  const [memberSearch, setMemberSearch] = useState("");
+  const { data: memberCandidates } = api.user.getMembers.useQuery({
+    search: memberSearch || undefined,
+    limit: 5,
+    offset: 0,
+  }, { enabled: isOrganizer && !!memberSearch });
 
   if (isLoading) {
     return (
@@ -59,7 +86,7 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
     );
   }
 
-  const isOrganizer = session?.user?.id === project.organizer.id;
+  // isOrganizer already computed above using optional chaining
   const isMember = project.members.some(member => member.user.id === session?.user?.id);
   const canApply = session && !isOrganizer && !isMember && project.recruitmentStatus === "open";
 
@@ -238,6 +265,9 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
                       )}
                     </div>
                     <Badge variant="outline">{member.role}</Badge>
+                    {isOrganizer && member.user.id !== project.organizer.id && (
+                      <OrganizerRemoveMemberButton projectId={project.id} userId={member.user.id} onRemoved={() => void utils.project.getById.invalidate({ id: projectId })} />
+                    )}
                   </div>
                 ))}
               </div>
@@ -270,10 +300,51 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
             </CardContent>
           </Card>
 
+          {isOrganizer && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("addMember")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Input
+                  placeholder={t("searchUsersPlaceholder")}
+                  value={memberSearch}
+                  onChange={(e) => setMemberSearch(e.target.value)}
+                />
+                {memberSearch && (memberCandidates?.members?.length ?? 0) > 0 && (
+                  <div className="space-y-2">
+                    {memberCandidates!.members.map((u) => (
+                      <div key={u.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={(u as any).image || undefined} />
+                            <AvatarFallback>
+                              {u.name?.charAt(0) || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span className="text-sm">{u.name || "Unknown"}</span>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => addMember.mutate({ projectId: project.id, userId: u.id })}
+                          disabled={addMember.isPending}
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          {t("add")}
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Project Stats */}
           <Card>
             <CardHeader>
-            <CardTitle>{t("statsTitle")}</CardTitle>
+              <CardTitle>{t("statsTitle")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
@@ -320,5 +391,32 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
         />
       )}
     </div>
+  );
+}
+
+function OrganizerRemoveMemberButton({ projectId, userId, onRemoved }: { projectId: string; userId: string; onRemoved?: () => void }) {
+  const t = useTranslations("ProjectDetail");
+  const utils = api.useUtils();
+  const removeMember = api.project.removeMember.useMutation({
+    onSuccess: async () => {
+      toast({ title: t("memberRemoveSuccess"), variant: "success" });
+      await utils.project.getById.invalidate({ id: projectId });
+      onRemoved?.();
+    },
+    onError: () => {
+      toast({ title: t("memberRemoveError"), variant: "destructive" });
+    },
+  });
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="ml-2 text-destructive border-destructive"
+      onClick={() => removeMember.mutate({ projectId, userId })}
+      disabled={removeMember.isPending}
+      aria-label={t("removeMemberAria", { defaultValue: "Remove member" })}
+    >
+      {t("remove")}
+    </Button>
   );
 }

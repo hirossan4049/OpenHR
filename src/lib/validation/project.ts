@@ -117,9 +117,24 @@ export const updateRecruitmentStatusSchema = z.object({
   status: z.enum(["open", "closed"]),
 });
 
+// Add member to project (organizer only)
+export const addProjectMemberSchema = z.object({
+  projectId: z.string(),
+  userId: z.string(),
+  role: z.enum(["member", "moderator", "organizer"]).default("member").optional(),
+});
+
+// Remove member from project (organizer only)
+export const removeProjectMemberSchema = z.object({
+  projectId: z.string(),
+  userId: z.string(),
+});
+
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type ProjectSearchInput = z.infer<typeof projectSearchSchema>;
 export type CreateApplicationInput = z.infer<typeof createApplicationSchema>;
 export type RespondToApplicationInput = z.infer<typeof respondToApplicationSchema>;
 export type UpdateRecruitmentStatusInput = z.infer<typeof updateRecruitmentStatusSchema>;
+export type AddProjectMemberInput = z.infer<typeof addProjectMemberSchema>;
+export type RemoveProjectMemberInput = z.infer<typeof removeProjectMemberSchema>;

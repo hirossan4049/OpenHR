@@ -13,6 +13,8 @@ import {
   createApplicationSchema,
   respondToApplicationSchema,
   updateRecruitmentStatusSchema,
+  addProjectMemberSchema,
+  removeProjectMemberSchema,
 } from "~/lib/validation/project";
 
 export const projectRouter = createTRPCRouter({
@@ -316,6 +318,94 @@ export const projectRouter = createTRPCRouter({
         where: { id: projectId },
         data: { recruitmentStatus: status },
       });
+    }),
+
+  // Add member directly (organizer only)
+  addMember: protectedProcedure
+    .input(addProjectMemberSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId, role = "member" } = input;
+
+      // Check organizer permission
+      const project = await ctx.db.project.findUnique({
+        where: { id: projectId },
+        select: {
+          organizerId: true,
+          maxMembers: true,
+          _count: { select: { members: true } },
+        },
+      });
+
+      if (!project) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+      }
+      if (project.organizerId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only the organizer can add members" });
+      }
+
+      // Check member limit
+      if (project.maxMembers && project._count.members >= project.maxMembers) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Project has reached maximum members" });
+      }
+
+      // Check if user exists
+      const user = await ctx.db.user.findUnique({ where: { id: userId }, select: { id: true } });
+      if (!user) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+      }
+
+      // Check existing membership
+      const existingMembership = await ctx.db.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId } },
+      });
+      if (existingMembership) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "User is already a member of this project" });
+      }
+
+      // Create membership
+      const member = await ctx.db.projectMember.create({
+        data: { projectId, userId, role },
+      });
+
+      return member;
+    }),
+
+  // Remove member (organizer only)
+  removeMember: protectedProcedure
+    .input(removeProjectMemberSchema)
+    .mutation(async ({ ctx, input }) => {
+      const { projectId, userId } = input;
+
+      // Check organizer permission and get organizerId
+      const project = await ctx.db.project.findUnique({
+        where: { id: projectId },
+        select: { organizerId: true },
+      });
+      if (!project) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+      }
+      if (project.organizerId !== ctx.session.user.id) {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Only the organizer can remove members" });
+      }
+
+      // Do not allow removing organizer's own membership entry if any
+      if (userId === project.organizerId) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Cannot remove the organizer from the project" });
+      }
+
+      // Check membership exists
+      const membership = await ctx.db.projectMember.findUnique({
+        where: { projectId_userId: { projectId, userId } },
+      });
+      if (!membership) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Membership not found" });
+      }
+
+      await ctx.db.projectMember.delete({
+        where: { id: membership.id },
+      });
+
+      return { success: true };
     }),
 
   // Apply to project
