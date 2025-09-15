@@ -31,6 +31,8 @@ export default defineConfig({
     video: 'on',
     /* Take screenshots only on failures */
     screenshot: 'only-on-failure',
+    /* Run all tests with an authenticated storage state */
+    storageState: 'e2e/.auth/user.json',
   },
 
   /* Global auth setup to prepare a logged-in storageState */
