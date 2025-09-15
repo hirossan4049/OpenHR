@@ -3,11 +3,23 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   publicProcedure,
+  protectedProcedure,
 } from "~/server/api/trpc";
 import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
 import { hasRole } from "~/lib/auth/roles";
 
 export const userRouter = createTRPCRouter({
+  // Current user's basic info including role
+  getCurrentRole: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true, name: true, image: true },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  }),
   // Get all members for directory with optional search filters
   getMembers: publicProcedure
     .input(z.object({

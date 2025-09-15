@@ -6,9 +6,18 @@ import { Link } from "~/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
+import { useSession } from "next-auth/react";
+import { api } from "~/trpc/react";
 
 export function Header() {
   const t = useTranslations("Header");
+  const { status } = useSession();
+  const { data: me } = api.user.getCurrentRole.useQuery(undefined, {
+    enabled: status === "authenticated",
+  });
+
+  const isAdmin = me?.role === "ADMIN";
+  const canCreateProject = status === "authenticated" && me?.role !== "VIEWER";
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background">
@@ -30,22 +39,25 @@ export function Header() {
             <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
               {t("members")}
             </Link>
-            {/* Admin only */}
-            <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
-              {t("admin")}
-            </Link>
+            {isAdmin && (
+              <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
+                {t("admin")}
+              </Link>
+            )}
           </nav>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="hidden items-center gap-2 md:flex">
-            {/* Organizer/Admin only */}
-            <Button size="sm" asChild>
-              <Link href="/projects/new">
-                <PlusCircle className="mr-2 h-4 w-4" />
-                {t("createProject")}
-              </Link>
-            </Button>
+            {/* Disallow for VIEWER */}
+            {canCreateProject && (
+              <Button size="sm" asChild>
+                <Link href="/projects/new">
+                  <PlusCircle className="mr-2 h-4 w-4" />
+                  {t("createProject")}
+                </Link>
+              </Button>
+            )}
             <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
@@ -80,18 +92,20 @@ export function Header() {
                   <Link href="/members" className="text-muted-foreground transition-colors hover:text-foreground">
                     {t("members")}
                   </Link>
-                  {/* Admin only */}
-                  <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
-                    {t("admin")}
-                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">
+                      {t("admin")}
+                    </Link>
+                  )}
                   <div className="border-t pt-4">
-                    {/* Organizer/Admin only */}
-                    <Button size="sm" asChild className="w-full">
-                      <Link href="/projects/new">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        {t("createProject")}
-                      </Link>
-                    </Button>
+                    {canCreateProject && (
+                      <Button size="sm" asChild className="w-full">
+                        <Link href="/projects/new">
+                          <PlusCircle className="mr-2 h-4 w-4" />
+                          {t("createProject")}
+                        </Link>
+                      </Button>
+                    )}
                   </div>
                 </div>
               </SheetContent>

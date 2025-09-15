@@ -120,6 +120,7 @@ export function AdminUserManagement() {
   const { 
     data: usersData, 
     isLoading: usersLoading,
+    error: usersError,
     refetch: refetchUsers 
   } = api.admin.getAllUsers.useQuery({
     search: search || undefined,
@@ -128,7 +129,7 @@ export function AdminUserManagement() {
     offset: 0,
   });
 
-  const { data: tags } = api.admin.getAllTags.useQuery();
+  const { data: tags, error: tagsError } = api.admin.getAllTags.useQuery();
 
   // API mutations
   const createViewerMutation = api.admin.createViewerAccount.useMutation({
@@ -178,6 +179,26 @@ export function AdminUserManagement() {
     members: filteredUsers.filter(u => u.role === "MEMBER").length,
     viewers: filteredUsers.filter(u => u.role === "VIEWER").length,
   };
+
+  // Basic access-denied handling for non-admins hitting this page client-side
+  // (server layout already blocks access, but keep this for safety/SSR fallbacks)
+  const isForbidden = (err: any) => {
+    try {
+      return err?.data?.code === "FORBIDDEN" || err?.shape?.data?.code === "FORBIDDEN";
+    } catch {
+      return false;
+    }
+  };
+  if (isForbidden(usersError) || isForbidden(tagsError)) {
+    return (
+      <div className="container py-16">
+        <div className="mx-auto max-w-xl rounded-lg border bg-card p-8 text-center">
+          <h1 className="mb-2 text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground">Admins only. If you need access, contact an administrator.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container py-8">
