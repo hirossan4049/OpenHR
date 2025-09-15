@@ -1,7 +1,6 @@
 import createMiddleware from 'next-intl/middleware';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { auth } from '~/server/auth';
 
 // Locale middleware from next-intl
 const intlMiddleware = createMiddleware({
@@ -15,20 +14,66 @@ function isLocaleRoot(pathname: string) {
   return /^\/(?:[a-z]{2})(?:\/)?$/.test(pathname);
 }
 
-export default auth(function middleware(req: NextRequest) {
+function stripLocale(pathname: string) {
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments[0] && /^[a-z]{2}$/.test(segments[0] ?? '')) {
+    segments.shift();
+  }
+  return '/' + segments.join('/');
+}
+
+// Public routes that should be accessible without authentication
+function isPublicPath(pathname: string) {
+  const p = stripLocale(pathname);
+  // Normalize trailing slash except for root
+  const norm = p !== '/' ? p.replace(/\/$/, '') : '/';
+
+  const publicPrefixes = [
+    '/',
+    '/members',
+    '/projects',
+    '/my', // page itself handles showing sign-in prompt if needed
+  ];
+
+  return publicPrefixes.some((prefix) =>
+    norm === prefix || norm.startsWith(prefix + '/')
+  );
+}
+
+function hasAuthCookie(req: NextRequest) {
+  const names = [
+    // Auth.js v5
+    'authjs.session-token',
+    '__Secure-authjs.session-token',
+    // NextAuth v4 legacy (in case)
+    'next-auth.session-token',
+    '__Secure-next-auth.session-token',
+  ];
+  return names.some((n) => Boolean(req.cookies.get(n)?.value));
+}
+
+export default function middleware(req: NextRequest) {
   // First, apply locale handling
   const res = intlMiddleware(req);
 
-  // If not authenticated and not on the locale root, redirect to the locale home (login UI)
-  if (!req.auth && !isLocaleRoot(req.nextUrl.pathname)) {
-    const segments = req.nextUrl.pathname.split('/').filter(Boolean);
+  // Only enforce auth on protected routes. Public pages should render for unauthenticated users.
+  if (!hasAuthCookie(req)) {
+    const pathname = req.nextUrl.pathname;
+
+    // Allow locale roots and public paths without auth
+    if (isLocaleRoot(pathname) || isPublicPath(pathname)) {
+      return res;
+    }
+
+    // Otherwise redirect unauthenticated users to the locale root (login UI)
+    const segments = pathname.split('/').filter(Boolean);
     const maybeLocale = segments[0] && /^[a-z]{2}$/.test(segments[0]) ? segments[0] : undefined;
     const localePrefix = maybeLocale ? `/${maybeLocale}` : '/en';
     return NextResponse.redirect(new URL(`${localePrefix}`, req.nextUrl));
   }
 
   return res;
-});
+}
 
 export const config = {
   // Skip all paths that are not internationalized
