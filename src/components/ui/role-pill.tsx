@@ -1,14 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { Crown, Eye, Shield } from "lucide-react"
 import { cn } from "~/lib/utils"
 import { type UserRole } from "~/lib/validation/admin"
 
-const ROLE_META: Record<UserRole, { color: string; Icon: React.ComponentType<{ className?: string }> }> = {
-  ADMIN: { color: "#EF4444", Icon: Crown }, // red-500
-  MEMBER: { color: "#3B82F6", Icon: Shield }, // blue-500
-  VIEWER: { color: "#6B7280", Icon: Eye }, // gray-500
+const ROLE_COLORS: Record<UserRole, string> = {
+  ADMIN: "#EF4444", // red-500
+  MEMBER: "#3B82F6", // blue-500
+  VIEWER: "#6B7280", // gray-500
 }
 
 interface RolePillProps {
@@ -18,7 +17,7 @@ interface RolePillProps {
 }
 
 export function RolePill({ role, className, size = "sm" }: RolePillProps) {
-  const { color, Icon } = ROLE_META[role]
+  const color = ROLE_COLORS[role]
   const bg = `${color}20`
 
   return (
@@ -30,8 +29,6 @@ export function RolePill({ role, className, size = "sm" }: RolePillProps) {
       )}
       style={{ backgroundColor: bg, borderColor: color }}
     >
-      <Icon className={cn(size === "sm" ? "h-3 w-3" : "h-4 w-4")} />
       {role}
     </span>
   )}
-

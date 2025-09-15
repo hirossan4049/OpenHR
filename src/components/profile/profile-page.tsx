@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Github, Mail, User } from "lucide-react";
 import { TagPill } from "~/components/ui/tag-pill";
+import { RolePill } from "~/components/ui/role-pill";
 
 interface UserProfile {
   name: string;
@@ -19,6 +20,7 @@ interface UserProfile {
   contact?: string;
   githubUrl?: string;
   userTags?: Array<{ tag: { id: string; name: string; color: string; description?: string | null } }>
+  role?: "ADMIN" | "MEMBER" | "VIEWER";
 }
 
 interface UserSkill {
@@ -67,7 +69,7 @@ export function ProfilePage() {
   };
 
   const handleProfileSave = (data: UserProfile) => {
-    setProfile(data);
+    setProfile((prev) => ({ ...prev, ...data }));
     setIsEditing(false);
   };
 
@@ -120,6 +122,9 @@ export function ProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                 <h1 className="text-2xl font-bold">{profile?.name ?? session?.user?.name}</h1>
+                {profile?.role && (
+                  <div className="mt-2"><RolePill role={profile.role} /></div>
+                )}
                 <p className="text-muted-foreground">{profile?.grade}</p>
                 <p className="mt-2 text-sm text-muted-foreground text-center">{profile?.bio}</p>
               </div>
