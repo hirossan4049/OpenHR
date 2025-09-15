@@ -31,6 +31,18 @@ export async function GET() {
         grade: true,
         contact: true,
         githubUrl: true,
+        userTags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+                description: true,
+              },
+            },
+          },
+        },
       },
     });
 
