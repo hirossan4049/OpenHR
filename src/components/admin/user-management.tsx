@@ -70,6 +70,7 @@ import { api } from "~/trpc/react";
 import { type UserRole } from "~/lib/validation/admin";
 import { CreatableTagMultiSelect } from "~/components/ui/creatable-tag-multi-select";
 import { TagPill } from "~/components/ui/tag-pill";
+import { RolePill } from "~/components/ui/role-pill";
 
 interface User {
   id: string;
@@ -402,12 +403,7 @@ export function AdminUserManagement() {
                     </TableCell>
                     <TableCell>{user.email}</TableCell>
                     <TableCell>
-                      <Badge className={ROLE_COLORS[user.role]}>
-                        <div className="flex items-center gap-1">
-                          {getRoleIcon(user.role)}
-                          {user.role}
-                        </div>
-                      </Badge>
+                      <RolePill role={user.role} />
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
