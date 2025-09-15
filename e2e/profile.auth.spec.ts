@@ -73,6 +73,7 @@ test.describe('Profile (authenticated)', () => {
     await skillRow.getByRole('button', { name: 'Remove skill' }).click();
     // 新しい確認ボタンをクリック
     await skillRow.getByRole('button', { name: 'Confirm' }).click();
-    await expect(page.getByText(skillName)).not.toBeVisible({ timeout: 5000 });
+    // Scope to table rows to avoid matching the combobox ghost text
+    await expect(page.locator('tr').filter({ hasText: skillName })).toHaveCount(0, { timeout: 5000 });
   });
 });
