@@ -68,6 +68,8 @@ import { Badge } from "~/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { api } from "~/trpc/react";
 import { type UserRole } from "~/lib/validation/admin";
+import { CreatableTagMultiSelect } from "~/components/ui/creatable-tag-multi-select";
+import { TagPill } from "~/components/ui/tag-pill";
 
 interface User {
   id: string;
@@ -101,6 +103,7 @@ const ROLE_COLORS = {
 
 export function AdminUserManagement() {
   const t = useTranslations("AdminUserManagement");
+  const tTags = useTranslations("AdminTagManagement");
   
   const [search, setSearch] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | "ALL">("ALL");
@@ -108,6 +111,11 @@ export function AdminUserManagement() {
   const [isRoleEditDialogOpen, setIsRoleEditDialogOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newUserRole, setNewUserRole] = useState<UserRole>("MEMBER");
+
+  // Tag assignment dialog state
+  const [isTagDialogOpen, setIsTagDialogOpen] = useState(false);
+  const [tagEditingUser, setTagEditingUser] = useState<User | null>(null);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   // Create viewer account form
   const [newUserData, setNewUserData] = useState({
@@ -125,11 +133,11 @@ export function AdminUserManagement() {
   } = api.admin.getAllUsers.useQuery({
     search: search || undefined,
     role: selectedRole === "ALL" ? undefined : selectedRole,
-    limit: 50,
+    limit: 10000,
     offset: 0,
   });
 
-  const { data: tags, error: tagsError } = api.admin.getAllTags.useQuery();
+  const { data: tags, error: tagsError, refetch: refetchTags } = api.admin.getAllTags.useQuery();
 
   // API mutations
   const createViewerMutation = api.admin.createViewerAccount.useMutation({
@@ -148,6 +156,26 @@ export function AdminUserManagement() {
     },
   });
 
+  const assignTagMutation = api.admin.assignTagToUser.useMutation({
+    onSuccess: () => {
+      // we'll refetch after bulk operations
+    },
+  });
+  const removeTagMutation = api.admin.removeTagFromUser.useMutation({
+    onSuccess: () => {
+      // we'll refetch after bulk operations
+    },
+  });
+
+  // Inline create tag
+  const createTagMutation = api.admin.createTag.useMutation({
+    onSuccess: async (newTag) => {
+      setSelectedTagIds((prev) => (prev.includes(newTag.id) ? prev : [...prev, newTag.id]));
+      await refetchTags();
+    },
+  });
+  const defaultTagColor = "#4F46E5"; // indigo-600
+
   const handleCreateViewer = () => {
     createViewerMutation.mutate(newUserData);
   };
@@ -165,6 +193,43 @@ export function AdminUserManagement() {
     setEditingUser(user);
     setNewUserRole(user.role);
     setIsRoleEditDialogOpen(true);
+  };
+
+  const handleOpenTagDialog = (user: User) => {
+    setTagEditingUser(user);
+    setSelectedTagIds(user.userTags.map((ut) => ut.tag.id));
+    setIsTagDialogOpen(true);
+  };
+
+  const toggleSelectedTag = (tagId: string) => {
+    setSelectedTagIds((prev) =>
+      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+    );
+  };
+
+  const handleSaveTags = async () => {
+    if (!tagEditingUser) return;
+    const current = new Set(tagEditingUser.userTags.map((ut) => ut.tag.id));
+    const next = new Set(selectedTagIds);
+    const toAdd = Array.from(next).filter((id) => !current.has(id));
+    const toRemove = Array.from(current).filter((id) => !next.has(id));
+
+    try {
+      await Promise.all([
+        ...toAdd.map((tagId) =>
+          assignTagMutation.mutateAsync({ userId: tagEditingUser.id, tagId })
+        ),
+        ...toRemove.map((tagId) =>
+          removeTagMutation.mutateAsync({ userId: tagEditingUser.id, tagId })
+        ),
+      ]);
+      setIsTagDialogOpen(false);
+      setTagEditingUser(null);
+      await refetchUsers();
+    } catch (e) {
+      // keep dialog open, could show toast in future
+      console.error(e);
+    }
   };
 
   const getRoleIcon = (role: UserRole) => {
@@ -347,13 +412,7 @@ export function AdminUserManagement() {
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
                         {user.userTags.map(({ tag }) => (
-                          <Badge
-                            key={tag.id}
-                            style={{ backgroundColor: tag.color + "20", borderColor: tag.color }}
-                            className="text-xs"
-                          >
-                            {tag.name}
-                          </Badge>
+                          <TagPill key={tag.id} name={tag.name} color={tag.color} size="sm" />
                         ))}
                       </div>
                     </TableCell>
@@ -369,7 +428,11 @@ export function AdminUserManagement() {
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleOpenTagDialog(user)}
+                        >
                           <Tag className="h-4 w-4" />
                         </Button>
                       </div>
@@ -492,6 +555,55 @@ export function AdminUserManagement() {
             >
               {updateRoleMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Update Role
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Tags Dialog */}
+      <Dialog open={isTagDialogOpen} onOpenChange={setIsTagDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("assignTags")}</DialogTitle>
+            <DialogDescription>
+              {tagEditingUser ? (tagEditingUser.name ?? tagEditingUser.email) : ""}
+            </DialogDescription>
+          </DialogHeader>
+
+          <CreatableTagMultiSelect
+            options={(tags ?? []).map((tag) => ({
+              id: tag.id,
+              name: tag.name,
+              color: tag.color,
+              description: tag.description,
+            }))}
+            values={selectedTagIds}
+            onValuesChange={setSelectedTagIds}
+            onCreateTag={(name, color) => {
+              // create with default color and empty description
+              createTagMutation.mutate({
+                name: name.trim(),
+                color: color ?? defaultTagColor,
+                description: undefined,
+              })
+            }}
+            placeholder={t("assignTags")}
+            searchPlaceholder={tTags("searchTags")}
+            emptyText={tTags("noTags")}
+          />
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsTagDialogOpen(false)}>
+              {t("viewerAccountForm.cancel")}
+            </Button>
+            <Button
+              onClick={handleSaveTags}
+              disabled={assignTagMutation.isPending || removeTagMutation.isPending}
+            >
+              {(assignTagMutation.isPending || removeTagMutation.isPending) && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {t("editRoleForm.save")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -613,7 +613,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         search: z.string().optional(),
         role: z.enum(["ADMIN", "MEMBER", "VIEWER"]).optional(),
-        limit: z.number().min(1).max(100).default(20),
+        limit: z.number().min(1).max(10000).default(20),
         offset: z.number().min(0).default(0),
       })
     )
