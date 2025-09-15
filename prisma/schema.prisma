@@ -61,11 +61,14 @@ model User {
     emailVerified DateTime?
     image         String?
     password      String?   // For email/password authentication
+    role          String    @default("MEMBER") // ADMIN, MEMBER, VIEWER
     // Profile information
     bio           String?
     grade         String?
     contact       String?
     githubUrl     String?
+    createdAt     DateTime  @default(now())
+    updatedAt     DateTime  @updatedAt
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
@@ -75,6 +78,8 @@ model User {
     organizedProjects Project[] @relation("ProjectOrganizer")
     projectApplications ProjectApplication[] @relation("ProjectApplications")
     projectMemberships ProjectMember[] @relation("ProjectMembers")
+    // Tag relations
+    userTags      UserTag[]
 }
 
 model VerificationToken {
@@ -233,4 +238,31 @@ model ProjectMember {
     @@unique([projectId, userId])
     @@index([projectId])
     @@index([userId])
+}
+
+// Tag model for user tagging
+model Tag {
+    id          String    @id @default(cuid())
+    name        String    @unique
+    color       String    // HEX color code like #FF5733
+    description String?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+    
+    userTags    UserTag[]
+}
+
+// Many-to-many relationship between User and Tag
+model UserTag {
+    id        String   @id @default(cuid())
+    userId    String
+    tagId     String
+    createdAt DateTime @default(now())
+    
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+    
+    @@unique([userId, tagId])
+    @@index([userId])
+    @@index([tagId])
 }

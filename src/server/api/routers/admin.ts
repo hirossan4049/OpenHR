@@ -1,15 +1,36 @@
 import { z } from "zod";
+import { hash } from "bcryptjs";
 import {
   createTRPCRouter,
   protectedProcedure,
 } from "~/server/api/trpc";
 import { skillMasterSchema } from "~/lib/validation/skill";
 import { discordMemberSyncService } from "~/server/services/discord-member-sync";
+import { requireAdmin } from "~/lib/auth/roles";
+import {
+  createViewerAccountSchema,
+  updateUserRoleSchema,
+  createTagSchema,
+  updateTagSchema,
+  deleteTagSchema,
+  assignTagToUserSchema,
+  removeTagFromUserSchema,
+} from "~/lib/validation/admin";
 
 export const adminRouter = createTRPCRouter({
   // Get dashboard statistics (admin only)
   getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: Add admin role check
+    // Get user with role for permission check
+    const currentUser = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true },
+    });
+    
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    
+    requireAdmin(currentUser);
     
     const [
       totalUsers,
@@ -85,7 +106,16 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       const [recentProjects, recentApplications] = await Promise.all([
         // Recent projects/events
@@ -140,7 +170,16 @@ export const adminRouter = createTRPCRouter({
 
   // Get all skills with usage statistics (admin only)
   getAllSkillsWithStats: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: Add admin role check
+    const currentUser = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true },
+    });
+    
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    
+    requireAdmin(currentUser);
     
     const skills = await ctx.db.skill.findMany({
       include: {
@@ -185,7 +224,16 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       const { id, logoUrl, aliases, ...updateData } = input;
       
@@ -203,7 +251,16 @@ export const adminRouter = createTRPCRouter({
   deleteSkill: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       // Check if skill is in use
       const skillUsage = await ctx.db.userSkill.count({
@@ -229,7 +286,16 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       const { sourceId, targetId, keepTarget: _keepTarget } = input;
       
@@ -255,7 +321,16 @@ export const adminRouter = createTRPCRouter({
   bulkVerifySkills: protectedProcedure
     .input(z.object({ skillIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       return ctx.db.skill.updateMany({
         where: { id: { in: input.skillIds } },
@@ -267,7 +342,16 @@ export const adminRouter = createTRPCRouter({
   importSkills: protectedProcedure
     .input(z.array(skillMasterSchema))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       const results = [];
       
@@ -309,7 +393,16 @@ export const adminRouter = createTRPCRouter({
 
   // Get all guilds with sync status
   getGuildSyncs: protectedProcedure.query(async ({ ctx }) => {
-    // TODO: Add admin role check
+    const currentUser = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true },
+    });
+    
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    
+    requireAdmin(currentUser);
     
     return ctx.db.guildSync.findMany({
       include: {
@@ -333,8 +426,17 @@ export const adminRouter = createTRPCRouter({
   // Sync Discord guild members
   syncGuildMembers: protectedProcedure
     .input(z.object({ guildId: z.string() }))
-    .mutation(async ({ input }) => {
-      // TODO: Add admin role check
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       return discordMemberSyncService.syncGuildMembers(input.guildId);
     }),
@@ -349,8 +451,17 @@ export const adminRouter = createTRPCRouter({
         take: z.number().min(1).max(100).default(50),
       })
     )
-    .query(async ({ input }) => {
-      // TODO: Add admin role check
+    .query(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       return discordMemberSyncService.getGuildMembers(input.guildId, {
         skip: input.skip,
@@ -368,7 +479,16 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       return ctx.db.discordMember.update({
         where: { id: input.discordMemberId },
@@ -390,11 +510,351 @@ export const adminRouter = createTRPCRouter({
   unlinkDiscordMember: protectedProcedure
     .input(z.object({ discordMemberId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // TODO: Add admin role check
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
       
       return ctx.db.discordMember.update({
         where: { id: input.discordMemberId },
         data: { userId: null },
+      });
+    }),
+
+  // ========== USER ROLE MANAGEMENT ==========
+
+  // Create viewer account (admin only)
+  createViewerAccount: protectedProcedure
+    .input(createViewerAccountSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      // Check if email already exists
+      const existingUser = await ctx.db.user.findUnique({
+        where: { email: input.email },
+      });
+
+      if (existingUser) {
+        throw new Error("User with this email already exists");
+      }
+
+      // Hash password
+      const hashedPassword = await hash(input.password, 12);
+
+      // Create viewer account
+      return ctx.db.user.create({
+        data: {
+          name: input.name,
+          email: input.email,
+          password: hashedPassword,
+          role: "VIEWER",
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+        },
+      });
+    }),
+
+  // Update user role (admin only)
+  updateUserRole: protectedProcedure
+    .input(updateUserRoleSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      // Prevent admin from changing their own role
+      if (input.userId === currentUser.id) {
+        throw new Error("Cannot change your own role");
+      }
+
+      return ctx.db.user.update({
+        where: { id: input.userId },
+        data: { role: input.role },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          updatedAt: true,
+        },
+      });
+    }),
+
+  // Get all users including viewers (admin only)
+  getAllUsers: protectedProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+        role: z.enum(["ADMIN", "MEMBER", "VIEWER"]).optional(),
+        limit: z.number().min(1).max(10000).default(20),
+        offset: z.number().min(0).default(0),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      const { search, role, limit, offset } = input;
+
+      const where: any = {};
+
+      if (search) {
+        where.OR = [
+          { name: { contains: search } },
+          { email: { contains: search } },
+        ];
+      }
+
+      if (role) {
+        where.role = role;
+      }
+
+      const [users, total] = await Promise.all([
+        ctx.db.user.findMany({
+          where,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            image: true,
+            createdAt: true,
+            updatedAt: true,
+            userTags: {
+              include: {
+                tag: true,
+              },
+            },
+          },
+          orderBy: { createdAt: "desc" },
+          take: limit,
+          skip: offset,
+        }),
+        ctx.db.user.count({ where }),
+      ]);
+
+      return {
+        users,
+        total,
+        hasMore: total > offset + limit,
+      };
+    }),
+
+  // ========== TAG MANAGEMENT ==========
+
+  // Get all tags (admin only)
+  getAllTags: protectedProcedure.query(async ({ ctx }) => {
+    const currentUser = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true },
+    });
+    
+    if (!currentUser) {
+      throw new Error("User not found");
+    }
+    
+    requireAdmin(currentUser);
+
+    return ctx.db.tag.findMany({
+      include: {
+        _count: {
+          select: {
+            userTags: true,
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+    });
+  }),
+
+  // Create tag (admin only)
+  createTag: protectedProcedure
+    .input(createTagSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      // Check if tag name already exists
+      const existingTag = await ctx.db.tag.findUnique({
+        where: { name: input.name },
+      });
+
+      if (existingTag) {
+        throw new Error("Tag with this name already exists");
+      }
+
+      return ctx.db.tag.create({
+        data: input,
+      });
+    }),
+
+  // Update tag (admin only)
+  updateTag: protectedProcedure
+    .input(updateTagSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      const { id, ...updateData } = input;
+
+      // Check if tag name already exists (excluding current tag)
+      if (updateData.name) {
+        const existingTag = await ctx.db.tag.findFirst({
+          where: {
+            name: updateData.name,
+            NOT: { id },
+          },
+        });
+
+        if (existingTag) {
+          throw new Error("Tag with this name already exists");
+        }
+      }
+
+      return ctx.db.tag.update({
+        where: { id },
+        data: updateData,
+      });
+    }),
+
+  // Delete tag (admin only)
+  deleteTag: protectedProcedure
+    .input(deleteTagSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      // Delete tag and all related UserTag entries will be cascade deleted
+      return ctx.db.tag.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  // Assign tag to user (admin only)
+  assignTagToUser: protectedProcedure
+    .input(assignTagToUserSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      // Check if user-tag combination already exists
+      const existingUserTag = await ctx.db.userTag.findUnique({
+        where: {
+          userId_tagId: {
+            userId: input.userId,
+            tagId: input.tagId,
+          },
+        },
+      });
+
+      if (existingUserTag) {
+        throw new Error("User already has this tag");
+      }
+
+      return ctx.db.userTag.create({
+        data: input,
+        include: {
+          tag: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    }),
+
+  // Remove tag from user (admin only)
+  removeTagFromUser: protectedProcedure
+    .input(removeTagFromUserSchema)
+    .mutation(async ({ ctx, input }) => {
+      const currentUser = await ctx.db.user.findUnique({
+        where: { id: ctx.session.user.id },
+        select: { id: true, role: true },
+      });
+      
+      if (!currentUser) {
+        throw new Error("User not found");
+      }
+      
+      requireAdmin(currentUser);
+
+      return ctx.db.userTag.delete({
+        where: {
+          userId_tagId: {
+            userId: input.userId,
+            tagId: input.tagId,
+          },
+        },
       });
     }),
 });

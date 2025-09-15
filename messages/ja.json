@@ -190,7 +190,119 @@
     "manageProjects": "プロジェクト管理",
     "manageSkills": "スキル管理",
     "manageDiscord": "Discord管理",
+    "manageTags": "タグ管理",
     "systemSettings": "システム設定"
+  },
+  "AdminUserManagement": {
+    "title": "ユーザー管理",
+    "createViewerAccount": "閲覧専用アカウント作成",
+    "allUsers": "全ユーザー",
+    "admins": "管理者",
+    "members": "メンバー",
+    "viewers": "閲覧者",
+    "searchUsers": "ユーザーを検索...",
+    "name": "名前",
+    "email": "メールアドレス",
+    "role": "役割",
+    "tags": "タグ",
+    "actions": "操作",
+    "createdAt": "作成日",
+    "noUsers": "ユーザーが見つかりません",
+    "editRole": "役割を編集",
+    "assignTags": "タグを割り当て",
+    "viewerAccountForm": {
+      "title": "閲覧専用アカウント作成",
+      "name": "氏名",
+      "namePlaceholder": "氏名を入力",
+      "email": "メールアドレス",
+      "emailPlaceholder": "メールアドレスを入力",
+      "password": "パスワード",
+      "passwordPlaceholder": "パスワードを入力（6文字以上）",
+      "create": "アカウント作成",
+      "cancel": "キャンセル",
+      "creating": "作成中..."
+    },
+    "editRoleForm": {
+      "title": "ユーザー役割編集",
+      "currentRole": "現在の役割",
+      "newRole": "新しい役割",
+      "save": "変更を保存",
+      "cancel": "キャンセル",
+      "saving": "保存中..."
+    },
+    "deleteConfirm": "このユーザーを削除してもよろしいですか？",
+    "success": {
+      "viewerCreated": "閲覧専用アカウントが作成されました",
+      "roleUpdated": "ユーザーの役割が更新されました",
+      "userDeleted": "ユーザーが削除されました"
+    },
+    "errors": {
+      "emailExists": "このメールアドレスのユーザーが既に存在します",
+      "cannotChangeOwnRole": "自分の役割は変更できません",
+      "userNotFound": "ユーザーが見つかりません",
+      "createFailed": "閲覧専用アカウントの作成に失敗しました",
+      "updateFailed": "ユーザー役割の更新に失敗しました"
+    }
+  },
+  "AdminTagManagement": {
+    "title": "タグ管理",
+    "createTag": "タグ作成",
+    "allTags": "全タグ",
+    "searchTags": "タグを検索...",
+    "name": "名前",
+    "color": "色",
+    "description": "説明",
+    "usersCount": "ユーザー数",
+    "actions": "操作",
+    "noTags": "タグが見つかりません",
+    "noTagsDescription": "ユーザーを整理・分類するためのタグを作成してください",
+    "editTag": "タグを編集",
+    "deleteTag": "タグを削除",
+    "assignToUsers": "ユーザーに割り当て",
+    "createTagForm": {
+      "title": "タグ作成",
+      "name": "タグ名",
+      "namePlaceholder": "タグ名を入力",
+      "color": "色",
+      "colorPlaceholder": "#FF5733",
+      "description": "説明",
+      "descriptionPlaceholder": "説明（任意）",
+      "create": "タグ作成",
+      "cancel": "キャンセル",
+      "creating": "作成中..."
+    },
+    "editTagForm": {
+      "title": "タグ編集",
+      "save": "変更を保存",
+      "cancel": "キャンセル",
+      "saving": "保存中..."
+    },
+    "deleteConfirm": "このタグを削除してもよろしいですか？全てのユーザーから削除されます。",
+    "assignUsersForm": {
+      "title": "ユーザーにタグを割り当て",
+      "selectUsers": "ユーザーを選択",
+      "searchUsers": "ユーザーを検索...",
+      "assign": "タグを割り当て",
+      "cancel": "キャンセル",
+      "assigning": "割り当て中..."
+    },
+    "success": {
+      "tagCreated": "タグが作成されました",
+      "tagUpdated": "タグが更新されました",
+      "tagDeleted": "タグが削除されました",
+      "tagAssigned": "ユーザーにタグが割り当てられました",
+      "tagRemoved": "ユーザーからタグが削除されました"
+    },
+    "errors": {
+      "nameExists": "この名前のタグが既に存在します",
+      "invalidColor": "無効な色形式です。#FF5733のような16進数形式を使用してください",
+      "tagNotFound": "タグが見つかりません",
+      "createFailed": "タグの作成に失敗しました",
+      "updateFailed": "タグの更新に失敗しました",
+      "deleteFailed": "タグの削除に失敗しました",
+      "assignFailed": "タグの割り当てに失敗しました",
+      "removeFailed": "タグの削除に失敗しました"
+    }
   },
   "SkillManagement": {
     "title": "スキル",

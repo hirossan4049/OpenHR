@@ -190,7 +190,119 @@
     "manageProjects": "Manage Projects",
     "manageSkills": "Manage Skills",
     "manageDiscord": "Manage Discord",
+    "manageTags": "Manage Tags",
     "systemSettings": "System Settings"
+  },
+  "AdminUserManagement": {
+    "title": "User Management",
+    "createViewerAccount": "Create Viewer Account",
+    "allUsers": "All Users",
+    "admins": "Admins",
+    "members": "Members",
+    "viewers": "Viewers",
+    "searchUsers": "Search users...",
+    "name": "Name",
+    "email": "Email",
+    "role": "Role",
+    "tags": "Tags",
+    "actions": "Actions",
+    "createdAt": "Created",
+    "noUsers": "No users found",
+    "editRole": "Edit Role",
+    "assignTags": "Assign Tags",
+    "viewerAccountForm": {
+      "title": "Create Viewer Account",
+      "name": "Full Name",
+      "namePlaceholder": "Enter full name",
+      "email": "Email Address",
+      "emailPlaceholder": "Enter email address",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (min 6 characters)",
+      "create": "Create Account",
+      "cancel": "Cancel",
+      "creating": "Creating..."
+    },
+    "editRoleForm": {
+      "title": "Edit User Role",
+      "currentRole": "Current Role",
+      "newRole": "New Role",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "deleteConfirm": "Are you sure you want to delete this user?",
+    "success": {
+      "viewerCreated": "Viewer account created successfully",
+      "roleUpdated": "User role updated successfully",
+      "userDeleted": "User deleted successfully"
+    },
+    "errors": {
+      "emailExists": "User with this email already exists",
+      "cannotChangeOwnRole": "Cannot change your own role",
+      "userNotFound": "User not found",
+      "createFailed": "Failed to create viewer account",
+      "updateFailed": "Failed to update user role"
+    }
+  },
+  "AdminTagManagement": {
+    "title": "Tag Management",
+    "createTag": "Create Tag",
+    "allTags": "All Tags",
+    "searchTags": "Search tags...",
+    "name": "Name",
+    "color": "Color",
+    "description": "Description",
+    "usersCount": "Users",
+    "actions": "Actions",
+    "noTags": "No tags found",
+    "noTagsDescription": "Create tags to organize and categorize users",
+    "editTag": "Edit Tag",
+    "deleteTag": "Delete Tag",
+    "assignToUsers": "Assign to Users",
+    "createTagForm": {
+      "title": "Create Tag",
+      "name": "Tag Name",
+      "namePlaceholder": "Enter tag name",
+      "color": "Color",
+      "colorPlaceholder": "#FF5733",
+      "description": "Description",
+      "descriptionPlaceholder": "Optional description",
+      "create": "Create Tag",
+      "cancel": "Cancel",
+      "creating": "Creating..."
+    },
+    "editTagForm": {
+      "title": "Edit Tag",
+      "save": "Save Changes",
+      "cancel": "Cancel",
+      "saving": "Saving..."
+    },
+    "deleteConfirm": "Are you sure you want to delete this tag? This will remove it from all users.",
+    "assignUsersForm": {
+      "title": "Assign Tag to Users",
+      "selectUsers": "Select Users",
+      "searchUsers": "Search users...",
+      "assign": "Assign Tag",
+      "cancel": "Cancel",
+      "assigning": "Assigning..."
+    },
+    "success": {
+      "tagCreated": "Tag created successfully",
+      "tagUpdated": "Tag updated successfully", 
+      "tagDeleted": "Tag deleted successfully",
+      "tagAssigned": "Tag assigned to user successfully",
+      "tagRemoved": "Tag removed from user successfully"
+    },
+    "errors": {
+      "nameExists": "Tag with this name already exists",
+      "invalidColor": "Invalid color format. Use HEX format like #FF5733",
+      "tagNotFound": "Tag not found",
+      "createFailed": "Failed to create tag",
+      "updateFailed": "Failed to update tag",
+      "deleteFailed": "Failed to delete tag",
+      "assignFailed": "Failed to assign tag",
+      "removeFailed": "Failed to remove tag"
+    }
   },
   "SkillManagement": {
     "title": "Skills",

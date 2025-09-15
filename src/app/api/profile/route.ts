@@ -26,11 +26,24 @@ export async function GET() {
     const user = await db.user.findUnique({
       where: { id: session.user.id },
       select: {
+        role: true,
         name: true,
         bio: true,
         grade: true,
         contact: true,
         githubUrl: true,
+        userTags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                color: true,
+                description: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -76,6 +89,7 @@ export async function PUT(request: NextRequest) {
         githubUrl: validatedData.githubUrl || null,
       },
       select: {
+        role: true,
         name: true,
         bio: true,
         grade: true,

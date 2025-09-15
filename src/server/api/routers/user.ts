@@ -2,11 +2,24 @@ import { z } from "zod";
 
 import {
   createTRPCRouter,
-  publicProcedure
+  publicProcedure,
+  protectedProcedure,
 } from "~/server/api/trpc";
 import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
+import { hasRole } from "~/lib/auth/roles";
 
 export const userRouter = createTRPCRouter({
+  // Current user's basic info including role
+  getCurrentRole: protectedProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: { id: true, role: true, name: true, image: true },
+    });
+    if (!user) {
+      throw new Error("User not found");
+    }
+    return user;
+  }),
   // Get all members for directory with optional search filters
   getMembers: publicProcedure
     .input(z.object({
@@ -19,6 +32,25 @@ export const userRouter = createTRPCRouter({
       const { search, skillId, limit, offset } = input;
 
       const where: any = {};
+
+      // Check if user is authenticated and if they are an admin
+      let showViewers = false;
+      if (ctx.session?.user?.id) {
+        const currentUser = await ctx.db.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: { id: true, role: true },
+        });
+        
+        // Only admins can see VIEWER role users
+        showViewers = currentUser && hasRole(currentUser, "ADMIN");
+      }
+
+      // Exclude VIEWER role users for non-admin users
+      if (!showViewers) {
+        where.role = {
+          not: "VIEWER"
+        };
+      }
 
       // Build search conditions
       if (search) {
@@ -95,6 +127,23 @@ export const userRouter = createTRPCRouter({
       });
 
       if (!member) {
+        throw new Error("Member not found");
+      }
+
+      // Check if user is authenticated and if they are an admin
+      let showViewers = false;
+      if (ctx.session?.user?.id) {
+        const currentUser = await ctx.db.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: { id: true, role: true },
+        });
+        
+        // Only admins can see VIEWER role users
+        showViewers = currentUser && hasRole(currentUser, "ADMIN");
+      }
+
+      // Prevent non-admin users from viewing VIEWER role users
+      if (member.role === "VIEWER" && !showViewers) {
         throw new Error("Member not found");
       }
 

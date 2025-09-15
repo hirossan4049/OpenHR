@@ -10,6 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/com
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Github, Mail, User } from "lucide-react";
+import { TagPill } from "~/components/ui/tag-pill";
+import { RolePill } from "~/components/ui/role-pill";
 
 interface UserProfile {
   name: string;
@@ -17,6 +19,8 @@ interface UserProfile {
   grade?: string;
   contact?: string;
   githubUrl?: string;
+  userTags?: Array<{ tag: { id: string; name: string; color: string; description?: string | null } }>
+  role?: "ADMIN" | "MEMBER" | "VIEWER";
 }
 
 interface UserSkill {
@@ -65,7 +69,7 @@ export function ProfilePage() {
   };
 
   const handleProfileSave = (data: UserProfile) => {
-    setProfile(data);
+    setProfile((prev) => ({ ...prev, ...data }));
     setIsEditing(false);
   };
 
@@ -118,6 +122,9 @@ export function ProfilePage() {
                   </AvatarFallback>
                 </Avatar>
                 <h1 className="text-2xl font-bold">{profile?.name ?? session?.user?.name}</h1>
+                {profile?.role && (
+                  <div className="mt-2"><RolePill role={profile.role} /></div>
+                )}
                 <p className="text-muted-foreground">{profile?.grade}</p>
                 <p className="mt-2 text-sm text-muted-foreground text-center">{profile?.bio}</p>
               </div>
@@ -138,6 +145,16 @@ export function ProfilePage() {
                     <a href={profile.githubUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                       GitHub Profile
                     </a>
+                  </div>
+                )}
+                {profile?.userTags && profile.userTags.length > 0 && (
+                  <div className="pt-2">
+                    <div className="mb-1 text-xs font-medium text-muted-foreground">Tags</div>
+                    <div className="flex flex-wrap gap-1">
+                      {profile.userTags.map(({ tag }) => (
+                        <TagPill key={tag.id} name={tag.name} color={tag.color} size="sm" />
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
