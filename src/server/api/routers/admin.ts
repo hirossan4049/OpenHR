@@ -7,6 +7,137 @@ import { skillMasterSchema } from "~/lib/validation/skill";
 import { discordMemberSyncService } from "~/server/services/discord-member-sync";
 
 export const adminRouter = createTRPCRouter({
+  // Get dashboard statistics (admin only)
+  getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
+    // TODO: Add admin role check
+    
+    const [
+      totalUsers,
+      totalProjects,
+      totalEvents,
+      totalSkills,
+      activeUsers,
+      recentApplications,
+      pendingApplications,
+    ] = await Promise.all([
+      // Total user count
+      ctx.db.user.count(),
+      
+      // Total project count
+      ctx.db.project.count({
+        where: { type: "project" },
+      }),
+      
+      // Total event count
+      ctx.db.project.count({
+        where: { type: "event" },
+      }),
+      
+      // Total skill count
+      ctx.db.skill.count(),
+      
+      // Active users (users who have logged in within last 30 days)
+      ctx.db.user.count({
+        where: {
+          sessions: {
+            some: {
+              expires: {
+                gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000), // Last 30 days
+              },
+            },
+          },
+        },
+      }),
+      
+      // Recent applications (last 7 days)
+      ctx.db.projectApplication.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+          },
+        },
+      }),
+      
+      // Pending applications
+      ctx.db.projectApplication.count({
+        where: {
+          status: "pending",
+        },
+      }),
+    ]);
+
+    return {
+      totalUsers,
+      totalProjects,
+      totalEvents,
+      totalSkills,
+      activeUsers,
+      recentApplications,
+      pendingApplications,
+    };
+  }),
+
+  // Get recent activities (admin only)
+  getRecentActivities: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).default(10),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      // TODO: Add admin role check
+      
+      const [recentProjects, recentApplications] = await Promise.all([
+        // Recent projects/events
+        ctx.db.project.findMany({
+          take: input.limit,
+          orderBy: { createdAt: "desc" },
+          include: {
+            organizer: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            _count: {
+              select: {
+                applications: true,
+                members: true,
+              },
+            },
+          },
+        }),
+        
+        // Recent applications
+        ctx.db.projectApplication.findMany({
+          take: input.limit,
+          orderBy: { createdAt: "desc" },
+          include: {
+            applicant: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            project: {
+              select: {
+                id: true,
+                title: true,
+                type: true,
+              },
+            },
+          },
+        }),
+      ]);
+
+      return {
+        recentProjects,
+        recentApplications,
+      };
+    }),
+
   // Get all skills with usage statistics (admin only)
   getAllSkillsWithStats: protectedProcedure.query(async ({ ctx }) => {
     // TODO: Add admin role check
