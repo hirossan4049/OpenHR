@@ -1,4 +1,4 @@
-import { describe, it, expect, jest, beforeEach } from '@jest/globals';
+import { describe, it, expect } from '@jest/globals';
 
 describe('Admin Dashboard Statistics Logic', () => {
   it('should calculate correct dashboard statistics', () => {
@@ -89,23 +89,27 @@ describe('Admin Dashboard Statistics Logic', () => {
 
     // Verify recent projects structure
     expect(Array.isArray(mockActivities.recentProjects)).toBe(true);
-    expect(mockActivities.recentProjects[0]).toHaveProperty('id');
-    expect(mockActivities.recentProjects[0]).toHaveProperty('title');
-    expect(mockActivities.recentProjects[0]).toHaveProperty('type');
-    expect(mockActivities.recentProjects[0]).toHaveProperty('organizer');
-    expect(mockActivities.recentProjects[0].organizer).toHaveProperty('name');
+    expect(mockActivities.recentProjects.length).toBeGreaterThan(0);
+    const firstProject = mockActivities.recentProjects[0]!;
+    expect(firstProject).toHaveProperty('id');
+    expect(firstProject).toHaveProperty('title');
+    expect(firstProject).toHaveProperty('type');
+    expect(firstProject).toHaveProperty('organizer');
+    expect(firstProject.organizer).toHaveProperty('name');
 
     // Verify recent applications structure
     expect(Array.isArray(mockActivities.recentApplications)).toBe(true);
-    expect(mockActivities.recentApplications[0]).toHaveProperty('id');
-    expect(mockActivities.recentApplications[0]).toHaveProperty('applicant');
-    expect(mockActivities.recentApplications[0]).toHaveProperty('project');
-    expect(mockActivities.recentApplications[0].applicant).toHaveProperty('name');
-    expect(mockActivities.recentApplications[0].project).toHaveProperty('title');
+    expect(mockActivities.recentApplications.length).toBeGreaterThan(0);
+    const firstApplication = mockActivities.recentApplications[0]!;
+    expect(firstApplication).toHaveProperty('id');
+    expect(firstApplication).toHaveProperty('applicant');
+    expect(firstApplication).toHaveProperty('project');
+    expect(firstApplication.applicant).toHaveProperty('name');
+    expect(firstApplication.project).toHaveProperty('title');
 
     // Verify date handling
-    expect(mockActivities.recentProjects[0].createdAt).toBeInstanceOf(Date);
-    expect(mockActivities.recentApplications[0].createdAt).toBeInstanceOf(Date);
+    expect(firstProject.createdAt).toBeInstanceOf(Date);
+    expect(firstApplication.createdAt).toBeInstanceOf(Date);
   });
 
   it('should handle empty activities correctly', () => {
@@ -178,7 +182,7 @@ describe('Admin Dashboard API Endpoint Logic', () => {
       },
     };
 
-    Object.entries(expectedQueries).forEach(([key, query]) => {
+    Object.entries(expectedQueries).forEach(([_key, query]) => {
       expect(query).toHaveProperty('table');
       expect(query).toHaveProperty('operation');
       expect(query.operation).toBe('count');
