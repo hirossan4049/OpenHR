@@ -16,6 +16,96 @@
     "projects": "プロジェクト",
     "activity": "アクティビティ"
   },
+  "DashboardPage": {
+    "title": "{name}さん、おかえりなさい",
+    "subtitle": "活動状況をひと目で確認できます。",
+    "loading": "ダッシュボードを読み込み中...",
+    "signInTitle": "サインインが必要です",
+    "signInDescription": "ダッシュボードを見るにはサインインしてください。",
+    "signInCta": "サインイン",
+    "cta": {
+      "createProject": "プロジェクトを作成"
+    },
+    "stats": {
+      "activeProjects": "進行中のプロジェクト",
+      "totalProjects": "合計{count}件",
+      "pendingApplications": "保留中の応募",
+      "totalApplications": "応募 {count}件",
+      "skills": "登録スキル",
+      "skillsDescription": "プロフィールに登録されたスキル",
+      "showcaseItems": "公開コンテンツ",
+      "portfolioDescription": "ポートフォリオ＋記事"
+    },
+    "sections": {
+      "myProjects": "自分のプロジェクト",
+      "myProjectsDescription": "主催しているプロジェクト",
+      "applications": "応募状況",
+      "applicationsDescription": "直近の応募ステータス",
+      "portfolio": "ポートフォリオ・記事",
+      "portfolioDescription": "成果物やアウトプットを整理",
+      "skillsHighlight": "注目スキル",
+      "quickActions": "クイックアクション",
+      "quickActionsDescription": "よく行う操作にすぐ移動",
+      "recommendations": "おすすめプロジェクト",
+      "recommendationsDescription": "興味がありそうな募集"
+    },
+    "actions": {
+      "viewAll": "すべて見る",
+      "addPortfolio": "作品を追加",
+      "addArticle": "記事を追加",
+      "goToProjects": "プロジェクトを探す",
+      "findMembers": "メンバー一覧を開く"
+    },
+    "empty": {
+      "projects": "まだ作成したプロジェクトがありません。",
+      "applications": "応募したプロジェクトはまだありません。",
+      "skills": "スキルを登録して、見つけてもらいやすくしましょう。",
+      "recommendations": "現在募集中のプロジェクトはありません。"
+    },
+    "project": {
+      "typeProject": "プロジェクト",
+      "typeEvent": "イベント",
+      "statusOpen": "募集中",
+      "statusClosed": "終了"
+    },
+    "projects": {
+      "members": "{count}人",
+      "pendingApplications": "保留 {count}件"
+    },
+    "applications": {
+      "pending": "保留 {count}件",
+      "approved": "承認 {count}件",
+      "rejected": "却下 {count}件",
+      "appliedOn": "{date}に応募"
+    },
+    "applicationStatus": {
+      "pending": "審査中",
+      "approved": "承認済み",
+      "rejected": "却下"
+    },
+    "portfolioSummary": {
+      "portfoliosLabel": "ポートフォリオ",
+      "articlesLabel": "記事"
+    },
+    "quickActions": {
+      "newProject": {
+        "label": "プロジェクトを作成",
+        "description": "新しいチームやイベントを立ち上げる"
+      },
+      "browseProjects": {
+        "label": "募集中を探す",
+        "description": "参加できるプロジェクトを確認"
+      },
+      "updateProfile": {
+        "label": "プロフィールを更新",
+        "description": "スキルやリンクを最新の状態に"
+      }
+    },
+    "recommendation": {
+      "noSkills": "スキル指定なし",
+      "members": "{count, plural, one {#人が参加中} other {#人が参加中}}"
+    }
+  },
   "ProjectList": {
     "title": "プロジェクト",
     "loading": "プロジェクトを読み込み中...",

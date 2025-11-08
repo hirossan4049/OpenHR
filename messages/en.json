@@ -16,6 +16,96 @@
     "projects": "Projects",
     "activity": "Activity"
   },
+  "DashboardPage": {
+    "title": "Welcome back, {name}",
+    "subtitle": "Track your work and jump back in.",
+    "loading": "Loading dashboard...",
+    "signInTitle": "Sign in required",
+    "signInDescription": "Sign in to view your dashboard and activity.",
+    "signInCta": "Sign In",
+    "cta": {
+      "createProject": "Create project"
+    },
+    "stats": {
+      "activeProjects": "Active projects",
+      "totalProjects": "{count} total",
+      "pendingApplications": "Pending applications",
+      "totalApplications": "{count} submissions",
+      "skills": "Skills",
+      "skillsDescription": "Skills listed on your profile",
+      "showcaseItems": "Showcase items",
+      "portfolioDescription": "Portfolios + articles"
+    },
+    "sections": {
+      "myProjects": "My projects",
+      "myProjectsDescription": "Projects you organize",
+      "applications": "Application status",
+      "applicationsDescription": "Latest updates from your submissions",
+      "portfolio": "Portfolio & articles",
+      "portfolioDescription": "Highlight your work and writings",
+      "skillsHighlight": "Top skills",
+      "quickActions": "Quick actions",
+      "quickActionsDescription": "Jump to the most common tasks",
+      "recommendations": "Recommended projects",
+      "recommendationsDescription": "Open projects you might be interested in"
+    },
+    "actions": {
+      "viewAll": "View all",
+      "addPortfolio": "Add portfolio",
+      "addArticle": "Add article",
+      "goToProjects": "Browse projects",
+      "findMembers": "Open directory"
+    },
+    "empty": {
+      "projects": "You have not created any projects yet.",
+      "applications": "You have not applied to any projects yet.",
+      "skills": "Add skills to your profile to help others find you.",
+      "recommendations": "No open projects found right now."
+    },
+    "project": {
+      "typeProject": "Project",
+      "typeEvent": "Event",
+      "statusOpen": "Open",
+      "statusClosed": "Closed"
+    },
+    "projects": {
+      "members": "{count} members",
+      "pendingApplications": "{count} pending applications"
+    },
+    "applications": {
+      "pending": "{count} pending",
+      "approved": "{count} approved",
+      "rejected": "{count} rejected",
+      "appliedOn": "Applied {date}"
+    },
+    "applicationStatus": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "portfolioSummary": {
+      "portfoliosLabel": "Portfolios",
+      "articlesLabel": "Articles"
+    },
+    "quickActions": {
+      "newProject": {
+        "label": "Create a project",
+        "description": "Kick off a new team or event."
+      },
+      "browseProjects": {
+        "label": "Browse projects",
+        "description": "Find teams that are actively recruiting."
+      },
+      "updateProfile": {
+        "label": "Update profile",
+        "description": "Keep your skills and links up to date."
+      }
+    },
+    "recommendation": {
+      "noSkills": "No specific skills listed",
+      "members": "{count, plural, one {# member joined} other {# members joined}}"
+    }
+  },
   "ProjectList": {
     "title": "Projects",
     "loading": "Loading projects...",
