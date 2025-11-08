@@ -336,6 +336,34 @@
     "subtitle": "タレント マネジメント システム",
     "hero": "チームの可能性を最大化する",
     "description": "OpenHR TMSは、メンバー管理、プロジェクト管理、スキル可視化を一元化し、チームの生産性を向上させます。",
+    "heroHighlights": {
+      "directory": {
+        "title": "メンバー情報を一元管理",
+        "description": "役割・所属・稼働状況まで含むリッチなプロフィールで認識を合わせます。"
+      },
+      "projects": {
+        "title": "最適なプロジェクトアサイン",
+        "description": "スキルマトリクスと興味タグで募集枠にぴったりの人材を数秒で検索。"
+      },
+      "insights": {
+        "title": "リアルタイムな可視化",
+        "description": "参加状況や学年、成長トレンドをダッシュボードで共有。"
+      }
+    },
+    "stats": {
+      "members": {
+        "value": "480+",
+        "label": "管理中のプロフィール"
+      },
+      "projects": {
+        "value": "120",
+        "label": "進行中のプロジェクト"
+      },
+      "skills": {
+        "value": "950",
+        "label": "トラッキング中のスキル"
+      }
+    },
     "features": {
       "title": "主な機能",
       "members": {
@@ -359,6 +387,68 @@
       "signIn": "サインイン",
       "signUp": "アカウント作成",
       "learnMore": "詳しく見る"
+    },
+    "workflow": {
+      "title": "学生主体のチーム運営をサポート",
+      "subtitle": "OpenHR TMSはオンボーディングから配属、評価までを滑らかに繋ぎます。",
+      "steps": {
+        "collect": {
+          "title": "情報収集",
+          "description": "標準化されたフォームでバックグラウンドやスキル、稼働可能時間を収集。"
+        },
+        "match": {
+          "title": "ベストなアサイン",
+          "description": "フィルタとタグで必要なスキルをすぐに検索し、募集をスムーズに。"
+        },
+        "celebrate": {
+          "title": "成果を共有",
+          "description": "実績やスキルアップを記録し、次のチャレンジへ繋げます。"
+        }
+      }
+    },
+    "ctaBanner": {
+      "title": "いますぐチーム運営を整えましょう",
+      "description": "サインインしてダッシュボードにアクセスするか、メンバー一覧を覗いてOpenHR TMSの体験を始めてください。",
+      "primary": "サインイン",
+      "secondary": "メンバーを見る"
+    },
+    "preview": {
+      "title": "プロフィール画面をチラ見せ",
+      "description": "サインイン後に確認できるプロフィール、稼働状況、クラブロゴなどの世界観を、訪問者にも先に伝えましょう。",
+      "profile": {
+        "badge": "プロダクトデザイン",
+        "name": "立花エミ",
+        "role": "UI/UXリード",
+        "grade": "学部3年",
+        "availability": "週4時間",
+        "tagline": "ハッカソンや学生SaaS向けにアクセシブルなデザインシステムを構築。",
+        "skillsLabel": "主要スキル",
+        "skills": {
+          "ui": "UIシステム",
+          "ux": "リサーチ",
+          "figma": "Figma運用"
+        }
+      },
+      "activity": {
+        "title": "最近のトピック",
+        "items": {
+          "one": "Hackathon HQのモバイルUIを刷新",
+          "two": "今月は4名のジュニアデザイナーをメンタリング",
+          "three": "JST19時以降のスプリント案件に参加可能"
+        },
+        "updated": "数分前に更新"
+      },
+      "logos": {
+        "title": "OpenHR導入クラブ",
+        "description": "学生ラボやハッカソン組織が同じメンバー基盤を共有しています。",
+        "items": {
+          "spark": "Spark Lab",
+          "orbit": "Orbit Studio",
+          "nova": "Nova Robotics",
+          "atlas": "Atlas Co-op",
+          "quartz": "Quartz Guild"
+        }
+      }
     },
     "firstStepsTitle": "最初のステップ →",
     "firstStepsDescription": "データベースと認証を設定するために必要なすべての基本情報。",

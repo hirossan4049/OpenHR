@@ -336,6 +336,34 @@
     "subtitle": "Talent Management System",
     "hero": "Maximize Your Team's Potential",
     "description": "OpenHR TMS centralizes member management, project coordination, and skill visualization to boost team productivity.",
+    "heroHighlights": {
+      "directory": {
+        "title": "All member context in one place",
+        "description": "Rich profiles with roles, squads, and availability keep everyone aligned."
+      },
+      "projects": {
+        "title": "Staff the right projects",
+        "description": "Match open roles with skill matrices and interest tags in seconds."
+      },
+      "insights": {
+        "title": "Share real-time insights",
+        "description": "Visual dashboards show participation, grades, and growth trends."
+      }
+    },
+    "stats": {
+      "members": {
+        "value": "480+",
+        "label": "Profiles under management"
+      },
+      "projects": {
+        "value": "120",
+        "label": "Active initiatives"
+      },
+      "skills": {
+        "value": "950",
+        "label": "Unique skills tracked"
+      }
+    },
     "features": {
       "title": "Key Features",
       "members": {
@@ -359,6 +387,68 @@
       "signIn": "Sign In",
       "signUp": "Sign Up",
       "learnMore": "Learn More"
+    },
+    "workflow": {
+      "title": "Designed for modern student teams",
+      "subtitle": "OpenHR TMS guides every collaboration phase so coordinators spend less time chasing spreadsheets.",
+      "steps": {
+        "collect": {
+          "title": "Collect member context",
+          "description": "Standardized forms gather background, skills, and availability in minutes."
+        },
+        "match": {
+          "title": "Match work quickly",
+          "description": "Powerful filters surface the right people for every squad, club, or hackathon."
+        },
+        "celebrate": {
+          "title": "Celebrate growth",
+          "description": "Track accomplishments and spotlight new skills so students keep leveling up."
+        }
+      }
+    },
+    "ctaBanner": {
+      "title": "Ready to align your team?",
+      "description": "Sign in to access your dashboard or explore the directory to see how OpenHR TMS can help.",
+      "primary": "Sign In",
+      "secondary": "Browse Members"
+    },
+    "preview": {
+      "title": "Preview the profile experience",
+      "description": "Give visitors a peek at the polished profiles, availability, and club logos they will unlock once they sign in.",
+      "profile": {
+        "badge": "Product Design",
+        "name": "Emi Tachibana",
+        "role": "UI/UX Lead",
+        "grade": "3rd year",
+        "availability": "4 hrs / week",
+        "tagline": "Builds accessible design systems for hackathons and student SaaS teams.",
+        "skillsLabel": "Key skills",
+        "skills": {
+          "ui": "UI Systems",
+          "ux": "Research",
+          "figma": "Figma Ops"
+        }
+      },
+      "activity": {
+        "title": "Recent highlights",
+        "items": {
+          "one": "Shipped Hackathon HQ mobile redesign",
+          "two": "Mentored 4 junior designers this month",
+          "three": "Available for sprints after 7pm JST"
+        },
+        "updated": "Updated moments ago"
+      },
+      "logos": {
+        "title": "Clubs using OpenHR",
+        "description": "Student-led labs and hackathons share members across these teams.",
+        "items": {
+          "spark": "Spark Lab",
+          "orbit": "Orbit Studio",
+          "nova": "Nova Robotics",
+          "atlas": "Atlas Co-op",
+          "quartz": "Quartz Guild"
+        }
+      }
     },
     "firstStepsTitle": "First Steps →",
     "firstStepsDescription": "Just the basics - Everything you need to know to set up your database and authentication.",
