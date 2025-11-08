@@ -333,6 +333,33 @@
   },
   "HomePage": {
     "title": "OpenHR TMS",
+    "subtitle": "タレント マネジメント システム",
+    "hero": "チームの可能性を最大化する",
+    "description": "OpenHR TMSは、メンバー管理、プロジェクト管理、スキル可視化を一元化し、チームの生産性を向上させます。",
+    "features": {
+      "title": "主な機能",
+      "members": {
+        "title": "メンバー管理",
+        "description": "チームメンバーのプロフィール、スキル、経験を一元管理"
+      },
+      "projects": {
+        "title": "プロジェクト管理",
+        "description": "プロジェクトの作成、メンバー募集、進捗管理を効率化"
+      },
+      "skills": {
+        "title": "スキル可視化",
+        "description": "チーム全体のスキルセットを可視化し、最適な人材配置を実現"
+      },
+      "hackathons": {
+        "title": "ハッカソン運営",
+        "description": "ハッカソンの企画から審査まで一貫してサポート"
+      }
+    },
+    "cta": {
+      "signIn": "サインイン",
+      "signUp": "アカウント作成",
+      "learnMore": "詳しく見る"
+    },
     "firstStepsTitle": "最初のステップ →",
     "firstStepsDescription": "データベースと認証を設定するために必要なすべての基本情報。",
     "documentationTitle": "ドキュメント →",

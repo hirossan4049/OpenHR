@@ -333,6 +333,33 @@
   },
   "HomePage": {
     "title": "OpenHR TMS",
+    "subtitle": "Talent Management System",
+    "hero": "Maximize Your Team's Potential",
+    "description": "OpenHR TMS centralizes member management, project coordination, and skill visualization to boost team productivity.",
+    "features": {
+      "title": "Key Features",
+      "members": {
+        "title": "Member Management",
+        "description": "Centralize team member profiles, skills, and experience"
+      },
+      "projects": {
+        "title": "Project Management",
+        "description": "Streamline project creation, member recruitment, and progress tracking"
+      },
+      "skills": {
+        "title": "Skill Visualization",
+        "description": "Visualize team skillsets for optimal resource allocation"
+      },
+      "hackathons": {
+        "title": "Hackathon Management",
+        "description": "Support end-to-end hackathon planning and judging"
+      }
+    },
+    "cta": {
+      "signIn": "Sign In",
+      "signUp": "Sign Up",
+      "learnMore": "Learn More"
+    },
     "firstStepsTitle": "First Steps →",
     "firstStepsDescription": "Just the basics - Everything you need to know to set up your database and authentication.",
     "documentationTitle": "Documentation →",
