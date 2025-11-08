@@ -1,5 +1,6 @@
 import { ProjectDetail } from "~/components/projects/project-detail";
 
-export default function ProjectDetailPage({ params }: { params: { id: string } }) {
-  return <ProjectDetail projectId={params.id} />;
+export default async function ProjectDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProjectDetail projectId={id} />;
 }

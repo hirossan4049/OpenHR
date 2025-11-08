@@ -42,7 +42,7 @@ export const userRouter = createTRPCRouter({
         });
         
         // Only admins can see VIEWER role users
-        showViewers = currentUser && hasRole(currentUser, "ADMIN");
+        showViewers = Boolean(currentUser && hasRole(currentUser, "ADMIN"));
       }
 
       // Exclude VIEWER role users for non-admin users
@@ -139,7 +139,7 @@ export const userRouter = createTRPCRouter({
         });
         
         // Only admins can see VIEWER role users
-        showViewers = currentUser && hasRole(currentUser, "ADMIN");
+        showViewers = Boolean(currentUser && hasRole(currentUser, "ADMIN"));
       }
 
       // Prevent non-admin users from viewing VIEWER role users

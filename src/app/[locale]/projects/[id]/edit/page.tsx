@@ -1,5 +1,6 @@
 import { ProjectEditPage } from "~/components/projects/project-edit-page";
 
-export default function EditProjectPage({ params }: { params: { id: string } }) {
-  return <ProjectEditPage projectId={params.id} />;
+export default async function EditProjectPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  return <ProjectEditPage projectId={id} />;
 }

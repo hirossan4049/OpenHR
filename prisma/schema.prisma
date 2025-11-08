@@ -14,16 +14,53 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+// Portfolio/作品管理
+model Portfolio {
+    id            String   @id @default(cuid())
+    title         String
+    description   String
+    url           String?  // デモURL、GitHub URL等
+    imageUrl      String?  // スクリーンショットやロゴ
+    projectType   String   @default("personal") // "personal", "hackathon", "team", "assignment"
+    technologies  String?  // JSON array of technologies used
+    startDate     DateTime? // 開発開始日
+    endDate       DateTime? // 開発完了日
+    isPublic      Boolean  @default(true) // スポンサーに公開するか
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    // Relations
+    createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+    createdById   String
 
-    @@index([name])
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    @@index([createdById])
+    @@index([projectType])
+    @@index([isPublic])
+}
+
+// 記事管理
+model Article {
+    id           String   @id @default(cuid())
+    title        String
+    url          String   // 記事のURL
+    platform     String   // "qiita", "zenn", "note", "blog", "other"
+    publishedAt  DateTime? // 記事の公開日
+    description  String?  // 記事の概要
+    tags         String?  // JSON array of tags
+    isPublic     Boolean  @default(true) // スポンサーに公開するか
+
+    // Relations
+    createdBy    User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
+    createdById  String
+
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    @@index([createdById])
+    @@index([platform])
+    @@index([publishedAt])
+    @@index([isPublic])
 }
 
 // Necessary for Next auth
@@ -71,13 +108,16 @@ model User {
     updatedAt     DateTime  @updatedAt
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
+    portfolios    Portfolio[]
+    articles      Article[]
     userSkills    UserSkill[]
     discordMembers DiscordMember[] // Discord members linked to this user
     // Project relations
     organizedProjects Project[] @relation("ProjectOrganizer")
     projectApplications ProjectApplication[] @relation("ProjectApplications")
     projectMemberships ProjectMember[] @relation("ProjectMembers")
+    // Hackathon participation history
+    hackathonParticipations HackathonParticipation[]
     // Tag relations
     userTags      UserTag[]
 }
@@ -164,24 +204,28 @@ model Project {
     id               String              @id @default(cuid())
     title            String
     description      String
-    type             String              @default("project") // "project" or "event"
+    type             String              @default("project") // "project", "event", or "hackathon"
     recruitmentStatus String             @default("open") // "open" or "closed"
     maxMembers       Int?                // Maximum number of members
     startDate        DateTime?           // Project/Event start date
     endDate          DateTime?           // Project/Event end date
-    
+
     // Relations
     organizerId      String
     organizer        User                @relation("ProjectOrganizer", fields: [organizerId], references: [id], onDelete: Cascade)
-    
+
     createdAt        DateTime            @default(now())
     updatedAt        DateTime            @updatedAt
-    
+
     // Related models
     requiredSkills   ProjectRequiredSkill[]
     applications     ProjectApplication[]
     members          ProjectMember[]
-    
+    hackathonInfo    HackathonInfo?
+    teamSubmissions  HackathonSubmission[] @relation("TeamSubmissions")
+    hackathonParticipants HackathonParticipation[] @relation("HackathonParticipants")
+    hackathonTeamMembers HackathonParticipation[] @relation("HackathonTeamMembers")
+
     @@index([organizerId])
     @@index([recruitmentStatus])
     @@index([type])
@@ -265,4 +309,108 @@ model UserTag {
     @@unique([userId, tagId])
     @@index([userId])
     @@index([tagId])
+}
+
+// Hackathon-specific information
+model HackathonInfo {
+    id               String    @id @default(cuid())
+    projectId        String    @unique
+    theme            String?   // Hackathon theme
+    prizes           String?   // Prize information (JSON)
+    judgingCriteria  String?   // Judging criteria (JSON)
+    status           String    @default("registration") // "registration", "ongoing", "judging", "completed"
+    submissionDeadline DateTime? // Submission deadline
+    judgingStartDate DateTime? // When judging starts
+    resultsDate      DateTime? // When results are announced
+
+    project          Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    submissions      HackathonSubmission[]
+    evaluations      HackathonEvaluation[]
+
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    @@index([projectId])
+    @@index([status])
+}
+
+// Team submissions for hackathons
+model HackathonSubmission {
+    id               String    @id @default(cuid())
+    hackathonId      String
+    teamId           String    // Reference to project (team)
+    title            String
+    description      String
+    demoUrl          String?   // Live demo URL
+    repositoryUrl    String?   // Source code repository
+    presentationUrl  String?   // Presentation slides URL
+    videoUrl         String?   // Demo video URL
+    submittedAt      DateTime  @default(now())
+
+    hackathon        HackathonInfo @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    team             Project       @relation("TeamSubmissions", fields: [teamId], references: [id], onDelete: Cascade)
+    evaluations      HackathonEvaluation[]
+    participants     HackathonParticipation[]
+
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    @@unique([hackathonId, teamId])
+    @@index([hackathonId])
+    @@index([teamId])
+}
+
+// Evaluations for hackathon submissions
+model HackathonEvaluation {
+    id               String    @id @default(cuid())
+    hackathonId      String
+    submissionId     String
+    judgeName        String    // Name of the judge
+    judgeEmail       String?   // Email of the judge (optional)
+    scores           String    // JSON object with scoring criteria
+    comment          String?   // Judge's comment
+    submittedAt      DateTime  @default(now())
+
+    hackathon        HackathonInfo       @relation(fields: [hackathonId], references: [id], onDelete: Cascade)
+    submission       HackathonSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    @@unique([hackathonId, submissionId, judgeEmail])
+    @@index([hackathonId])
+    @@index([submissionId])
+}
+
+// User participation history in hackathons
+model HackathonParticipation {
+    id               String    @id @default(cuid())
+    userId           String
+    hackathonId      String
+    teamId           String?   // Reference to project (team) if participated as team member
+    role             String    @default("participant") // "participant", "organizer", "judge", "mentor"
+    participatedAt   DateTime  @default(now())
+
+    // Results and achievements
+    ranking          Int?      // Final ranking/position (1st, 2nd, 3rd, etc.)
+    awards           String?   // JSON array of awards received
+    submissionId     String?   // Reference to their team's submission
+
+    // Additional info
+    feedback         String?   // Participant's feedback about the hackathon
+    rating           Int?      // Participant's rating of the hackathon (1-5)
+
+    user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+    hackathon        Project   @relation("HackathonParticipants", fields: [hackathonId], references: [id], onDelete: Cascade)
+    team             Project?  @relation("HackathonTeamMembers", fields: [teamId], references: [id], onDelete: SetNull)
+    submission       HackathonSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+
+    createdAt        DateTime  @default(now())
+    updatedAt        DateTime  @updatedAt
+
+    @@unique([userId, hackathonId])
+    @@index([userId])
+    @@index([hackathonId])
+    @@index([teamId])
+    @@index([role])
 }

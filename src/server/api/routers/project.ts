@@ -333,6 +333,7 @@ export const projectRouter = createTRPCRouter({
         select: {
           organizerId: true,
           maxMembers: true,
+          type: true,
           _count: { select: { members: true } },
         },
       });
@@ -367,6 +368,25 @@ export const projectRouter = createTRPCRouter({
       const member = await ctx.db.projectMember.create({
         data: { projectId, userId, role },
       });
+
+      // If this is a hackathon, also create participation record
+      if (project.type === "hackathon") {
+        // Check if participation record already exists
+        const existingParticipation = await ctx.db.hackathonParticipation.findUnique({
+          where: { userId_hackathonId: { userId, hackathonId: projectId } },
+        });
+
+        if (!existingParticipation) {
+          await ctx.db.hackathonParticipation.create({
+            data: {
+              userId,
+              hackathonId: projectId,
+              teamId: projectId,
+              role: "participant",
+            },
+          });
+        }
+      }
 
       return member;
     }),

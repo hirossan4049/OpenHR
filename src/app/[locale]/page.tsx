@@ -1,18 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { AuthForms } from "~/app/_components/auth-forms";
-import { LatestPost } from "~/app/_components/post";
 import { Link } from "~/navigation";
 import { auth } from "~/server/auth";
-import { api, HydrateClient } from "~/trpc/server";
+import { HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
   const t = await getTranslations('HomePage');
-  const hello = await api.post.hello({ text: "from tRPC" });
   const session = await auth();
-
-  if (session?.user) {
-    void api.post.getLatest.prefetch();
-  }
 
   return (
     <HydrateClient>
@@ -50,33 +44,25 @@ export default async function Home() {
                   </div>
                 </a>
               </div>
-              <div className="flex flex-col items-center gap-2">
-                <p className="text-2xl text-white">
-                  {hello ? hello.greeting : t("loadingTRPC")}
+              <div className="flex flex-col items-center gap-4">
+                <p className="text-center text-2xl text-white">
+                  {session && <span>{t("loggedInAs", { name: session.user?.name || "" })}</span>}
                 </p>
-
-                <div className="flex flex-col items-center justify-center gap-4">
-                  <p className="text-center text-2xl text-white">
-                    {session && <span>{t("loggedInAs", { name: session.user?.name || "" })}</span>}
-                  </p>
-                  <div className="flex gap-4">
-                    <Link
-                      href="/profile"
-                      className="rounded-full bg-purple-600 px-10 py-3 font-semibold no-underline transition hover:bg-purple-700"
-                    >
-                      {t("myProfile")}
-                    </Link>
-                    <a
-                      href="/api/auth/signout"
-                      className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
-                    >
-                      {t("signOut")}
-                    </a>
-                  </div>
+                <div className="flex gap-4">
+                  <Link
+                    href="/profile"
+                    className="rounded-full bg-purple-600 px-10 py-3 font-semibold no-underline transition hover:bg-purple-700"
+                  >
+                    {t("myProfile")}
+                  </Link>
+                  <a
+                    href="/api/auth/signout"
+                    className="rounded-full bg-white/10 px-10 py-3 font-semibold no-underline transition hover:bg-white/20"
+                  >
+                    {t("signOut")}
+                  </a>
                 </div>
               </div>
-
-              {session?.user && <LatestPost />}
             </>
           )}
         </div>
