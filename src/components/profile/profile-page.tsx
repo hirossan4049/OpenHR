@@ -85,6 +85,8 @@ export function ProfilePage() {
   useEffect(() => {
     if (status === "authenticated") {
       fetchProfileData();
+    } else if (status === "unauthenticated") {
+      setIsLoading(false);
     }
   }, [status]);
 
