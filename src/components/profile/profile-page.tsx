@@ -122,6 +122,8 @@ export function ProfilePage() {
     tags: "",
   });
   const [isFetchingArticleMeta, setIsFetchingArticleMeta] = useState(false);
+  const [articleMeta, setArticleMeta] = useState<{ title?: string; description?: string; image?: string; siteName?: string }>({});
+  const [platformTouched, setPlatformTouched] = useState(false);
 
   const portfolioCreate = api.portfolio.create.useMutation({
     onSuccess: async () => {
@@ -240,12 +242,19 @@ export function ProfilePage() {
         const res = await fetch(`/api/link-preview?url=${encodeURIComponent(url)}`);
         if (!res.ok) return;
         const data = await res.json();
+        const detectedPlatform = detectPlatformFromUrl(url);
         setArticleForm((prev) => ({
           ...prev,
           title: prev.title || data.title || prev.title,
           description: prev.description || data.description || prev.description,
-          platform: prev.platform === "qiita" ? detectPlatformFromUrl(url) : prev.platform,
+          platform: platformTouched ? prev.platform : detectedPlatform,
         }));
+        setArticleMeta({
+          title: data.title,
+          description: data.description,
+          image: data.image,
+          siteName: data.siteName,
+        });
       } catch (error) {
         console.error("Failed to fetch article metadata", error);
       } finally {
@@ -254,7 +263,7 @@ export function ProfilePage() {
     }, 600);
 
     return () => clearTimeout(handler);
-  }, [articleForm.url, articleDialog.open]);
+  }, [articleForm.url, articleDialog.open, platformTouched]);
 
   const handleProfileSave = (data: UserProfile) => {
     setProfile((prev) => ({ ...prev, ...data }));
@@ -319,6 +328,8 @@ export function ProfilePage() {
       description: data?.description ?? "",
       tags: data?.tags ? JSON.parse(data.tags).join(", ") : "",
     });
+    setArticleMeta({});
+    setPlatformTouched(false);
   };
 
   const closeArticleDialog = () => {
@@ -331,6 +342,8 @@ export function ProfilePage() {
       description: "",
       tags: "",
     });
+    setArticleMeta({});
+    setPlatformTouched(false);
   };
 
   const submitArticle = () => {
@@ -799,15 +812,6 @@ export function ProfilePage() {
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="article-title">タイトル</Label>
-              <Input
-                id="article-title"
-                value={articleForm.title}
-                onChange={(e) => setArticleForm((prev) => ({ ...prev, title: e.target.value }))}
-                placeholder="記事タイトル"
-              />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="article-url">URL</Label>
               <Input
                 id="article-url"
@@ -820,12 +824,24 @@ export function ProfilePage() {
                 {isFetchingArticleMeta && <span className="ml-1">取得中…</span>}
               </p>
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="article-title">タイトル</Label>
+              <Input
+                id="article-title"
+                value={articleForm.title}
+                onChange={(e) => setArticleForm((prev) => ({ ...prev, title: e.target.value }))}
+                placeholder="記事タイトル"
+              />
+            </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label>プラットフォーム</Label>
                 <Select
                   value={articleForm.platform}
-                  onValueChange={(value) => setArticleForm((prev) => ({ ...prev, platform: value }))}
+                  onValueChange={(value) => {
+                    setPlatformTouched(true);
+                    setArticleForm((prev) => ({ ...prev, platform: value }));
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="選択してください" />
@@ -868,6 +884,21 @@ export function ProfilePage() {
                 placeholder="Next.js, TypeScript"
               />
             </div>
+            {(articleMeta.title || articleMeta.description || articleMeta.image) && (
+              <div className="rounded-lg border p-3 flex gap-3">
+                {articleMeta.image && (
+                  <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded bg-muted">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={articleMeta.image} alt={articleMeta.title ?? "preview"} className="h-full w-full object-cover" />
+                  </div>
+                )}
+                <div className="space-y-1 text-sm">
+                  <div className="font-medium line-clamp-2">{articleMeta.title ?? articleForm.title}</div>
+                  <div className="text-muted-foreground line-clamp-2">{articleMeta.description ?? articleForm.description}</div>
+                  {articleMeta.siteName && <div className="text-xs text-muted-foreground">{articleMeta.siteName}</div>}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-2">
             <UiButton variant="outline" onClick={closeArticleDialog}>キャンセル</UiButton>
