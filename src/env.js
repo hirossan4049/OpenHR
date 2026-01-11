@@ -2,36 +2,32 @@ import { randomUUID } from "crypto";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-const shouldSkipValidation = process.env.SKIP_ENV_VALIDATION !== "0";
-/**
- * @param {import("zod").ZodTypeAny} schema
- * @param {any} defaultValue
- * @returns {import("zod").ZodTypeAny}
- */
-const withDefault = (schema, defaultValue) =>
-  shouldSkipValidation ? schema.default(defaultValue) : schema;
-/**
- * @param {any} value
- * @param {any} defaultValue
- * @returns {any}
- */
-const withRuntimeDefault = (value, defaultValue) =>
-  shouldSkipValidation ? value ?? defaultValue : value;
+const shouldSkipValidation =
+  process.env.SKIP_ENV_VALIDATION === "1" || process.env.SKIP_ENV_VALIDATION === "true";
+const appEnv = process.env.APP_ENV ?? "development";
 const fallbackAuthSecret = randomUUID();
 const fallbackDatabaseUrl = "file:./db.sqlite";
+const fallbackOauthDefaults = {
+  discordId: `dev-placeholder-discord-id-${randomUUID()}`,
+  discordSecret: `dev-placeholder-discord-secret-${randomUUID()}`,
+  githubId: `dev-placeholder-github-id-${randomUUID()}`,
+  githubSecret: `dev-placeholder-github-secret-${randomUUID()}`,
+  googleId: `dev-placeholder-google-id-${randomUUID()}`,
+  googleSecret: `dev-placeholder-google-secret-${randomUUID()}`,
+  discordBotToken: `dev-placeholder-discord-bot-token-${randomUUID()}`,
+};
 
-if (shouldSkipValidation) {
-  process.env.AUTH_SECRET ??= fallbackAuthSecret;
-  process.env.NEXTAUTH_SECRET ??= fallbackAuthSecret;
-  process.env.DATABASE_URL ??= fallbackDatabaseUrl;
-  process.env.DISCORD_BOT_TOKEN ??= "placeholder";
-  process.env.AUTH_DISCORD_ID ??= "placeholder";
-  process.env.AUTH_DISCORD_SECRET ??= "placeholder";
-  process.env.AUTH_GITHUB_ID ??= "placeholder";
-  process.env.AUTH_GITHUB_SECRET ??= "placeholder";
-  process.env.AUTH_GOOGLE_ID ??= "placeholder";
-  process.env.AUTH_GOOGLE_SECRET ??= "placeholder";
-}
+process.env.AUTH_SECRET ??= appEnv === "production" ? fallbackAuthSecret : "dev-secret-not-for-prod";
+// NextAuth accepts either AUTH_SECRET or NEXTAUTH_SECRET; set both when generating fallbacks.
+process.env.NEXTAUTH_SECRET ??= process.env.AUTH_SECRET;
+process.env.DATABASE_URL ??= fallbackDatabaseUrl;
+process.env.DISCORD_BOT_TOKEN ??= fallbackOauthDefaults.discordBotToken;
+process.env.AUTH_DISCORD_ID ??= fallbackOauthDefaults.discordId;
+process.env.AUTH_DISCORD_SECRET ??= fallbackOauthDefaults.discordSecret;
+process.env.AUTH_GITHUB_ID ??= fallbackOauthDefaults.githubId;
+process.env.AUTH_GITHUB_SECRET ??= fallbackOauthDefaults.githubSecret;
+process.env.AUTH_GOOGLE_ID ??= fallbackOauthDefaults.googleId;
+process.env.AUTH_GOOGLE_SECRET ??= fallbackOauthDefaults.googleSecret;
 
 export const env = createEnv({
   /**
@@ -39,16 +35,16 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET: withDefault(z.string(), fallbackAuthSecret),
+    AUTH_SECRET: z.string().default(process.env.AUTH_SECRET),
     AUTH_URL: z.string().url().optional(),
-    AUTH_DISCORD_ID: withDefault(z.string(), "placeholder"),
-    AUTH_DISCORD_SECRET: withDefault(z.string(), "placeholder"),
-    AUTH_GITHUB_ID: withDefault(z.string(), "placeholder"),
-    AUTH_GITHUB_SECRET: withDefault(z.string(), "placeholder"),
-    AUTH_GOOGLE_ID: withDefault(z.string(), "placeholder"),
-    AUTH_GOOGLE_SECRET: withDefault(z.string(), "placeholder"),
-    DISCORD_BOT_TOKEN: withDefault(z.string(), "placeholder"),
-    DATABASE_URL: withDefault(z.string(), fallbackDatabaseUrl),
+    AUTH_DISCORD_ID: z.string().default(process.env.AUTH_DISCORD_ID),
+    AUTH_DISCORD_SECRET: z.string().default(process.env.AUTH_DISCORD_SECRET),
+    AUTH_GITHUB_ID: z.string().default(process.env.AUTH_GITHUB_ID),
+    AUTH_GITHUB_SECRET: z.string().default(process.env.AUTH_GITHUB_SECRET),
+    AUTH_GOOGLE_ID: z.string().default(process.env.AUTH_GOOGLE_ID),
+    AUTH_GOOGLE_SECRET: z.string().default(process.env.AUTH_GOOGLE_SECRET),
+    DISCORD_BOT_TOKEN: z.string().default(process.env.DISCORD_BOT_TOKEN),
+    DATABASE_URL: z.string().default(fallbackDatabaseUrl),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -68,16 +64,16 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    AUTH_SECRET: withRuntimeDefault(process.env.AUTH_SECRET, fallbackAuthSecret),
+    AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_URL: process.env.AUTH_URL,
-    AUTH_DISCORD_ID: withRuntimeDefault(process.env.AUTH_DISCORD_ID, "placeholder"),
-    AUTH_DISCORD_SECRET: withRuntimeDefault(process.env.AUTH_DISCORD_SECRET, "placeholder"),
-    AUTH_GITHUB_ID: withRuntimeDefault(process.env.AUTH_GITHUB_ID, "placeholder"),
-    AUTH_GITHUB_SECRET: withRuntimeDefault(process.env.AUTH_GITHUB_SECRET, "placeholder"),
-    AUTH_GOOGLE_ID: withRuntimeDefault(process.env.AUTH_GOOGLE_ID, "placeholder"),
-    AUTH_GOOGLE_SECRET: withRuntimeDefault(process.env.AUTH_GOOGLE_SECRET, "placeholder"),
-    DISCORD_BOT_TOKEN: withRuntimeDefault(process.env.DISCORD_BOT_TOKEN, "placeholder"),
-    DATABASE_URL: withRuntimeDefault(process.env.DATABASE_URL, fallbackDatabaseUrl),
+    AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
+    AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
+    AUTH_GITHUB_ID: process.env.AUTH_GITHUB_ID,
+    AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET,
+    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
+    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
+    DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },
   /**
