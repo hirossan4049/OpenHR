@@ -12,6 +12,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "~/navigation";
@@ -75,7 +76,7 @@ export function DashboardPage() {
           <h1 className="text-2xl font-bold">{t("signInTitle")}</h1>
           <p className="text-muted-foreground">{t("signInDescription")}</p>
           <Button asChild>
-            <Link href="/api/auth/signin">{t("signInCta")}</Link>
+            <Link href="/auth/signin">{t("signInCta")}</Link>
           </Button>
         </div>
       </div>
@@ -140,7 +141,12 @@ export function DashboardPage() {
       href: "/profile",
       icon: Users,
     },
-  ];
+  ] satisfies Array<{
+    label: string;
+    description: string;
+    href: "/projects/new" | "/projects" | "/profile";
+    icon: LucideIcon;
+  }>;
   type ApplicationStatus = "pending" | "approved" | "rejected";
   const applicationStatusLabels: Record<ApplicationStatus, string> = {
     pending: t("applicationStatus.pending"),
