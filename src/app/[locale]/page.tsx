@@ -86,7 +86,7 @@ export default async function Home() {
                     {t("cta.learnMore")}
                   </Link>
                   <Link
-                    href="/api/auth/signin"
+                    href="/auth/signin"
                     className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
                   >
                     {t("cta.signIn")}
@@ -108,7 +108,7 @@ export default async function Home() {
 
                   <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                     <Link
-                      href="/api/auth/signin"
+                      href="/auth/signin"
                       className="rounded-2xl bg-purple-500 px-6 py-3 text-center text-sm font-semibold text-white transition hover:bg-purple-400"
                     >
                       {t("cta.signIn")}
@@ -322,7 +322,7 @@ export default async function Home() {
                   </div>
                   <div className="flex flex-col gap-4 sm:flex-row">
                     <Link
-                      href="/api/auth/signin"
+                      href="/auth/signin"
                       className="rounded-2xl bg-white px-6 py-3 text-center text-sm font-semibold text-slate-900 transition hover:bg-white/90"
                     >
                       {t("ctaBanner.primary")}

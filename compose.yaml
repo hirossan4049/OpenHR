@@ -1,0 +1,28 @@
+services:
+  app:
+    image: oven/bun:1.3
+    working_dir: /app
+    command: >
+      sh -c "bun install && bun run dev -- --hostname 0.0.0.0 --port 3000"
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: ${DATABASE_URL:-file:./db.sqlite}
+      AUTH_SECRET: ${AUTH_SECRET:-dev-secret}
+      AUTH_DISCORD_ID: ${AUTH_DISCORD_ID:-placeholder}
+      AUTH_DISCORD_SECRET: ${AUTH_DISCORD_SECRET:-placeholder}
+      AUTH_GITHUB_ID: ${AUTH_GITHUB_ID:-placeholder}
+      AUTH_GITHUB_SECRET: ${AUTH_GITHUB_SECRET:-placeholder}
+      AUTH_GOOGLE_ID: ${AUTH_GOOGLE_ID:-placeholder}
+      AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-placeholder}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-placeholder}
+      SKIP_ENV_VALIDATION: ${SKIP_ENV_VALIDATION:-1}
+    volumes:
+      - .:/app
+      - bun-cache:/root/.bun
+    tty: true
+    stdin_open: true
+
+volumes:
+  bun-cache:

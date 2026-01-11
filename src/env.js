@@ -1,5 +1,37 @@
+import { randomUUID } from "crypto";
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
+
+const shouldSkipValidation = process.env.SKIP_ENV_VALIDATION !== "0";
+/**
+ * @param {import("zod").ZodTypeAny} schema
+ * @param {any} defaultValue
+ * @returns {import("zod").ZodTypeAny}
+ */
+const withDefault = (schema, defaultValue) =>
+  shouldSkipValidation ? schema.default(defaultValue) : schema;
+/**
+ * @param {any} value
+ * @param {any} defaultValue
+ * @returns {any}
+ */
+const withRuntimeDefault = (value, defaultValue) =>
+  shouldSkipValidation ? value ?? defaultValue : value;
+const fallbackAuthSecret = randomUUID();
+const fallbackDatabaseUrl = "file:./db.sqlite";
+
+if (shouldSkipValidation) {
+  process.env.AUTH_SECRET ??= fallbackAuthSecret;
+  process.env.NEXTAUTH_SECRET ??= fallbackAuthSecret;
+  process.env.DATABASE_URL ??= fallbackDatabaseUrl;
+  process.env.DISCORD_BOT_TOKEN ??= "placeholder";
+  process.env.AUTH_DISCORD_ID ??= "placeholder";
+  process.env.AUTH_DISCORD_SECRET ??= "placeholder";
+  process.env.AUTH_GITHUB_ID ??= "placeholder";
+  process.env.AUTH_GITHUB_SECRET ??= "placeholder";
+  process.env.AUTH_GOOGLE_ID ??= "placeholder";
+  process.env.AUTH_GOOGLE_SECRET ??= "placeholder";
+}
 
 export const env = createEnv({
   /**
@@ -7,19 +39,16 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    AUTH_SECRET:
-      process.env.NODE_ENV === "production"
-        ? z.string()
-        : z.string().optional(),
+    AUTH_SECRET: withDefault(z.string(), fallbackAuthSecret),
     AUTH_URL: z.string().url().optional(),
-    AUTH_DISCORD_ID: z.string(),
-    AUTH_DISCORD_SECRET: z.string(),
-    AUTH_GITHUB_ID: z.string(),
-    AUTH_GITHUB_SECRET: z.string(),
-    AUTH_GOOGLE_ID: z.string(),
-    AUTH_GOOGLE_SECRET: z.string(),
-    DISCORD_BOT_TOKEN: z.string(),
-    DATABASE_URL: z.string().url(),
+    AUTH_DISCORD_ID: withDefault(z.string(), "placeholder"),
+    AUTH_DISCORD_SECRET: withDefault(z.string(), "placeholder"),
+    AUTH_GITHUB_ID: withDefault(z.string(), "placeholder"),
+    AUTH_GITHUB_SECRET: withDefault(z.string(), "placeholder"),
+    AUTH_GOOGLE_ID: withDefault(z.string(), "placeholder"),
+    AUTH_GOOGLE_SECRET: withDefault(z.string(), "placeholder"),
+    DISCORD_BOT_TOKEN: withDefault(z.string(), "placeholder"),
+    DATABASE_URL: withDefault(z.string(), fallbackDatabaseUrl),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -39,23 +68,23 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
-    AUTH_SECRET: process.env.AUTH_SECRET,
+    AUTH_SECRET: withRuntimeDefault(process.env.AUTH_SECRET, fallbackAuthSecret),
     AUTH_URL: process.env.AUTH_URL,
-    AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
-    AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
-    AUTH_GITHUB_ID: process.env.AUTH_GITHUB_ID,
-    AUTH_GITHUB_SECRET: process.env.AUTH_GITHUB_SECRET,
-    AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
-    AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
-    DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
-    DATABASE_URL: process.env.DATABASE_URL,
+    AUTH_DISCORD_ID: withRuntimeDefault(process.env.AUTH_DISCORD_ID, "placeholder"),
+    AUTH_DISCORD_SECRET: withRuntimeDefault(process.env.AUTH_DISCORD_SECRET, "placeholder"),
+    AUTH_GITHUB_ID: withRuntimeDefault(process.env.AUTH_GITHUB_ID, "placeholder"),
+    AUTH_GITHUB_SECRET: withRuntimeDefault(process.env.AUTH_GITHUB_SECRET, "placeholder"),
+    AUTH_GOOGLE_ID: withRuntimeDefault(process.env.AUTH_GOOGLE_ID, "placeholder"),
+    AUTH_GOOGLE_SECRET: withRuntimeDefault(process.env.AUTH_GOOGLE_SECRET, "placeholder"),
+    DISCORD_BOT_TOKEN: withRuntimeDefault(process.env.DISCORD_BOT_TOKEN, "placeholder"),
+    DATABASE_URL: withRuntimeDefault(process.env.DATABASE_URL, fallbackDatabaseUrl),
     NODE_ENV: process.env.NODE_ENV,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
    * useful for Docker builds.
    */
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+  skipValidation: shouldSkipValidation,
   /**
    * Makes it so that empty strings are treated as undefined. `SOME_VAR: z.string()` and
    * `SOME_VAR=''` will throw an error.
