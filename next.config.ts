@@ -38,11 +38,12 @@ const validateTranslations = () => {
 };
 
 const skipTranslationValidation =
+  typeof process.env.SKIP_TRANSLATION_VALIDATION === 'string' &&
   ['1', 'true'].includes(
-    (process.env.SKIP_TRANSLATION_VALIDATION ?? '').toLowerCase(),
+    process.env.SKIP_TRANSLATION_VALIDATION.toLowerCase(),
   );
 
-// Set SKIP_TRANSLATION_VALIDATION to skip translation checks when debugging locally.
+// Set SKIP_TRANSLATION_VALIDATION to "1" or "true" to skip translation checks when debugging locally.
 if (!skipTranslationValidation) {
   validateTranslations();
 }

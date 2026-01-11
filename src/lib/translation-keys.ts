@@ -1,11 +1,11 @@
 /**
  * Recursively collect translation key paths.
- * Uses dot notation for objects (e.g., "section.title") and bracket notation for arrays (e.g., "items[0]").
+ * Uses dot notation for nested objects and array indices (e.g., "items.0").
  */
 export const collectTranslationKeys = (value: unknown, prefix = ''): string[] => {
   if (Array.isArray(value)) {
     return value.flatMap((item, index) => {
-      const nextPrefix = prefix ? `${prefix}[${index}]` : String(index);
+      const nextPrefix = prefix ? `${prefix}.${index}` : String(index);
       return collectTranslationKeys(item, nextPrefix);
     });
   }
