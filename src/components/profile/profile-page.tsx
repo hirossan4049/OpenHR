@@ -79,6 +79,18 @@ interface Article {
   createdAt: string;
 }
 
+const detectPlatformFromUrl = (url: string): Article["platform"] => {
+  try {
+    const host = new URL(url).hostname;
+    if (host.includes("qiita")) return "qiita";
+    if (host.includes("zenn")) return "zenn";
+    if (host.includes("note")) return "note";
+    return host.includes("blog") ? "blog" : "other";
+  } catch {
+    return "other";
+  }
+};
+
 export function ProfilePage() {
   const t = useTranslations("ProfilePage");
   const { data: session, status } = useSession();
@@ -109,6 +121,7 @@ export function ProfilePage() {
     description: "",
     tags: "",
   });
+  const [isFetchingArticleMeta, setIsFetchingArticleMeta] = useState(false);
 
   const portfolioCreate = api.portfolio.create.useMutation({
     onSuccess: async () => {
@@ -214,6 +227,34 @@ export function ProfilePage() {
       setArticles(formattedArticles);
     }
   }, [articleData]);
+
+  // Auto-fetch article metadata when URL is provided
+  useEffect(() => {
+    if (!articleDialog.open) return;
+    const url = articleForm.url.trim();
+    if (!url || !/^https?:\/\//.test(url)) return;
+
+    const handler = setTimeout(async () => {
+      try {
+        setIsFetchingArticleMeta(true);
+        const res = await fetch(`/api/link-preview?url=${encodeURIComponent(url)}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setArticleForm((prev) => ({
+          ...prev,
+          title: prev.title || data.title || prev.title,
+          description: prev.description || data.description || prev.description,
+          platform: prev.platform === "qiita" ? detectPlatformFromUrl(url) : prev.platform,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch article metadata", error);
+      } finally {
+        setIsFetchingArticleMeta(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(handler);
+  }, [articleForm.url, articleDialog.open]);
 
   const handleProfileSave = (data: UserProfile) => {
     setProfile((prev) => ({ ...prev, ...data }));
@@ -774,6 +815,10 @@ export function ProfilePage() {
                 onChange={(e) => setArticleForm((prev) => ({ ...prev, url: e.target.value }))}
                 placeholder="https://example.com"
               />
+              <p className="text-xs text-muted-foreground">
+                URLを入力するとタイトルと概要を自動取得します。
+                {isFetchingArticleMeta && <span className="ml-1">取得中…</span>}
+              </p>
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
