@@ -124,6 +124,7 @@ export function ProfilePage() {
   const [isFetchingArticleMeta, setIsFetchingArticleMeta] = useState(false);
   const [articleMeta, setArticleMeta] = useState<{ title?: string; description?: string; image?: string; siteName?: string }>({});
   const [platformTouched, setPlatformTouched] = useState(false);
+  const [articleUrlError, setArticleUrlError] = useState<string | null>(null);
 
   const portfolioCreate = api.portfolio.create.useMutation({
     onSuccess: async () => {
@@ -230,17 +231,33 @@ export function ProfilePage() {
     }
   }, [articleData]);
 
+  const validateArticleUrl = (url: string) => {
+    if (!url) return "URLを入力してください";
+    try {
+      const parsed = new URL(url);
+      if (!["http:", "https:"].includes(parsed.protocol)) return "http/https の URL を入力してください";
+      return null;
+    } catch {
+      return "正しい URL を入力してください";
+    }
+  };
+
   // Auto-fetch article metadata when URL is provided
   useEffect(() => {
     if (!articleDialog.open) return;
     const url = articleForm.url.trim();
-    if (!url || !/^https?:\/\//.test(url)) return;
+    const error = url ? validateArticleUrl(url) : null;
+    setArticleUrlError(error);
+    if (error || !url) return;
 
     const handler = setTimeout(async () => {
       try {
         setIsFetchingArticleMeta(true);
         const res = await fetch(`/api/link-preview?url=${encodeURIComponent(url)}`);
-        if (!res.ok) return;
+        if (!res.ok) {
+          setArticleUrlError("メタデータの取得に失敗しました");
+          return;
+        }
         const data = await res.json();
         const detectedPlatform = detectPlatformFromUrl(url);
         setArticleForm((prev) => ({
@@ -257,6 +274,7 @@ export function ProfilePage() {
         });
       } catch (error) {
         console.error("Failed to fetch article metadata", error);
+        setArticleUrlError("メタデータの取得に失敗しました");
       } finally {
         setIsFetchingArticleMeta(false);
       }
@@ -330,6 +348,7 @@ export function ProfilePage() {
     });
     setArticleMeta({});
     setPlatformTouched(false);
+    setArticleUrlError(null);
   };
 
   const closeArticleDialog = () => {
@@ -344,9 +363,17 @@ export function ProfilePage() {
     });
     setArticleMeta({});
     setPlatformTouched(false);
+    setArticleUrlError(null);
   };
 
   const submitArticle = () => {
+    const urlError = validateArticleUrl(articleForm.url.trim());
+    if (urlError) {
+      setArticleUrlError(urlError);
+      toast({ title: urlError, variant: "destructive" });
+      return;
+    }
+
     const payload = {
       title: articleForm.title.trim(),
       url: articleForm.url.trim(),
@@ -816,13 +843,17 @@ export function ProfilePage() {
               <Input
                 id="article-url"
                 value={articleForm.url}
-                onChange={(e) => setArticleForm((prev) => ({ ...prev, url: e.target.value }))}
+                onChange={(e) => {
+                  setArticleUrlError(null);
+                  setArticleForm((prev) => ({ ...prev, url: e.target.value }));
+                }}
                 placeholder="https://example.com"
               />
               <p className="text-xs text-muted-foreground">
                 URLを入力するとタイトルと概要を自動取得します。
                 {isFetchingArticleMeta && <span className="ml-1">取得中…</span>}
               </p>
+              {articleUrlError && <p className="text-xs text-red-600">{articleUrlError}</p>}
             </div>
             <div className="space-y-2">
               <Label htmlFor="article-title">タイトル</Label>
