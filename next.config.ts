@@ -72,7 +72,13 @@ const validateTranslations = () => {
   }
 };
 
-validateTranslations();
+const shouldValidateTranslations =
+  process.env.NEXT_PHASE === 'phase-production-build' ||
+  process.env.NODE_ENV === 'production';
+
+if (shouldValidateTranslations) {
+  validateTranslations();
+}
 
 const nextConfig: NextConfig = {};
 const withNextIntl = createNextIntlPlugin();
