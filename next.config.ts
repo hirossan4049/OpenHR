@@ -37,6 +37,7 @@ const validateTranslations = () => {
   }
 };
 
+// Set SKIP_TRANSLATION_VALIDATION=true to bypass translation checks when debugging locally.
 if (process.env.SKIP_TRANSLATION_VALIDATION !== 'true') {
   validateTranslations();
 }
