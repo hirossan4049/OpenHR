@@ -6,6 +6,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 
 import { Header } from "~/components/layout/header";
+import { auth } from "~/server/auth";
 import { TRPCReactProvider } from "~/trpc/react";
 
 export const metadata: Metadata = {
@@ -27,14 +28,15 @@ export default async function RootLayout({ children, params }: Props) {
     : DEFAULT_LOCALE;
 
   const messages = await getMessages({ locale });
+  const session = await auth();
 
   return (
     <html lang={locale} className="font-sans">
       <body>
         <NextIntlClientProvider messages={messages} locale={locale} timeZone="UTC">
-          <SessionProvider>
+          <SessionProvider session={session}>
             <TRPCReactProvider>
-              <Header />
+              {session ? <Header /> : null}
               {children}
             </TRPCReactProvider>
           </SessionProvider>
