@@ -567,7 +567,10 @@
     "nextPage": "次のページ",
     "pageInfo": "{current} / {total} ページ",
     "grade": "学年",
-    "itemsPerPageLabel": "表示件数"
+    "itemsPerPageLabel": "表示件数",
+    "viewModeLabel": "表示モード",
+    "viewModeGrid": "グリッド表示",
+    "viewModeList": "リスト表示"
   },
   "MemberDetail": {
     "backToDirectory": "ディレクトリに戻る",
