@@ -11,7 +11,7 @@ import { api } from "~/trpc/react";
 
 export function Header() {
   const t = useTranslations("Header");
-  const { status } = useSession();
+  const { status, data: session } = useSession();
   const { data: me } = api.user.getCurrentRole.useQuery(undefined, {
     enabled: status === "authenticated",
   });
@@ -65,8 +65,13 @@ export function Header() {
 
           <Link href="/profile" data-testid="profile-link">
             <Avatar className="h-8 w-8">
-              <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage
+                src={me?.image ?? session?.user?.image ?? undefined}
+                alt={me?.name ?? session?.user?.name ?? "Profile"}
+              />
+              <AvatarFallback>
+                {(me?.name ?? session?.user?.name ?? "??").slice(0, 2).toUpperCase()}
+              </AvatarFallback>
             </Avatar>
           </Link>
 
