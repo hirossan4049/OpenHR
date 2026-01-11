@@ -9,10 +9,17 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
 
 const validateTranslations = () => {
   const basePath = path.join(process.cwd(), 'messages');
-  const load = (locale: string) =>
-    JSON.parse(
-      fs.readFileSync(path.join(basePath, `${locale}.json`), 'utf8'),
-    ) as Record<string, unknown>;
+  const load = (locale: string) => {
+    const filePath = path.join(basePath, `${locale}.json`);
+    try {
+      return JSON.parse(
+        fs.readFileSync(filePath, 'utf8'),
+      ) as Record<string, unknown>;
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to load messages for locale "${locale}": ${reason}`);
+    }
+  };
 
   const compareKeys = (
     source: Record<string, unknown>,
