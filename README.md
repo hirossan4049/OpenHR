@@ -1,29 +1,66 @@
-# Create T3 App
+# OpenHR
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+OpenHR is a talent management app for hackathon/side-project teams. Members can publish rich profiles, manage skills, and apply to projects with role-based access control and internationalization.
 
-## What's next? How do I make an app with this?
+## Features
+- Profile hub with bio, grade, contact, GitHub link, portfolio, articles, and hackathon history
+- Skill master with logo search, alias handling, suggestion flow, and admin approval/merge tools
+- Role- and tag-based access control (ADMIN / MEMBER / VIEWER), viewer-hiding rules, and admin consoles
+- Project navigation (dashboard, project list/detail, “My Projects”) with create flow for eligible roles
+- Auth via NextAuth (Discord/GitHub/Google) and session-aware UI elements
+- Internationalized UI (next-intl) with message catalogs in `messages/`
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+## Tech Stack
+- Next.js 15, TypeScript, App Router, next-intl
+- tRPC v11, React Query, SuperJSON
+- Prisma (SQLite default) with NextAuth + @auth/prisma-adapter
+- Tailwind CSS + shadcn/ui, lucide-react
+- Testing: Jest (unit) and Playwright (e2e)
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## Getting Started
+1) Install dependencies (Bun recommended):
+```bash
+bun install
+# or
+npm install
+```
+2) Copy env template and fill in secrets:
+```bash
+cp .env.example .env
+```
+Required keys: `AUTH_SECRET` plus provider IDs/secrets for Discord, GitHub, Google. `DATABASE_URL` defaults to SQLite; point it to Postgres/MySQL if needed.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+3) Generate Prisma client and apply schema:
+```bash
+bun db:generate
+bun db:push
+# optional: seed initial data if provided
+bun db:seed
+```
 
-## Learn More
+4) Run the app:
+```bash
+bun dev
+```
+Then open the locale-aware root (e.g., `http://localhost:3000/en` or `/ja`).
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+## Scripts
+- `bun dev` — start dev server
+- `bun build` / `bun preview` — production build + start
+- `bun lint` — oxlint
+- `bun typecheck` — TypeScript no-emit
+- `bun test` — Jest unit tests
+- `bun run e2e:install` then `bun run test:e2e` — Playwright e2e
+- `bun db:push` / `bun db:migrate` / `bun db:studio` — database workflow
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Project Notes
+- RBAC and tag management docs: `docs/ROLE_AND_TAG_MANAGEMENT.md`
+- Skill system docs: `docs/SKILL_MASTER_FEATURE.md`, `docs/IMPLEMENTATION_COMPLETE.md`
+- Profile feature docs: `docs/PROFILE_FEATURE.md`
+- Discord integration notes: `docs/DISCORD_FEATURE.md`
+- Auth details: `docs/AUTHENTICATION.md`
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
-
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+## Troubleshooting
+- Missing migrations/seed: rerun `bun db:push` and `bun db:seed`.
+- Auth errors: confirm provider secrets and `AUTH_SECRET`, and restart dev server after changes.
+- Playwright: run `bun run e2e:install` once per machine to fetch browsers.
