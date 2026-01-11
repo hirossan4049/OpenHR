@@ -61,7 +61,7 @@ interface Portfolio {
   description: string;
   url: string | null;
   imageUrl: string | null;
-  projectType: string;
+  projectType: "personal" | "hackathon" | "team" | "assignment";
   technologies: string | null;
   startDate: string | null;
   endDate: string | null;
@@ -72,7 +72,7 @@ interface Article {
   id: string;
   title: string;
   url: string;
-  platform: string;
+  platform: "qiita" | "zenn" | "note" | "blog" | "other";
   publishedAt: string | null;
   description: string | null;
   tags: string | null;
@@ -116,7 +116,7 @@ export function ProfilePage() {
   const [articleForm, setArticleForm] = useState({
     title: "",
     url: "",
-    platform: "qiita",
+    platform: "qiita" as Article["platform"],
     publishedAt: "",
     description: "",
     tags: "",
@@ -212,6 +212,7 @@ export function ProfilePage() {
     if (portfolioData) {
       const formattedPortfolios = portfolioData.map(p => ({
         ...p,
+        projectType: p.projectType as Portfolio["projectType"],
         startDate: p.startDate ? p.startDate.toISOString() : null,
         endDate: p.endDate ? p.endDate.toISOString() : null,
         createdAt: p.createdAt.toISOString(),
@@ -224,6 +225,7 @@ export function ProfilePage() {
     if (articleData) {
       const formattedArticles = articleData.map(a => ({
         ...a,
+        platform: a.platform as Article["platform"],
         publishedAt: a.publishedAt ? a.publishedAt.toISOString() : null,
         createdAt: a.createdAt.toISOString(),
       }));
@@ -871,7 +873,7 @@ export function ProfilePage() {
                   value={articleForm.platform}
                   onValueChange={(value) => {
                     setPlatformTouched(true);
-                    setArticleForm((prev) => ({ ...prev, platform: value }));
+                    setArticleForm((prev) => ({ ...prev, platform: value as Article["platform"] }));
                   }}
                 >
                   <SelectTrigger>
