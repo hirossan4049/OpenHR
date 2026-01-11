@@ -1,4 +1,4 @@
-// next.config.ts（プロジェクト直下）
+// next.config.ts (project root)
 import fs from 'node:fs';
 import path from 'node:path';
 import type { NextConfig } from 'next';
@@ -37,8 +37,13 @@ const validateTranslations = () => {
   }
 };
 
-// Set SKIP_TRANSLATION_VALIDATION=true to bypass translation checks when debugging locally.
-if (process.env.SKIP_TRANSLATION_VALIDATION !== 'true') {
+const skipTranslationValidation =
+  ['1', 'true'].includes(
+    (process.env.SKIP_TRANSLATION_VALIDATION ?? '').toLowerCase(),
+  );
+
+// Set SKIP_TRANSLATION_VALIDATION to skip translation checks when debugging locally.
+if (!skipTranslationValidation) {
   validateTranslations();
 }
 

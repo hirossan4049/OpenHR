@@ -5,7 +5,7 @@
 export const collectTranslationKeys = (value: unknown, prefix = ''): string[] => {
   if (Array.isArray(value)) {
     return value.flatMap((item, index) => {
-      const nextPrefix = prefix ? `${prefix}[${index}]` : `${index}`;
+      const nextPrefix = prefix ? `${prefix}[${index}]` : String(index);
       return collectTranslationKeys(item, nextPrefix);
     });
   }
