@@ -32,6 +32,7 @@ function isPublicPath(pathname: string) {
     '/',
     '/members',
     '/projects',
+    '/auth', // allow sign-in/up flows without an existing session
     '/my', // page itself handles showing sign-in prompt if needed
   ];
 
