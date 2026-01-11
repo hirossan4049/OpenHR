@@ -1,6 +1,17 @@
+import { redirect } from "next/navigation";
 import { AuthForms } from "~/app/_components/auth-forms";
+import { auth } from "~/server/auth";
 
-export default function SignInPage() {
+type Props = Readonly<{ params: { locale: string } }>;
+
+export default async function SignInPage({ params }: Props) {
+  const session = await auth();
+  const locale = params.locale || "en";
+
+  if (session) {
+    redirect(`/${locale}/dashboard`);
+  }
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-12">
       <div className="w-full max-w-md">

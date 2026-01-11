@@ -1,12 +1,21 @@
 import { Award, Database, FolderKanban, Sparkles, TrendingUp, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import { redirect } from "next/navigation";
 import { Link } from "~/navigation";
 import { auth } from "~/server/auth";
 import { HydrateClient } from "~/trpc/server";
 
-export default async function Home() {
-  const t = await getTranslations('HomePage');
+type Props = Readonly<{ params: { locale: string } }>;
+
+export default async function Home({ params }: Props) {
   const session = await auth();
+
+  if (session) {
+    const locale = params?.locale ?? "en";
+    redirect(`/${locale}/dashboard`);
+  }
+
+  const t = await getTranslations('HomePage');
 
   if (!session) {
     const heroHighlights = [
