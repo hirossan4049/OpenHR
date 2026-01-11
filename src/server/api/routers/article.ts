@@ -7,11 +7,19 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const dateInput = z.preprocess((value) => {
+  if (typeof value === "string" && value) {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? value : new Date(parsed);
+  }
+  return value;
+}, z.date());
+
 const createArticleSchema = z.object({
   title: z.string().min(1).max(200),
   url: z.string().url(),
   platform: z.enum(["qiita", "zenn", "note", "blog", "other"]),
-  publishedAt: z.date().optional(),
+  publishedAt: dateInput.optional(),
   description: z.string().max(500).optional(),
   tags: z.array(z.string()).optional(),
   isPublic: z.boolean().default(true),

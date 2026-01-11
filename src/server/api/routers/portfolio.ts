@@ -7,6 +7,14 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 
+const dateInput = z.preprocess((value) => {
+  if (typeof value === "string" && value) {
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? value : new Date(parsed);
+  }
+  return value;
+}, z.date());
+
 const createPortfolioSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(2000),
@@ -14,8 +22,8 @@ const createPortfolioSchema = z.object({
   imageUrl: z.string().url().optional(),
   projectType: z.enum(["personal", "hackathon", "team", "assignment"]).default("personal"),
   technologies: z.array(z.string()).optional(),
-  startDate: z.date().optional(),
-  endDate: z.date().optional(),
+  startDate: dateInput.optional(),
+  endDate: dateInput.optional(),
   isPublic: z.boolean().default(true),
 });
 
