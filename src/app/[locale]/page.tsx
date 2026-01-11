@@ -1,6 +1,5 @@
 import { Award, Database, FolderKanban, Sparkles, TrendingUp, Users } from "lucide-react";
 import { getTranslations } from "next-intl/server";
-import { AuthForms } from "~/app/_components/auth-forms";
 import { Link } from "~/navigation";
 import { auth } from "~/server/auth";
 import { HydrateClient } from "~/trpc/server";
@@ -136,7 +135,32 @@ export default async function Home() {
                   <div className="absolute -inset-4 rounded-[30px] bg-purple-500/20 blur-2xl" aria-hidden />
                   <div className="relative rounded-[30px] border border-white/10 bg-slate-900/70 p-1 shadow-2xl shadow-purple-500/30">
                     <div className="rounded-[24px] bg-slate-950/80 p-6">
-                      <AuthForms />
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/60">
+                        {t("cta.signIn")}
+                      </p>
+                      <h2 className="mt-3 text-2xl font-semibold text-white">
+                        {t("ctaBanner.title")}
+                      </h2>
+                      <p className="mt-2 text-sm text-white/70">
+                        {t("ctaBanner.description")}
+                      </p>
+                      <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                        <Link
+                          href="/auth/signin"
+                          className="rounded-2xl bg-white px-5 py-3 text-center text-sm font-semibold text-slate-900 transition hover:bg-slate-100"
+                        >
+                          {t("cta.signIn")}
+                        </Link>
+                        <Link
+                          href="/members"
+                          className="rounded-2xl border border-white/30 px-5 py-3 text-center text-sm font-semibold text-white/80 transition hover:border-white/60 hover:text-white"
+                        >
+                          {t("cta.learnMore")}
+                        </Link>
+                      </div>
+                      <p className="mt-4 text-xs text-white/60">
+                        {t("description")}
+                      </p>
                     </div>
                   </div>
                 </div>
