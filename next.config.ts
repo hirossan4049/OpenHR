@@ -22,11 +22,31 @@ const validateTranslations = () => {
   };
 
   const compareKeys = (
-    source: Record<string, unknown>,
+    source: Record<string, unknown> | unknown[],
     target: unknown,
     missing: string[],
     prefix = '',
   ) => {
+    if (Array.isArray(source)) {
+      const targetArray = Array.isArray(target) ? target : undefined;
+      source.forEach((item, index) => {
+        const nextPrefix = prefix ? `${prefix}[${index}]` : `${index}`;
+        const targetValue = targetArray?.[index];
+
+        if (isObject(item) || Array.isArray(item)) {
+          compareKeys(
+            item as Record<string, unknown> | unknown[],
+            targetValue,
+            missing,
+            nextPrefix,
+          );
+        } else if (!targetArray || !(index in targetArray)) {
+          missing.push(nextPrefix);
+        }
+      });
+      return;
+    }
+
     if (!isObject(source)) return;
     const targetObject = isObject(target) ? target : undefined;
 
@@ -72,11 +92,7 @@ const validateTranslations = () => {
   }
 };
 
-const shouldValidateTranslations =
-  process.env.NEXT_PHASE === 'phase-production-build' ||
-  process.env.NODE_ENV === 'production';
-
-if (shouldValidateTranslations) {
+if (process.env.SKIP_TRANSLATION_VALIDATION !== 'true') {
   validateTranslations();
 }
 
