@@ -9,10 +9,18 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
-import { Github, Mail, User, Trophy, Calendar, Briefcase, FileText, ExternalLink } from "lucide-react";
+import { Github, Mail, User, Trophy, Calendar, Briefcase, FileText, ExternalLink, PlusCircle, Pencil } from "lucide-react";
 import { TagPill } from "~/components/ui/tag-pill";
 import { RolePill } from "~/components/ui/role-pill";
 import { api } from "~/trpc/react";
+import { Button as UiButton } from "~/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "~/components/ui/dialog";
+import { Label } from "~/components/ui/label";
+import { Input } from "~/components/ui/input";
+import { Textarea } from "~/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
+import { toast } from "~/components/ui/use-toast";
+import { Link } from "~/navigation";
 
 interface UserProfile {
   name: string;
@@ -81,6 +89,62 @@ export function ProfilePage() {
   const [articles, setArticles] = useState<Article[]>([]);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [portfolioDialog, setPortfolioDialog] = useState<{ open: boolean; mode: "create" | "edit"; data?: Portfolio }>({ open: false, mode: "create" });
+  const [articleDialog, setArticleDialog] = useState<{ open: boolean; mode: "create" | "edit"; data?: Article }>({ open: false, mode: "create" });
+  const utils = api.useUtils();
+  const [portfolioForm, setPortfolioForm] = useState({
+    title: "",
+    description: "",
+    url: "",
+    projectType: "personal" as Portfolio["projectType"],
+    technologies: "",
+    startDate: "",
+    endDate: "",
+  });
+  const [articleForm, setArticleForm] = useState({
+    title: "",
+    url: "",
+    platform: "qiita",
+    publishedAt: "",
+    description: "",
+    tags: "",
+  });
+
+  const portfolioCreate = api.portfolio.create.useMutation({
+    onSuccess: async () => {
+      toast({ title: "作品を追加しました" });
+      await utils.portfolio.getMyPortfolios.invalidate();
+      closePortfolioDialog();
+    },
+    onError: () => toast({ title: "作品の保存に失敗しました", variant: "destructive" }),
+  });
+
+  const portfolioUpdate = api.portfolio.update.useMutation({
+    onSuccess: async () => {
+      toast({ title: "作品を更新しました" });
+      await utils.portfolio.getMyPortfolios.invalidate();
+      closePortfolioDialog();
+    },
+    onError: () => toast({ title: "作品の更新に失敗しました", variant: "destructive" }),
+  });
+
+  const articleCreate = api.article.create.useMutation({
+    onSuccess: async () => {
+      toast({ title: "記事を追加しました" });
+      await utils.article.getMyArticles.invalidate();
+      closeArticleDialog();
+    },
+    onError: () => toast({ title: "記事の保存に失敗しました", variant: "destructive" }),
+  });
+
+  const articleUpdate = api.article.update.useMutation({
+    onSuccess: async () => {
+      toast({ title: "記事を更新しました" });
+      await utils.article.getMyArticles.invalidate();
+      closeArticleDialog();
+    },
+    onError: () => toast({ title: "記事の更新に失敗しました", variant: "destructive" }),
+  });
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -154,6 +218,98 @@ export function ProfilePage() {
   const handleProfileSave = (data: UserProfile) => {
     setProfile((prev) => ({ ...prev, ...data }));
     setIsEditing(false);
+  };
+
+  const openPortfolioDialog = (mode: "create" | "edit", data?: Portfolio) => {
+    setPortfolioDialog({ open: true, mode, data });
+    setPortfolioForm({
+      title: data?.title ?? "",
+      description: data?.description ?? "",
+      url: data?.url ?? "",
+      projectType: data?.projectType ?? "personal",
+      technologies: data?.technologies ? JSON.parse(data.technologies).join(", ") : "",
+      startDate: data?.startDate ? data.startDate.slice(0, 10) : "",
+      endDate: data?.endDate ? data.endDate.slice(0, 10) : "",
+    });
+  };
+
+  const closePortfolioDialog = () => {
+    setPortfolioDialog({ open: false, mode: "create" });
+    setPortfolioForm({
+      title: "",
+      description: "",
+      url: "",
+      projectType: "personal",
+      technologies: "",
+      startDate: "",
+      endDate: "",
+    });
+  };
+
+  const submitPortfolio = () => {
+    const payload = {
+      title: portfolioForm.title.trim(),
+      description: portfolioForm.description.trim(),
+      url: portfolioForm.url.trim() || undefined,
+      projectType: portfolioForm.projectType,
+      technologies: portfolioForm.technologies
+        ? portfolioForm.technologies.split(",").map((t) => t.trim()).filter(Boolean)
+        : undefined,
+      startDate: portfolioForm.startDate ? new Date(portfolioForm.startDate) : undefined,
+      endDate: portfolioForm.endDate ? new Date(portfolioForm.endDate) : undefined,
+      imageUrl: undefined as string | undefined,
+      isPublic: true,
+    };
+
+    if (portfolioDialog.mode === "edit" && portfolioDialog.data) {
+      portfolioUpdate.mutate({ id: portfolioDialog.data.id, ...payload });
+    } else {
+      portfolioCreate.mutate(payload);
+    }
+  };
+
+  const openArticleDialog = (mode: "create" | "edit", data?: Article) => {
+    setArticleDialog({ open: true, mode, data });
+    setArticleForm({
+      title: data?.title ?? "",
+      url: data?.url ?? "",
+      platform: data?.platform ?? "qiita",
+      publishedAt: data?.publishedAt ? data.publishedAt.slice(0, 10) : "",
+      description: data?.description ?? "",
+      tags: data?.tags ? JSON.parse(data.tags).join(", ") : "",
+    });
+  };
+
+  const closeArticleDialog = () => {
+    setArticleDialog({ open: false, mode: "create" });
+    setArticleForm({
+      title: "",
+      url: "",
+      platform: "qiita",
+      publishedAt: "",
+      description: "",
+      tags: "",
+    });
+  };
+
+  const submitArticle = () => {
+    const payload = {
+      title: articleForm.title.trim(),
+      url: articleForm.url.trim(),
+      platform: articleForm.platform as Article["platform"],
+      publishedAt: articleForm.publishedAt ? new Date(articleForm.publishedAt) : undefined,
+      description: articleForm.description.trim() || undefined,
+      tags: articleForm.tags
+        ? articleForm.tags.split(",").map((t) => t.trim()).filter(Boolean)
+        : undefined,
+      isPublic: true,
+    };
+
+    if (articleDialog.mode === "edit" && articleDialog.data) {
+      articleUpdate.mutate({ id: articleDialog.data.id, ...payload });
+    } else {
+      articleCreate.mutate(payload);
+    }
   };
 
   if (status === "loading" || isLoading) {
@@ -273,6 +429,12 @@ export function ProfilePage() {
                     ポートフォリオ
                   </CardTitle>
                   <CardDescription>作成した作品やアプリケーションの一覧です。</CardDescription>
+                  <div className="flex gap-2 pt-2">
+                    <UiButton size="sm" onClick={() => openPortfolioDialog("create")}>
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      作品を追加
+                    </UiButton>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {portfolios.length > 0 ? (
@@ -295,6 +457,9 @@ export function ProfilePage() {
                                     <ExternalLink className="h-4 w-4" />
                                   </a>
                                 )}
+                                <UiButton variant="ghost" size="icon" onClick={() => openPortfolioDialog("edit", portfolio)}>
+                                  <Pencil className="h-4 w-4" />
+                                </UiButton>
                               </div>
                             </div>
                             <p className="text-muted-foreground text-sm mb-3">{portfolio.description}</p>
@@ -335,6 +500,12 @@ export function ProfilePage() {
                     技術記事
                   </CardTitle>
                   <CardDescription>執筆した技術記事やブログの一覧です。</CardDescription>
+                  <div className="flex gap-2 pt-2">
+                    <UiButton size="sm" onClick={() => openArticleDialog("create")}>
+                      <PlusCircle className="h-4 w-4 mr-1" />
+                      記事を追加
+                    </UiButton>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {articles.length > 0 ? (
@@ -343,7 +514,7 @@ export function ProfilePage() {
                         const tags = article.tags ? JSON.parse(article.tags) : [];
                         return (
                           <div key={article.id} className="border rounded-lg p-4">
-                            <div className="flex justify-between items-start mb-2">
+                              <div className="flex justify-between items-start mb-2">
                               <h3 className="font-semibold text-lg">
                                 <a href={article.url} target="_blank" rel="noopener noreferrer"
                                    className="hover:text-blue-600 flex items-center gap-2">
@@ -363,6 +534,9 @@ export function ProfilePage() {
                                     {new Date(article.publishedAt).toLocaleDateString()}
                                   </span>
                                 )}
+                                <UiButton variant="ghost" size="icon" onClick={() => openArticleDialog("edit", article)}>
+                                  <Pencil className="h-4 w-4" />
+                                </UiButton>
                               </div>
                             </div>
                             {article.description && (
@@ -396,6 +570,11 @@ export function ProfilePage() {
                     Hackathon History
                   </CardTitle>
                   <CardDescription>Your participation history in hackathons.</CardDescription>
+                  <div className="pt-2">
+                    <UiButton variant="outline" size="sm" asChild>
+                      <Link href="/projects">ハッカソン案件を探す</Link>
+                    </UiButton>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   {hackathonHistory.length > 0 ? (
@@ -449,6 +628,14 @@ export function ProfilePage() {
                 <CardHeader>
                   <CardTitle>{t("projects")}</CardTitle>
                   <CardDescription>Projects you have participated in.</CardDescription>
+                  <div className="flex gap-2 pt-2">
+                    <UiButton size="sm" asChild>
+                      <Link href="/projects/new">プロジェクトを作成</Link>
+                    </UiButton>
+                    <UiButton variant="outline" size="sm" asChild>
+                      <Link href="/my">自分のプロジェクトを編集</Link>
+                    </UiButton>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">No projects to display yet.</p>
@@ -469,6 +656,182 @@ export function ProfilePage() {
           </Tabs>
         </div>
       </div>
+
+      {/* Portfolio Dialog */}
+      <Dialog open={portfolioDialog.open} onOpenChange={(open) => open ? setPortfolioDialog((prev) => ({ ...prev, open })) : closePortfolioDialog()}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{portfolioDialog.mode === "edit" ? "作品を編集" : "作品を追加"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="portfolio-title">タイトル</Label>
+              <Input
+                id="portfolio-title"
+                value={portfolioForm.title}
+                onChange={(e) => setPortfolioForm((prev) => ({ ...prev, title: e.target.value }))}
+                placeholder="作品名"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="portfolio-description">概要</Label>
+              <Textarea
+                id="portfolio-description"
+                value={portfolioForm.description}
+                onChange={(e) => setPortfolioForm((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="どんな作品か簡単に書いてください"
+                rows={3}
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>種別</Label>
+                <Select
+                  value={portfolioForm.projectType}
+                  onValueChange={(value) => setPortfolioForm((prev) => ({ ...prev, projectType: value as Portfolio["projectType"] }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="選択してください" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="personal">個人開発</SelectItem>
+                    <SelectItem value="team">チーム開発</SelectItem>
+                    <SelectItem value="hackathon">ハッカソン</SelectItem>
+                    <SelectItem value="assignment">課題</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="portfolio-url">URL</Label>
+                <Input
+                  id="portfolio-url"
+                  value={portfolioForm.url}
+                  onChange={(e) => setPortfolioForm((prev) => ({ ...prev, url: e.target.value }))}
+                  placeholder="https://example.com"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="portfolio-technologies">使用技術（カンマ区切り）</Label>
+              <Input
+                id="portfolio-technologies"
+                value={portfolioForm.technologies}
+                onChange={(e) => setPortfolioForm((prev) => ({ ...prev, technologies: e.target.value }))}
+                placeholder="React, Next.js, Prisma"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label htmlFor="portfolio-start">開始日</Label>
+                <Input
+                  id="portfolio-start"
+                  type="date"
+                  value={portfolioForm.startDate}
+                  onChange={(e) => setPortfolioForm((prev) => ({ ...prev, startDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="portfolio-end">終了日</Label>
+                <Input
+                  id="portfolio-end"
+                  type="date"
+                  value={portfolioForm.endDate}
+                  onChange={(e) => setPortfolioForm((prev) => ({ ...prev, endDate: e.target.value }))}
+                />
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <UiButton variant="outline" onClick={closePortfolioDialog}>キャンセル</UiButton>
+            <UiButton onClick={submitPortfolio} disabled={portfolioCreate.isPending || portfolioUpdate.isPending}>
+              {portfolioDialog.mode === "edit" ? "更新" : "追加"}
+            </UiButton>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Article Dialog */}
+      <Dialog open={articleDialog.open} onOpenChange={(open) => open ? setArticleDialog((prev) => ({ ...prev, open })) : closeArticleDialog()}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{articleDialog.mode === "edit" ? "記事を編集" : "記事を追加"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="article-title">タイトル</Label>
+              <Input
+                id="article-title"
+                value={articleForm.title}
+                onChange={(e) => setArticleForm((prev) => ({ ...prev, title: e.target.value }))}
+                placeholder="記事タイトル"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="article-url">URL</Label>
+              <Input
+                id="article-url"
+                value={articleForm.url}
+                onChange={(e) => setArticleForm((prev) => ({ ...prev, url: e.target.value }))}
+                placeholder="https://example.com"
+              />
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label>プラットフォーム</Label>
+                <Select
+                  value={articleForm.platform}
+                  onValueChange={(value) => setArticleForm((prev) => ({ ...prev, platform: value }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="選択してください" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="qiita">Qiita</SelectItem>
+                    <SelectItem value="zenn">Zenn</SelectItem>
+                    <SelectItem value="note">note</SelectItem>
+                    <SelectItem value="blog">ブログ</SelectItem>
+                    <SelectItem value="other">その他</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="article-date">公開日</Label>
+                <Input
+                  id="article-date"
+                  type="date"
+                  value={articleForm.publishedAt}
+                  onChange={(e) => setArticleForm((prev) => ({ ...prev, publishedAt: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="article-description">概要</Label>
+              <Textarea
+                id="article-description"
+                value={articleForm.description}
+                onChange={(e) => setArticleForm((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="どんな内容の記事か簡単に書いてください"
+                rows={3}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="article-tags">タグ（カンマ区切り）</Label>
+              <Input
+                id="article-tags"
+                value={articleForm.tags}
+                onChange={(e) => setArticleForm((prev) => ({ ...prev, tags: e.target.value }))}
+                placeholder="Next.js, TypeScript"
+              />
+            </div>
+          </div>
+          <div className="flex justify-end gap-2">
+            <UiButton variant="outline" onClick={closeArticleDialog}>キャンセル</UiButton>
+            <UiButton onClick={submitArticle} disabled={articleCreate.isPending || articleUpdate.isPending}>
+              {articleDialog.mode === "edit" ? "更新" : "追加"}
+            </UiButton>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
