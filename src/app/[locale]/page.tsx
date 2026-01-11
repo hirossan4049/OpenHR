@@ -5,13 +5,13 @@ import { Link } from "~/navigation";
 import { auth } from "~/server/auth";
 import { HydrateClient } from "~/trpc/server";
 
-type Props = Readonly<{ params: { locale: string } }>;
+type Props = Readonly<{ params: Promise<{ locale?: string }> }>;
 
 export default async function Home({ params }: Props) {
   const session = await auth();
+  const { locale = "en" } = await params;
 
   if (session) {
-    const locale = params?.locale ?? "en";
     redirect(`/${locale}/dashboard`);
   }
 
