@@ -4,31 +4,42 @@ import path from 'node:path';
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null;
+
 const validateTranslations = () => {
   const basePath = path.join(process.cwd(), 'messages');
   const load = (locale: string) =>
-    JSON.parse(fs.readFileSync(path.join(basePath, `${locale}.json`), 'utf8'));
+    JSON.parse(
+      fs.readFileSync(path.join(basePath, `${locale}.json`), 'utf8'),
+    ) as Record<string, unknown>;
 
   const compareKeys = (
-    source: Record<string, any>,
-    target: Record<string, any>,
+    source: Record<string, unknown>,
+    target: unknown,
     missing: string[],
     prefix = '',
   ) => {
-    if (typeof source !== 'object' || source === null) return;
+    if (!isObject(source)) return;
+    const targetObject = isObject(target) ? target : undefined;
 
     for (const key of Object.keys(source)) {
       const fullKey = prefix ? `${prefix}.${key}` : key;
-      if (!(target && key in target)) {
+      if (!(targetObject && key in targetObject)) {
         missing.push(fullKey);
         continue;
       }
 
       const sourceValue = source[key];
-      const targetValue = target[key];
+      const targetValue = targetObject[key];
 
-      if (typeof sourceValue === 'object' && sourceValue !== null) {
-        compareKeys(sourceValue, targetValue as Record<string, any>, missing, fullKey);
+      if (isObject(sourceValue)) {
+        compareKeys(
+          sourceValue,
+          isObject(targetValue) ? targetValue : undefined,
+          missing,
+          fullKey,
+        );
       }
     }
   };

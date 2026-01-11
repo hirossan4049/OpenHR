@@ -28,8 +28,11 @@ describe('translations', () => {
     const enKeys = collectKeys(loadMessages('en'));
     const jaKeys = collectKeys(loadMessages('ja'));
 
-    const missingInJa = enKeys.filter((key) => !jaKeys.includes(key));
-    const missingInEn = jaKeys.filter((key) => !enKeys.includes(key));
+    const jaKeysSet = new Set(jaKeys);
+    const enKeysSet = new Set(enKeys);
+
+    const missingInJa = enKeys.filter((key) => !jaKeysSet.has(key));
+    const missingInEn = jaKeys.filter((key) => !enKeysSet.has(key));
 
     expect(missingInJa).toEqual([]);
     expect(missingInEn).toEqual([]);
