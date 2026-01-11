@@ -2,11 +2,11 @@ import { redirect } from "next/navigation";
 import { AuthForms } from "~/app/_components/auth-forms";
 import { auth } from "~/server/auth";
 
-type Props = Readonly<{ params: { locale: string } }>;
+type Props = Readonly<{ params: Promise<{ locale?: string }> }>;
 
 export default async function SignInPage({ params }: Props) {
   const session = await auth();
-  const locale = params.locale || "en";
+  const { locale = "en" } = await params;
 
   if (session) {
     redirect(`/${locale}/dashboard`);
