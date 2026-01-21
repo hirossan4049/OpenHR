@@ -10,6 +10,8 @@ ENV PORT=3000
 COPY bun.lock package.json ./
 COPY prisma ./prisma
 RUN bun install --frozen-lockfile
+# Ensure OpenSSL is available for PostgreSQL client
+RUN apt-get update && apt-get install -y openssl libssl3 ca-certificates && rm -rf /var/lib/apt/lists/*
 
 # Build application
 COPY . .
