@@ -127,8 +127,8 @@ Main authentication component that toggles between login and registration modes.
 The following environment variables are required:
 
 ```env
-# Database
-DATABASE_URL="file:./dev.db"
+# Database (PostgreSQL)
+DATABASE_URL="postgresql://user:password@localhost:5432/openhr"
 
 # NextAuth.js
 AUTH_SECRET="your-secret-key"

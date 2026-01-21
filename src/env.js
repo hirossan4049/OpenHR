@@ -6,7 +6,7 @@ const shouldSkipValidation =
   process.env.SKIP_ENV_VALIDATION === "1" || process.env.SKIP_ENV_VALIDATION === "true";
 const appEnv = process.env.APP_ENV ?? "development";
 const fallbackAuthSecret = randomUUID();
-const fallbackDatabaseUrl = "file:./db.sqlite";
+const fallbackDatabaseUrl = "postgresql://user:password@localhost:5432/openhr";
 const fallbackOauthDefaults = {
   discordId: `dev-placeholder-discord-id-${randomUUID()}`,
   discordSecret: `dev-placeholder-discord-secret-${randomUUID()}`,
@@ -44,7 +44,10 @@ export const env = createEnv({
     AUTH_GOOGLE_ID: z.string().default(process.env.AUTH_GOOGLE_ID),
     AUTH_GOOGLE_SECRET: z.string().default(process.env.AUTH_GOOGLE_SECRET),
     DISCORD_BOT_TOKEN: z.string().default(process.env.DISCORD_BOT_TOKEN),
-    DATABASE_URL: z.string().default(fallbackDatabaseUrl),
+    DATABASE_URL: z
+      .string()
+      .url()
+      .default(fallbackDatabaseUrl),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
