@@ -17,6 +17,7 @@ import {
   removeProjectMemberSchema,
   updateProjectMemberRoleSchema,
 } from "~/lib/validation/project";
+import { cached, cache, CACHE_KEYS, CACHE_TTL } from "~/server/cache";
 
 export const projectRouter = createTRPCRouter({
   // Get all projects with optional filtering
@@ -24,46 +25,122 @@ export const projectRouter = createTRPCRouter({
     .input(projectSearchSchema)
     .query(async ({ ctx, input }) => {
       const { search, type, skillId, organizerId, recruitmentStatus, limit, offset } = input;
+      const cacheKey = CACHE_KEYS.projects(
+        JSON.stringify({ search, type, skillId, organizerId, recruitmentStatus, limit, offset })
+      );
 
-      const where: any = {};
+      return cached(cacheKey, CACHE_TTL.short, async () => {
+        const where: any = {};
 
-      // Build search conditions
-      if (search) {
-        where.OR = [
-          { title: { contains: search } },
-          { description: { contains: search } },
-        ];
-      }
+        // Build search conditions
+        if (search) {
+          where.OR = [
+            { title: { contains: search } },
+            { description: { contains: search } },
+          ];
+        }
 
-      if (type) {
-        where.type = type;
-      }
+        if (type) {
+          where.type = type;
+        }
 
-      if (recruitmentStatus) {
-        where.recruitmentStatus = recruitmentStatus;
-      }
+        if (recruitmentStatus) {
+          where.recruitmentStatus = recruitmentStatus;
+        }
 
-      if (organizerId) {
-        where.organizerId = organizerId;
-      }
+        if (organizerId) {
+          where.organizerId = organizerId;
+        }
 
-      if (skillId) {
-        where.requiredSkills = {
-          some: {
-            skillId: skillId,
-          },
+        if (skillId) {
+          where.requiredSkills = {
+            some: {
+              skillId: skillId,
+            },
+          };
+        }
+
+        const [projects, total] = await Promise.all([
+          ctx.db.project.findMany({
+            where,
+            include: {
+              organizer: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+              requiredSkills: {
+                include: {
+                  skill: true,
+                },
+              },
+              members: {
+                select: {
+                  id: true,
+                },
+              },
+              _count: {
+                select: {
+                  applications: true,
+                  members: true,
+                },
+              },
+            },
+            orderBy: [
+              { createdAt: "desc" },
+            ],
+            take: limit,
+            skip: offset,
+          }),
+          ctx.db.project.count({ where }),
+        ]);
+
+        return {
+          projects: projects.map((project) => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            type: project.type,
+            recruitmentStatus: project.recruitmentStatus,
+            maxMembers: project.maxMembers,
+            startDate: project.startDate,
+            endDate: project.endDate,
+            createdAt: project.createdAt,
+            organizer: project.organizer,
+            requiredSkills: project.requiredSkills.map((rs) => ({
+              skillId: rs.skillId,
+              skillName: rs.skill.name,
+              minLevel: rs.minLevel,
+              priority: rs.priority,
+              category: rs.skill.category,
+            })),
+            memberCount: project._count.members,
+            applicationCount: project._count.applications,
+          })),
+          total,
+          hasMore: offset + limit < total,
         };
-      }
+      });
+    }),
 
-      const [projects, total] = await Promise.all([
-        ctx.db.project.findMany({
-          where,
+  // Get project by ID
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const cacheKey = CACHE_KEYS.project(input.id);
+
+      return cached(cacheKey, CACHE_TTL.short, async () => {
+        const project = await ctx.db.project.findUnique({
+          where: { id: input.id },
           include: {
             organizer: {
               select: {
                 id: true,
                 name: true,
                 image: true,
+                bio: true,
               },
             },
             requiredSkills: {
@@ -72,28 +149,33 @@ export const projectRouter = createTRPCRouter({
               },
             },
             members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    bio: true,
+                  },
+                },
+              },
+            },
+            applications: {
+              where: {
+                status: "pending",
+              },
               select: {
                 id: true,
               },
             },
-            _count: {
-              select: {
-                applications: true,
-                members: true,
-              },
-            },
           },
-          orderBy: [
-            { createdAt: "desc" },
-          ],
-          take: limit,
-          skip: offset,
-        }),
-        ctx.db.project.count({ where }),
-      ]);
+        });
 
-      return {
-        projects: projects.map((project) => ({
+        if (!project) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
+        }
+
+        return {
           id: project.id,
           title: project.title,
           description: project.description,
@@ -103,6 +185,7 @@ export const projectRouter = createTRPCRouter({
           startDate: project.startDate,
           endDate: project.endDate,
           createdAt: project.createdAt,
+          updatedAt: project.updatedAt,
           organizer: project.organizer,
           requiredSkills: project.requiredSkills.map((rs) => ({
             skillId: rs.skillId,
@@ -111,88 +194,15 @@ export const projectRouter = createTRPCRouter({
             priority: rs.priority,
             category: rs.skill.category,
           })),
-          memberCount: project._count.members,
-          applicationCount: project._count.applications,
-        })),
-        total,
-        hasMore: offset + limit < total,
-      };
-    }),
-
-  // Get project by ID
-  getById: publicProcedure
-    .input(z.object({ id: z.string() }))
-    .query(async ({ ctx, input }) => {
-      const project = await ctx.db.project.findUnique({
-        where: { id: input.id },
-        include: {
-          organizer: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              bio: true,
-            },
-          },
-          requiredSkills: {
-            include: {
-              skill: true,
-            },
-          },
-          members: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true,
-                  bio: true,
-                },
-              },
-            },
-          },
-          applications: {
-            where: {
-              status: "pending",
-            },
-            select: {
-              id: true,
-            },
-          },
-        },
+          members: project.members.map((member) => ({
+            id: member.id,
+            role: member.role,
+            joinedAt: member.joinedAt,
+            user: member.user,
+          })),
+          pendingApplicationsCount: project.applications.length,
+        };
       });
-
-      if (!project) {
-        throw new TRPCError({ code: "NOT_FOUND", message: "Project not found" });
-      }
-
-      return {
-        id: project.id,
-        title: project.title,
-        description: project.description,
-        type: project.type,
-        recruitmentStatus: project.recruitmentStatus,
-        maxMembers: project.maxMembers,
-        startDate: project.startDate,
-        endDate: project.endDate,
-        createdAt: project.createdAt,
-        updatedAt: project.updatedAt,
-        organizer: project.organizer,
-        requiredSkills: project.requiredSkills.map((rs) => ({
-          skillId: rs.skillId,
-          skillName: rs.skill.name,
-          minLevel: rs.minLevel,
-          priority: rs.priority,
-          category: rs.skill.category,
-        })),
-        members: project.members.map((member) => ({
-          id: member.id,
-          role: member.role,
-          joinedAt: member.joinedAt,
-          user: member.user,
-        })),
-        pendingApplicationsCount: project.applications.length,
-      };
     }),
 
   // Create new project (protected)
@@ -237,6 +247,9 @@ export const projectRouter = createTRPCRouter({
           },
         },
       });
+
+      // Invalidate projects list cache
+      cache.invalidate("projects:");
 
       return project;
     }),
@@ -292,6 +305,10 @@ export const projectRouter = createTRPCRouter({
         },
       });
 
+      // Invalidate caches
+      cache.invalidate("projects:");
+      cache.invalidate(`project:${id}`);
+
       return project;
     }),
 
@@ -315,10 +332,16 @@ export const projectRouter = createTRPCRouter({
         throw new TRPCError({ code: "FORBIDDEN", message: "Only the organizer can update recruitment status" });
       }
 
-      return ctx.db.project.update({
+      const updated = await ctx.db.project.update({
         where: { id: projectId },
         data: { recruitmentStatus: status },
       });
+
+      // Invalidate caches
+      cache.invalidate("projects:");
+      cache.invalidate(`project:${projectId}`);
+
+      return updated;
     }),
 
   // Add member directly (organizer only)
@@ -388,6 +411,10 @@ export const projectRouter = createTRPCRouter({
         }
       }
 
+      // Invalidate caches
+      cache.invalidate("projects:");
+      cache.invalidate(`project:${projectId}`);
+
       return member;
     }),
 
@@ -425,6 +452,10 @@ export const projectRouter = createTRPCRouter({
       await ctx.db.projectMember.delete({
         where: { id: membership.id },
       });
+
+      // Invalidate caches
+      cache.invalidate("projects:");
+      cache.invalidate(`project:${projectId}`);
 
       return { success: true };
     }),
@@ -672,6 +703,10 @@ export const projectRouter = createTRPCRouter({
             role: "member",
           },
         });
+
+        // Invalidate caches
+        cache.invalidate("projects:");
+        cache.invalidate(`project:${application.project.id}`);
       }
 
       return updatedApplication;

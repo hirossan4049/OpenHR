@@ -7,6 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
 import { hasRole } from "~/lib/auth/roles";
+import { cached, cache, CACHE_KEYS, CACHE_TTL } from "~/server/cache";
 
 export const userRouter = createTRPCRouter({
   // Current user's basic info including role
@@ -167,14 +168,15 @@ export const userRouter = createTRPCRouter({
 
   // Get all skills for filter dropdown
   getAllSkills: publicProcedure.query(async ({ ctx }) => {
-    const skills = await ctx.db.skill.findMany({
-      orderBy: [
-        { category: "asc" },
-        { name: "asc" },
-      ],
+    return cached(CACHE_KEYS.skills, CACHE_TTL.long, async () => {
+      const skills = await ctx.db.skill.findMany({
+        orderBy: [
+          { category: "asc" },
+          { name: "asc" },
+        ],
+      });
+      return skills;
     });
-
-    return skills;
   }),
 
   // Search skills with aliases support
@@ -184,38 +186,41 @@ export const userRouter = createTRPCRouter({
       const { query, limit } = input;
       const q = query.trim();
       const qLower = q.toLowerCase();
+      const cacheKey = CACHE_KEYS.skillSearch(`${qLower}:${limit}`);
 
-      // Fetch a reasonable superset and filter in memory to ensure case-insensitive matching across JSON aliases
-      const all = await ctx.db.skill.findMany({
-        orderBy: [
-          { verified: "desc" },
-          { name: "asc" },
-        ],
-        take: 1000,
+      return cached(cacheKey, CACHE_TTL.medium, async () => {
+        // Fetch a reasonable superset and filter in memory to ensure case-insensitive matching across JSON aliases
+        const all = await ctx.db.skill.findMany({
+          orderBy: [
+            { verified: "desc" },
+            { name: "asc" },
+          ],
+          take: 1000,
+        });
+
+        const filtered = all.filter((s) => {
+          let aliases: string[] = [];
+          try {
+            aliases = s.aliases ? (JSON.parse(s.aliases) as string[]) : [];
+          } catch {
+            aliases = [];
+          }
+          const haystack = [s.name ?? "", s.slug ?? "", ...aliases].join(" ").toLowerCase();
+          return haystack.includes(qLower);
+        });
+
+        const results = filtered.slice(0, limit);
+
+        return results.map((skill) => ({
+          id: skill.id,
+          name: skill.name,
+          slug: skill.slug,
+          logoUrl: skill.logoUrl,
+          aliases: (() => { try { return skill.aliases ? JSON.parse(skill.aliases) : []; } catch { return []; } })(),
+          verified: skill.verified,
+          category: skill.category,
+        }));
       });
-
-      const filtered = all.filter((s) => {
-        let aliases: string[] = [];
-        try {
-          aliases = s.aliases ? (JSON.parse(s.aliases) as string[]) : [];
-        } catch {
-          aliases = [];
-        }
-        const haystack = [s.name ?? "", s.slug ?? "", ...aliases].join(" ").toLowerCase();
-        return haystack.includes(qLower);
-      });
-
-      const results = filtered.slice(0, limit);
-
-      return results.map((skill) => ({
-        id: skill.id,
-        name: skill.name,
-        slug: skill.slug,
-        logoUrl: skill.logoUrl,
-        aliases: (() => { try { return skill.aliases ? JSON.parse(skill.aliases) : []; } catch { return []; } })(),
-        verified: skill.verified,
-        category: skill.category,
-      }));
     }),
 
   // Suggest new skill creation
@@ -254,6 +259,9 @@ export const userRouter = createTRPCRouter({
           verified: false, // New skills start as unverified
         },
       });
+
+      // Invalidate skills cache
+      cache.invalidate("skills:");
 
       return { skill: newSkill, created: true };
     }),
