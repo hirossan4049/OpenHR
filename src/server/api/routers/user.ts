@@ -115,6 +115,32 @@ export const userRouter = createTRPCRouter({
               skill: true,
             },
           },
+          portfolios: {
+            where: { isPublic: true },
+            orderBy: { createdAt: "desc" },
+          },
+          articles: {
+            where: { isPublic: true },
+            orderBy: { publishedAt: "desc" },
+          },
+          hackathonParticipations: {
+            include: {
+              hackathon: {
+                select: {
+                  id: true,
+                  title: true,
+                  startDate: true,
+                  endDate: true,
+                },
+              },
+            },
+            orderBy: { participatedAt: "desc" },
+          },
+          userTags: {
+            include: {
+              tag: true,
+            },
+          },
         },
       });
 
@@ -145,6 +171,39 @@ export const userRouter = createTRPCRouter({
           level: us.level,
           yearsOfExp: us.yearsOfExp,
           category: us.skill.category,
+        })),
+        portfolios: member.portfolios.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          url: p.url,
+          imageUrl: p.imageUrl,
+          projectType: p.projectType,
+          technologies: p.technologies ? JSON.parse(p.technologies) : [],
+          startDate: p.startDate,
+          endDate: p.endDate,
+        })),
+        articles: member.articles.map((a: any) => ({
+          id: a.id,
+          title: a.title,
+          url: a.url,
+          platform: a.platform,
+          publishedAt: a.publishedAt,
+          description: a.description,
+          tags: a.tags ? JSON.parse(a.tags) : [],
+        })),
+        hackathonHistory: member.hackathonParticipations.map((hp: any) => ({
+          id: hp.id,
+          hackathon: hp.hackathon,
+          role: hp.role,
+          ranking: hp.ranking,
+          awards: hp.awards ? JSON.parse(hp.awards) : [],
+          participatedAt: hp.participatedAt,
+        })),
+        tags: member.userTags.map((ut: any) => ({
+          id: ut.tag.id,
+          name: ut.tag.name,
+          color: ut.tag.color,
         })),
       };
     }),

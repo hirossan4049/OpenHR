@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Github, Mail, User } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, FileText, FolderGit2, Github, Mail, Trophy, User } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -33,6 +33,35 @@ export default function MemberDetailPage() {
   const getLevelLabel = (level: number) => {
     const labels = ["", "Beginner", "Basic", "Intermediate", "Advanced", "Expert"];
     return labels[level] || "Unknown";
+  };
+
+  const getRoleLabel = (role: string) => {
+    const roleMap: Record<string, string> = {
+      participant: t("roleParticipant"),
+      organizer: t("roleOrganizer"),
+      judge: t("roleJudge"),
+      mentor: t("roleMentor"),
+    };
+    return roleMap[role] || role;
+  };
+
+  const getProjectTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      personal: t("projectTypePersonal"),
+      hackathon: t("projectTypeHackathon"),
+      team: t("projectTypeTeam"),
+      assignment: t("projectTypeAssignment"),
+    };
+    return typeMap[type] || type;
+  };
+
+  const formatDate = (date: string | Date | null | undefined) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString();
+  };
+
+  const getPlatformIcon = (_platform: string) => {
+    return <FileText className="h-4 w-4" />;
   };
 
   if (isLoading) {
@@ -125,6 +154,20 @@ export default function MemberDetailPage() {
               {member.grade && (
                 <p className="text-muted-foreground">{member.grade}</p>
               )}
+              {/* Tags */}
+              {member.tags && member.tags.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-1 mt-2">
+                  {member.tags.map((tag: { id: string; name: string; color: string }) => (
+                    <Badge
+                      key={tag.id}
+                      style={{ backgroundColor: tag.color, color: "#fff" }}
+                      className="text-xs"
+                    >
+                      {tag.name}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -204,6 +247,198 @@ export default function MemberDetailPage() {
                             </span>
                           </Badge>
                         ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Portfolios */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FolderGit2 className="h-5 w-5" />
+                {t("portfoliosSection")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!member.portfolios || member.portfolios.length === 0 ? (
+                <p className="text-muted-foreground">{t("noPortfolios")}</p>
+              ) : (
+                <div className="space-y-4">
+                  {member.portfolios.map((portfolio: any) => (
+                    <div
+                      key={portfolio.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{portfolio.title}</h4>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            {getProjectTypeLabel(portfolio.projectType)}
+                          </Badge>
+                          {portfolio.description && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {portfolio.description}
+                            </p>
+                          )}
+                          {portfolio.technologies && portfolio.technologies.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {portfolio.technologies.map((tech: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {tech}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {(portfolio.startDate || portfolio.endDate) && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(portfolio.startDate)}
+                              {portfolio.endDate && ` - ${formatDate(portfolio.endDate)}`}
+                            </div>
+                          )}
+                        </div>
+                        {portfolio.url && (
+                          <a
+                            href={portfolio.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="ml-2"
+                          >
+                            <Button variant="outline" size="sm">
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              {t("viewProject")}
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Articles */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                {t("articlesSection")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!member.articles || member.articles.length === 0 ? (
+                <p className="text-muted-foreground">{t("noArticles")}</p>
+              ) : (
+                <div className="space-y-4">
+                  {member.articles.map((article: any) => (
+                    <div
+                      key={article.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            {getPlatformIcon(article.platform)}
+                            <h4 className="font-semibold">{article.title}</h4>
+                          </div>
+                          <Badge variant="outline" className="mt-1 text-xs capitalize">
+                            {article.platform}
+                          </Badge>
+                          {article.description && (
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {article.description}
+                            </p>
+                          )}
+                          {article.tags && article.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {article.tags.map((tag: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  {tag}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {article.publishedAt && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(article.publishedAt)}
+                            </div>
+                          )}
+                        </div>
+                        <a
+                          href={article.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2"
+                        >
+                          <Button variant="outline" size="sm">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            {t("readArticle")}
+                          </Button>
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Hackathon History */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Trophy className="h-5 w-5" />
+                {t("hackathonHistorySection")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!member.hackathonHistory || member.hackathonHistory.length === 0 ? (
+                <p className="text-muted-foreground">{t("noHackathonHistory")}</p>
+              ) : (
+                <div className="space-y-4">
+                  {member.hackathonHistory.map((participation: any) => (
+                    <div
+                      key={participation.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">
+                            {participation.hackathon?.title || "Unknown Hackathon"}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {getRoleLabel(participation.role)}
+                            </Badge>
+                            {participation.ranking && (
+                              <Badge variant="default" className="text-xs">
+                                {t("ranking", { ranking: participation.ranking })}
+                              </Badge>
+                            )}
+                          </div>
+                          {participation.awards && participation.awards.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {participation.awards.map((award: string, index: number) => (
+                                <Badge key={index} variant="secondary" className="text-xs">
+                                  <Trophy className="h-3 w-3 mr-1" />
+                                  {award}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+                          {participation.participatedAt && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                              <Calendar className="h-3 w-3" />
+                              {formatDate(participation.participatedAt)}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
