@@ -2,6 +2,8 @@
  * Simple in-memory cache for tRPC queries
  */
 
+import { env } from "~/env";
+
 interface CacheEntry<T> {
   data: T;
   expiresAt: number;
@@ -63,7 +65,7 @@ const globalForCache = globalThis as unknown as {
 
 export const cache = globalForCache.memoryCache ?? new MemoryCache();
 
-if (process.env.NODE_ENV !== "production") {
+if (env.NODE_ENV !== "production") {
   globalForCache.memoryCache = cache;
 }
 
@@ -86,6 +88,7 @@ export const CACHE_TTL = {
 
 /**
  * Helper to get or set cache
+ * Note: Uses `undefined` to indicate cache miss, so `null` values can be cached properly.
  */
 export async function cached<T>(
   key: string,
@@ -93,7 +96,7 @@ export async function cached<T>(
   fn: () => Promise<T>
 ): Promise<T> {
   const existing = cache.get<T>(key);
-  if (existing !== null) {
+  if (existing !== null && existing !== undefined) {
     return existing;
   }
   const data = await fn();

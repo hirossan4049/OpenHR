@@ -492,6 +492,10 @@ export const projectRouter = createTRPCRouter({
         data: { role },
       });
 
+      // Invalidate caches
+      cache.invalidate("projects:");
+      cache.invalidate(`project:${projectId}`);
+
       return updated;
     }),
 
