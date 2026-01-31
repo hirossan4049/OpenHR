@@ -12,8 +12,9 @@ test.describe('Project Members Management (auth)', () => {
     // Create a new project as the authenticated organizer
     await page.goto('/projects/new', { waitUntil: 'networkidle' });
 
-    await page.getByLabel('Title').fill('E2E Members Project');
-    await page.getByLabel('Description').fill('Project for E2E members management test');
+    // Use specific textbox role to avoid conflict with markdown editor's "Insert title" button
+    await page.getByRole('textbox', { name: 'Title' }).fill('E2E Members Project');
+    await page.getByRole('textbox', { name: 'Summary' }).fill('Project for E2E members management test');
 
     // Type = Project (default); just submit
     await page.locator('button[type="submit"]').click();

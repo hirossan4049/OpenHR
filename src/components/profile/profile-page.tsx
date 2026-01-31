@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { ProfileEditForm } from "~/components/profile/profile-edit-form";
 import { SkillManagement } from "~/components/profile/skill-management";
+import { HackathonHistoryManagement } from "~/components/profile/hackathon-history-management";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -652,65 +653,7 @@ export function ProfilePage() {
               </Card>
             </TabsContent>
             <TabsContent value="hackathons">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Trophy className="h-5 w-5" />
-                    Hackathon History
-                  </CardTitle>
-                  <CardDescription>Your participation history in hackathons.</CardDescription>
-                  <div className="pt-2">
-                    <UiButton variant="outline" size="sm" asChild>
-                      <Link href="/projects">ハッカソン案件を探す</Link>
-                    </UiButton>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {hackathonHistory.length > 0 ? (
-                    <div className="space-y-4">
-                      {hackathonHistory.map((participation) => {
-                        const awards = participation.awards ? JSON.parse(participation.awards) : [];
-                        return (
-                          <div key={participation.id} className="border rounded-lg p-4">
-                            <div className="flex justify-between items-start mb-2">
-                              <h3 className="font-semibold text-lg">{participation.hackathon.title}</h3>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                {new Date(participation.participatedAt).toLocaleDateString()}
-                              </div>
-                            </div>
-                            <p className="text-muted-foreground text-sm mb-3">{participation.hackathon.description}</p>
-
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                                {participation.role}
-                              </span>
-                              {participation.ranking && (
-                                <span className="inline-flex items-center rounded-md bg-yellow-50 px-2 py-1 text-xs font-medium text-yellow-800 ring-1 ring-inset ring-yellow-600/20">
-                                  #{participation.ranking}
-                                </span>
-                              )}
-                            </div>
-
-                            {awards.length > 0 && (
-                              <div className="flex flex-wrap gap-1">
-                                {awards.map((award: string, index: number) => (
-                                  <span key={index} className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
-                                    <Trophy className="h-3 w-3 mr-1" />
-                                    {award}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <p className="text-muted-foreground">No hackathon participation history yet.</p>
-                  )}
-                </CardContent>
-              </Card>
+              <HackathonHistoryManagement />
             </TabsContent>
             <TabsContent value="projects">
               <div className="space-y-6">

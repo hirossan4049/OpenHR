@@ -30,6 +30,7 @@ model Portfolio {
     // Relations
     createdBy     User     @relation(fields: [createdById], references: [id], onDelete: Cascade)
     createdById   String
+    hackathonParticipations HackathonParticipation[] // Hackathon participations linked to this portfolio
 
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
@@ -387,24 +388,33 @@ model HackathonEvaluation {
 model HackathonParticipation {
     id               String    @id @default(cuid())
     userId           String
-    hackathonId      String
+    hackathonId      String?   // Reference to internal hackathon (Project), null for external
     teamId           String?   // Reference to project (team) if participated as team member
     role             String    @default("participant") // "participant", "organizer", "judge", "mentor"
     participatedAt   DateTime  @default(now())
+
+    // External hackathon info (for hackathons not managed in this system)
+    externalHackathonName String?   // Name of external hackathon
+    externalHackathonUrl  String?   // URL to external hackathon website
+    externalHackathonDate DateTime? // Date of external hackathon
 
     // Results and achievements
     ranking          Int?      // Final ranking/position (1st, 2nd, 3rd, etc.)
     awards           String?   // JSON array of awards received
     submissionId     String?   // Reference to their team's submission
 
+    // Portfolio link (can link to portfolio item showcasing the project)
+    portfolioId      String?   // Reference to portfolio showcasing this hackathon project
+
     // Additional info
     feedback         String?   // Participant's feedback about the hackathon
     rating           Int?      // Participant's rating of the hackathon (1-5)
 
     user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-    hackathon        Project   @relation("HackathonParticipants", fields: [hackathonId], references: [id], onDelete: Cascade)
+    hackathon        Project?  @relation("HackathonParticipants", fields: [hackathonId], references: [id], onDelete: Cascade)
     team             Project?  @relation("HackathonTeamMembers", fields: [teamId], references: [id], onDelete: SetNull)
     submission       HackathonSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+    portfolio        Portfolio? @relation(fields: [portfolioId], references: [id], onDelete: SetNull)
 
     createdAt        DateTime  @default(now())
     updatedAt        DateTime  @updatedAt
@@ -413,5 +423,6 @@ model HackathonParticipation {
     @@index([userId])
     @@index([hackathonId])
     @@index([teamId])
+    @@index([portfolioId])
     @@index([role])
 }

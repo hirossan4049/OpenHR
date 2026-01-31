@@ -62,13 +62,14 @@ test.describe('Profile (authenticated)', () => {
     const skillRow = page.locator('tr').filter({ hasText: skillName });
     await expect(skillRow).toBeVisible({ timeout: 5000 });
 
-    await expect(skillRow.locator('[role=combobox]')).toHaveText('Advanced');
+    // Skill level now shows as "Lv.X Label" format
+    await expect(skillRow.locator('[role=combobox]')).toContainText('Advanced');
     await expect(skillRow.getByRole('spinbutton')).toHaveValue('3');
 
     await skillRow.locator('[role=combobox]').click();
-    await page.getByRole('option', { name: 'Expert' }).click();
+    await page.getByRole('option', { name: /Expert/ }).click();
 
-    await expect(skillRow.locator('[role=combobox]')).toHaveText('Expert', { timeout: 5000 });
+    await expect(skillRow.locator('[role=combobox]')).toContainText('Expert', { timeout: 5000 });
 
     await skillRow.getByRole('button', { name: 'Remove skill' }).click();
     // 新しい確認ボタンをクリック

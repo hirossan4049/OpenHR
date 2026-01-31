@@ -410,46 +410,86 @@ export default function MemberDetailPage() {
                 <p className="text-muted-foreground">{t("noHackathonHistory")}</p>
               ) : (
                 <div className="space-y-4">
-                  {member.hackathonHistory.map((participation: any) => (
-                    <div
-                      key={participation.id}
-                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <h4 className="font-semibold">
-                            {participation.hackathon?.title || "Unknown Hackathon"}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge variant="outline" className="text-xs">
-                              {getRoleLabel(participation.role)}
-                            </Badge>
-                            {participation.ranking && (
-                              <Badge variant="default" className="text-xs">
-                                {t("ranking", { ranking: participation.ranking })}
+                  {member.hackathonHistory.map((participation: any) => {
+                    // Determine hackathon name and URL
+                    const hackathonName = participation.hackathon?.title || participation.externalHackathonName || t("unknownHackathon");
+                    const hackathonUrl = participation.externalHackathonUrl;
+                    const hackathonDate = participation.externalHackathonDate || participation.participatedAt;
+                    const isExternal = !participation.hackathon && participation.externalHackathonName;
+
+                    return (
+                      <div
+                        key={participation.id}
+                        className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold">
+                                {hackathonUrl ? (
+                                  <a
+                                    href={hackathonUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:underline"
+                                  >
+                                    {hackathonName}
+                                  </a>
+                                ) : (
+                                  hackathonName
+                                )}
+                              </h4>
+                              {isExternal && (
+                                <Badge variant="outline" className="text-xs">
+                                  {t("externalHackathon")}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Badge variant="outline" className="text-xs">
+                                {getRoleLabel(participation.role)}
                               </Badge>
+                              {participation.ranking && (
+                                <Badge variant="default" className="text-xs">
+                                  {t("ranking", { ranking: participation.ranking })}
+                                </Badge>
+                              )}
+                            </div>
+                            {participation.awards && participation.awards.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {participation.awards.map((award: string, index: number) => (
+                                  <Badge key={index} variant="secondary" className="text-xs">
+                                    <Trophy className="h-3 w-3 mr-1" />
+                                    {award}
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                            {hackathonDate && (
+                              <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(hackathonDate)}
+                              </div>
+                            )}
+                            {/* Linked Portfolio */}
+                            {participation.portfolio && (
+                              <div className="flex items-center gap-2 mt-2">
+                                <FolderGit2 className="h-3 w-3 text-muted-foreground" />
+                                <a
+                                  href={participation.portfolio.url || "#"}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-sm text-blue-600 hover:underline"
+                                >
+                                  {participation.portfolio.title}
+                                </a>
+                              </div>
                             )}
                           </div>
-                          {participation.awards && participation.awards.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {participation.awards.map((award: string, index: number) => (
-                                <Badge key={index} variant="secondary" className="text-xs">
-                                  <Trophy className="h-3 w-3 mr-1" />
-                                  {award}
-                                </Badge>
-                              ))}
-                            </div>
-                          )}
-                          {participation.participatedAt && (
-                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
-                              <Calendar className="h-3 w-3" />
-                              {formatDate(participation.participatedAt)}
-                            </div>
-                          )}
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </CardContent>

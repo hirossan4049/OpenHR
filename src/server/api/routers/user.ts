@@ -133,6 +133,14 @@ export const userRouter = createTRPCRouter({
                   endDate: true,
                 },
               },
+              portfolio: {
+                select: {
+                  id: true,
+                  title: true,
+                  url: true,
+                  imageUrl: true,
+                },
+              },
             },
             orderBy: { participatedAt: "desc" },
           },
@@ -236,6 +244,12 @@ export const userRouter = createTRPCRouter({
         hackathonHistory: member.hackathonParticipations.map((hp: any) => ({
           id: hp.id,
           hackathon: hp.hackathon,
+          // External hackathon info
+          externalHackathonName: hp.externalHackathonName,
+          externalHackathonUrl: hp.externalHackathonUrl,
+          externalHackathonDate: hp.externalHackathonDate,
+          // Linked portfolio
+          portfolio: hp.portfolio,
           role: hp.role,
           ranking: hp.ranking,
           awards: hp.awards ? JSON.parse(hp.awards) : [],
@@ -371,5 +385,201 @@ export const userRouter = createTRPCRouter({
       cache.invalidate("skills:");
 
       return { skill: newSkill, created: true };
+    }),
+
+  // Get current user's hackathon participation history
+  getMyHackathonHistory: protectedProcedure.query(async ({ ctx }) => {
+    const participations = await ctx.db.hackathonParticipation.findMany({
+      where: { userId: ctx.session.user.id },
+      include: {
+        hackathon: {
+          select: {
+            id: true,
+            title: true,
+            startDate: true,
+            endDate: true,
+          },
+        },
+        portfolio: {
+          select: {
+            id: true,
+            title: true,
+            url: true,
+            imageUrl: true,
+          },
+        },
+      },
+      orderBy: { participatedAt: "desc" },
+    });
+
+    return participations.map((hp) => ({
+      id: hp.id,
+      hackathon: hp.hackathon,
+      externalHackathonName: hp.externalHackathonName,
+      externalHackathonUrl: hp.externalHackathonUrl,
+      externalHackathonDate: hp.externalHackathonDate,
+      portfolio: hp.portfolio,
+      role: hp.role,
+      ranking: hp.ranking,
+      awards: hp.awards ? JSON.parse(hp.awards) : [],
+      participatedAt: hp.participatedAt,
+    }));
+  }),
+
+  // Get current user's portfolios for linking
+  getMyPortfolios: protectedProcedure.query(async ({ ctx }) => {
+    const portfolios = await ctx.db.portfolio.findMany({
+      where: { createdById: ctx.session.user.id },
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        url: true,
+        imageUrl: true,
+        projectType: true,
+      },
+    });
+    return portfolios;
+  }),
+
+  // Add hackathon participation history
+  addHackathonParticipation: protectedProcedure
+    .input(z.object({
+      // For internal hackathon
+      hackathonId: z.string().optional(),
+      // For external hackathon
+      externalHackathonName: z.string().optional(),
+      externalHackathonUrl: z.string().url().optional().or(z.literal("")),
+      externalHackathonDate: z.coerce.date().optional(),
+      // Common fields
+      role: z.enum(["participant", "organizer", "judge", "mentor"]).default("participant"),
+      ranking: z.number().int().positive().optional(),
+      awards: z.array(z.string()).optional(),
+      portfolioId: z.string().optional(),
+      participatedAt: z.coerce.date().optional(),
+    }).refine(
+      (data) => data.hackathonId || data.externalHackathonName,
+      { message: "Either hackathonId or externalHackathonName is required" }
+    ))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Check for duplicate internal hackathon participation
+      if (input.hackathonId) {
+        const existing = await ctx.db.hackathonParticipation.findUnique({
+          where: {
+            userId_hackathonId: {
+              userId,
+              hackathonId: input.hackathonId,
+            },
+          },
+        });
+        if (existing) {
+          throw new Error("You already have a participation record for this hackathon");
+        }
+      }
+
+      const participation = await ctx.db.hackathonParticipation.create({
+        data: {
+          userId,
+          hackathonId: input.hackathonId || null,
+          externalHackathonName: input.externalHackathonName || null,
+          externalHackathonUrl: input.externalHackathonUrl || null,
+          externalHackathonDate: input.externalHackathonDate || null,
+          role: input.role,
+          ranking: input.ranking || null,
+          awards: input.awards ? JSON.stringify(input.awards) : null,
+          portfolioId: input.portfolioId || null,
+          participatedAt: input.participatedAt || new Date(),
+        },
+        include: {
+          hackathon: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          portfolio: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      });
+
+      return participation;
+    }),
+
+  // Update hackathon participation history
+  updateHackathonParticipation: protectedProcedure
+    .input(z.object({
+      id: z.string(),
+      externalHackathonName: z.string().optional(),
+      externalHackathonUrl: z.string().url().optional().or(z.literal("")),
+      externalHackathonDate: z.coerce.date().optional().nullable(),
+      role: z.enum(["participant", "organizer", "judge", "mentor"]).optional(),
+      ranking: z.number().int().positive().optional().nullable(),
+      awards: z.array(z.string()).optional(),
+      portfolioId: z.string().optional().nullable(),
+      participatedAt: z.coerce.date().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+      const { id, ...updateData } = input;
+
+      // Verify ownership
+      const existing = await ctx.db.hackathonParticipation.findFirst({
+        where: { id, userId },
+      });
+      if (!existing) {
+        throw new Error("Participation record not found or you don't have permission to edit it");
+      }
+
+      const participation = await ctx.db.hackathonParticipation.update({
+        where: { id },
+        data: {
+          ...updateData,
+          externalHackathonUrl: updateData.externalHackathonUrl || null,
+          awards: updateData.awards ? JSON.stringify(updateData.awards) : existing.awards,
+        },
+        include: {
+          hackathon: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          portfolio: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+        },
+      });
+
+      return participation;
+    }),
+
+  // Delete hackathon participation history
+  deleteHackathonParticipation: protectedProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const userId = ctx.session.user.id;
+
+      // Verify ownership
+      const existing = await ctx.db.hackathonParticipation.findFirst({
+        where: { id: input.id, userId },
+      });
+      if (!existing) {
+        throw new Error("Participation record not found or you don't have permission to delete it");
+      }
+
+      await ctx.db.hackathonParticipation.delete({
+        where: { id: input.id },
+      });
+
+      return { success: true };
     }),
 });
