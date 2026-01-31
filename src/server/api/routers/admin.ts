@@ -20,17 +20,8 @@ import {
 export const adminRouter = createTRPCRouter({
   // Get dashboard statistics (admin only)
   getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
-    // Get user with role for permission check
-    const currentUser = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: { id: true, role: true },
-    });
-    
-    if (!currentUser) {
-      throw new Error("User not found");
-    }
-    
-    requireAdmin(currentUser);
+    // セッションからロールを取得（DBアクセス不要）
+    requireAdmin(ctx.session.user);
     
     const [
       totalUsers,
@@ -106,16 +97,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       const [recentProjects, recentApplications] = await Promise.all([
         // Recent projects/events
@@ -170,16 +153,8 @@ export const adminRouter = createTRPCRouter({
 
   // Get all skills with usage statistics (admin only)
   getAllSkillsWithStats: protectedProcedure.query(async ({ ctx }) => {
-    const currentUser = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: { id: true, role: true },
-    });
-    
-    if (!currentUser) {
-      throw new Error("User not found");
-    }
-    
-    requireAdmin(currentUser);
+    // セッションからロールを取得（DBアクセス不要）
+    requireAdmin(ctx.session.user);
     
     const skills = await ctx.db.skill.findMany({
       include: {
@@ -224,16 +199,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       const { id, logoUrl, aliases, ...updateData } = input;
       
@@ -251,16 +218,8 @@ export const adminRouter = createTRPCRouter({
   deleteSkill: protectedProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       // Check if skill is in use
       const skillUsage = await ctx.db.userSkill.count({
@@ -286,16 +245,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       const { sourceId, targetId, keepTarget: _keepTarget } = input;
       
@@ -321,16 +272,8 @@ export const adminRouter = createTRPCRouter({
   bulkVerifySkills: protectedProcedure
     .input(z.object({ skillIds: z.array(z.string()) }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       return ctx.db.skill.updateMany({
         where: { id: { in: input.skillIds } },
@@ -342,16 +285,8 @@ export const adminRouter = createTRPCRouter({
   importSkills: protectedProcedure
     .input(z.array(skillMasterSchema))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       const results = [];
       
@@ -393,16 +328,8 @@ export const adminRouter = createTRPCRouter({
 
   // Get all guilds with sync status
   getGuildSyncs: protectedProcedure.query(async ({ ctx }) => {
-    const currentUser = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: { id: true, role: true },
-    });
-    
-    if (!currentUser) {
-      throw new Error("User not found");
-    }
-    
-    requireAdmin(currentUser);
+    // セッションからロールを取得（DBアクセス不要）
+    requireAdmin(ctx.session.user);
     
     return ctx.db.guildSync.findMany({
       include: {
@@ -427,16 +354,8 @@ export const adminRouter = createTRPCRouter({
   syncGuildMembers: protectedProcedure
     .input(z.object({ guildId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       return discordMemberSyncService.syncGuildMembers(input.guildId);
     }),
@@ -452,16 +371,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       return discordMemberSyncService.getGuildMembers(input.guildId, {
         skip: input.skip,
@@ -479,16 +390,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       return ctx.db.discordMember.update({
         where: { id: input.discordMemberId },
@@ -510,16 +413,8 @@ export const adminRouter = createTRPCRouter({
   unlinkDiscordMember: protectedProcedure
     .input(z.object({ discordMemberId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
       
       return ctx.db.discordMember.update({
         where: { id: input.discordMemberId },
@@ -533,16 +428,8 @@ export const adminRouter = createTRPCRouter({
   createViewerAccount: protectedProcedure
     .input(createViewerAccountSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       // Check if email already exists
       const existingUser = await ctx.db.user.findUnique({
@@ -578,19 +465,11 @@ export const adminRouter = createTRPCRouter({
   updateUserRole: protectedProcedure
     .input(updateUserRoleSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       // Prevent admin from changing their own role
-      if (input.userId === currentUser.id) {
+      if (input.userId === ctx.session.user.id) {
         throw new Error("Cannot change your own role");
       }
 
@@ -618,16 +497,8 @@ export const adminRouter = createTRPCRouter({
       })
     )
     .query(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       const { search, role, limit, offset } = input;
 
@@ -679,16 +550,8 @@ export const adminRouter = createTRPCRouter({
 
   // Get all tags (admin only)
   getAllTags: protectedProcedure.query(async ({ ctx }) => {
-    const currentUser = await ctx.db.user.findUnique({
-      where: { id: ctx.session.user.id },
-      select: { id: true, role: true },
-    });
-    
-    if (!currentUser) {
-      throw new Error("User not found");
-    }
-    
-    requireAdmin(currentUser);
+    // セッションからロールを取得（DBアクセス不要）
+    requireAdmin(ctx.session.user);
 
     return ctx.db.tag.findMany({
       include: {
@@ -706,16 +569,8 @@ export const adminRouter = createTRPCRouter({
   createTag: protectedProcedure
     .input(createTagSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       // Check if tag name already exists
       const existingTag = await ctx.db.tag.findUnique({
@@ -735,16 +590,8 @@ export const adminRouter = createTRPCRouter({
   updateTag: protectedProcedure
     .input(updateTagSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       const { id, ...updateData } = input;
 
@@ -772,16 +619,8 @@ export const adminRouter = createTRPCRouter({
   deleteTag: protectedProcedure
     .input(deleteTagSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       // Delete tag and all related UserTag entries will be cascade deleted
       return ctx.db.tag.delete({
@@ -793,16 +632,8 @@ export const adminRouter = createTRPCRouter({
   assignTagToUser: protectedProcedure
     .input(assignTagToUserSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       // Check if user-tag combination already exists
       const existingUserTag = await ctx.db.userTag.findUnique({
@@ -837,16 +668,8 @@ export const adminRouter = createTRPCRouter({
   removeTagFromUser: protectedProcedure
     .input(removeTagFromUserSchema)
     .mutation(async ({ ctx, input }) => {
-      const currentUser = await ctx.db.user.findUnique({
-        where: { id: ctx.session.user.id },
-        select: { id: true, role: true },
-      });
-      
-      if (!currentUser) {
-        throw new Error("User not found");
-      }
-      
-      requireAdmin(currentUser);
+      // セッションからロールを取得（DBアクセス不要）
+      requireAdmin(ctx.session.user);
 
       return ctx.db.userTag.delete({
         where: {
