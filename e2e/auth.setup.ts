@@ -30,24 +30,22 @@ export default async function globalSetup(config: FullConfig) {
     });
 
     console.log('[E2E Setup] Navigating to login...');
-    await page.goto(baseURL, { waitUntil: 'networkidle' });
-    
-    // Check if already logged in
-    const isLoggedIn = await page.getByRole('link', { name: 'My Profile' }).isVisible().catch(() => false);
-    
+    await page.goto(`${baseURL}/auth/signin`, { waitUntil: 'networkidle' });
+
+    // Check if already logged in (redirected to dashboard)
+    const isLoggedIn = page.url().includes('/dashboard') ||
+      await page.getByRole('link', { name: 'ダッシュボード' }).isVisible().catch(() => false);
+
     if (!isLoggedIn) {
       console.log('[E2E Setup] Logging in...');
       await ensureLoginForm(page);
-      await page.getByLabel('Email', { exact: true }).fill(email);
-      await page.getByLabel('Password', { exact: true }).fill(password);
+      await page.getByRole('textbox', { name: 'Email' }).fill(email);
+      await page.getByRole('textbox', { name: 'Password' }).fill(password);
       await page.getByRole('button', { name: 'Sign In' }).click();
-      
-      // Wait for successful login
-      await page.waitForURL('**/', { waitUntil: 'networkidle', timeout: 10000 });
-      
-      // Ensure profile link is visible after login
-      await expect(page.getByRole('link', { name: 'My Profile' })).toBeVisible({ timeout: 10000 });
-      console.log('[E2E Setup] Login successful!');
+
+      // Wait for successful login (redirect to dashboard)
+      await page.waitForURL('**/dashboard', { waitUntil: 'networkidle', timeout: 15000 });
+      console.log('[E2E Setup] Login successful! Redirected to:', page.url());
     } else {
       console.log('[E2E Setup] Already logged in!');
     }
@@ -64,7 +62,7 @@ export default async function globalSetup(config: FullConfig) {
 }
 
 async function ensureLoginForm(page: Page) {
-  const signInHeading = page.getByRole('heading', { name: 'Sign In' });
+  const signInHeading = page.getByRole('heading', { name: 'Sign In', exact: true });
   const createHeading = page.getByRole('heading', { name: 'Create Account' });
   if (await createHeading.isVisible().catch(() => false)) {
     const toLogin = page.getByRole('button', { name: 'Already have an account? Sign in' });
