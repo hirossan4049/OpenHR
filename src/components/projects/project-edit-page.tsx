@@ -44,6 +44,7 @@ export function ProjectEditPage({ projectId }: ProjectEditPageProps) {
   const initialData = {
     title: project.title,
     description: project.description,
+    readme: project.readme || undefined,
     type: project.type as "project" | "event",
     maxMembers: project.maxMembers || undefined,
     startDate: project.startDate || undefined,

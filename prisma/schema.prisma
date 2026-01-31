@@ -203,7 +203,8 @@ model GuildSync {
 model Project {
     id               String              @id @default(cuid())
     title            String
-    description      String
+    description      String              // Short summary (1 line)
+    readme           String?             @db.Text // Detailed description in Markdown
     type             String              @default("project") // "project", "event", or "hackathon"
     recruitmentStatus String             @default("open") // "open" or "closed"
     maxMembers       Int?                // Maximum number of members

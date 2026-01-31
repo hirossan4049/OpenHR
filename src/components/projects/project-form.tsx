@@ -7,6 +7,7 @@ import { api } from "~/trpc/react";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
+import { MarkdownEditor } from "~/components/ui/markdown-editor";
 import { Label } from "~/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Badge } from "~/components/ui/badge";
@@ -28,6 +29,7 @@ interface ProjectFormProps {
   initialData?: {
     title: string;
     description: string;
+    readme?: string;
     type: "project" | "event";
     maxMembers?: number;
     startDate?: Date;
@@ -45,6 +47,7 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
   // Form state
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
+  const [readme, setReadme] = useState(initialData?.readme || "");
   const [type, setType] = useState<"project" | "event">(initialData?.type || "project");
   const [maxMembers, setMaxMembers] = useState<string>(initialData?.maxMembers?.toString() || "");
   const [startDate, setStartDate] = useState<string>(
@@ -116,6 +119,7 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
     const formData = {
       title,
       description,
+      readme: readme || undefined,
       type,
       maxMembers: maxMembers ? parseInt(maxMembers) : undefined,
       startDate: type === "event"
@@ -220,9 +224,13 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder={t("fieldDescriptionPlaceholder")}
-                rows={4}
+                maxLength={200}
+                rows={2}
                 required
               />
+              <p className="text-xs text-muted-foreground">
+                {description.length}/200
+              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -395,6 +403,22 @@ export function ProjectForm({ projectId, initialData }: ProjectFormProps) {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* README */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("readmeTitle")}</CardTitle>
+            <CardDescription>{t("readmeDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <MarkdownEditor
+              value={readme}
+              onChange={setReadme}
+              placeholder={t("readmePlaceholder")}
+              height={400}
+            />
           </CardContent>
         </Card>
 

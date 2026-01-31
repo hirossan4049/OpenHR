@@ -44,7 +44,11 @@ const baseProjectSchema = z.object({
   description: z
     .string()
     .min(1, "Description is required")
-    .max(2000, "Description must be less than 2000 characters"),
+    .max(200, "Description must be less than 200 characters"),
+  readme: z
+    .string()
+    .max(50000, "README must be less than 50000 characters")
+    .optional(),
   type: z.enum(["project", "event"]).default("project"),
   maxMembers: z
     .number()

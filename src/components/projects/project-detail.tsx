@@ -12,6 +12,7 @@ import { ArrowLeft, Calendar, MapPin, Settings, Users, MessageSquare, Plus } fro
 import { useState } from "react";
 import { ApplicationForm } from "./application-form";
 import { ApplicationManagement } from "./application-management";
+import { MarkdownViewer } from "~/components/ui/markdown-viewer";
 import { Input } from "~/components/ui/input";
 import { toast } from "~/components/ui/use-toast";
 import * as React from "react";
@@ -213,6 +214,18 @@ export function ProjectDetail({ projectId }: ProjectDetailProps) {
               )}
             </CardContent>
           </Card>
+
+          {/* README */}
+          {project.readme && (
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("readme")}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <MarkdownViewer content={project.readme} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Required Skills */}
           <Card>

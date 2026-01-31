@@ -179,6 +179,7 @@ export const projectRouter = createTRPCRouter({
           id: project.id,
           title: project.title,
           description: project.description,
+          readme: project.readme,
           type: project.type,
           recruitmentStatus: project.recruitmentStatus,
           maxMembers: project.maxMembers,
