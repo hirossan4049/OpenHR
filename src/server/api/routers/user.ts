@@ -6,7 +6,6 @@ import {
   protectedProcedure,
 } from "~/server/api/trpc";
 import { skillSearchSchema, skillSuggestionSchema } from "~/lib/validation/skill";
-import { hasRole } from "~/lib/auth/roles";
 import { cached, cache, CACHE_KEYS, CACHE_TTL } from "~/server/cache";
 
 export const userRouter = createTRPCRouter({
@@ -34,17 +33,9 @@ export const userRouter = createTRPCRouter({
 
       const where: any = {};
 
-      // Check if user is authenticated and if they are an admin
-      let showViewers = false;
-      if (ctx.session?.user?.id) {
-        const currentUser = await ctx.db.user.findUnique({
-          where: { id: ctx.session.user.id },
-          select: { id: true, role: true },
-        });
-        
-        // Only admins can see VIEWER role users
-        showViewers = Boolean(currentUser && hasRole(currentUser, "ADMIN"));
-      }
+      // セッションからロールを取得（DBアクセス不要）
+      // Only admins can see VIEWER role users
+      const showViewers = ctx.session?.user?.role === "ADMIN";
 
       // Exclude VIEWER role users for non-admin users
       if (!showViewers) {
@@ -131,17 +122,9 @@ export const userRouter = createTRPCRouter({
         throw new Error("Member not found");
       }
 
-      // Check if user is authenticated and if they are an admin
-      let showViewers = false;
-      if (ctx.session?.user?.id) {
-        const currentUser = await ctx.db.user.findUnique({
-          where: { id: ctx.session.user.id },
-          select: { id: true, role: true },
-        });
-        
-        // Only admins can see VIEWER role users
-        showViewers = Boolean(currentUser && hasRole(currentUser, "ADMIN"));
-      }
+      // セッションからロールを取得（DBアクセス不要）
+      // Only admins can see VIEWER role users
+      const showViewers = ctx.session?.user?.role === "ADMIN";
 
       // Prevent non-admin users from viewing VIEWER role users
       if (member.role === "VIEWER" && !showViewers) {

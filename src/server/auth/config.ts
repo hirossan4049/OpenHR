@@ -28,6 +28,7 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      role: string;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
@@ -39,6 +40,7 @@ declare module "next-auth" {
     name?: string | null;
     image?: string | null;
     password?: string | null;
+    role?: string;
   }
 }
 
@@ -169,13 +171,25 @@ export const authConfig = {
   },
   callbacks: {
     // Support both database and jwt session strategies
-    jwt: ({ token, user }: any) => {
+    jwt: async ({ token, user, trigger }: any) => {
       // On sign in, persist basic user info into the token
       if (user) {
         token.sub = user.id ?? token.sub;
         if (user.email) token.email = user.email;
         if (user.name) token.name = user.name;
         if (user.image) token.picture = user.image;
+      }
+      // ユーザーのロールをトークンに含める（サインイン時またはロールが未設定の場合）
+      if ((user || trigger === 'signIn' || !token.role) && token.sub) {
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { id: token.sub },
+            select: { role: true },
+          });
+          token.role = dbUser?.role ?? 'MEMBER';
+        } catch {
+          token.role = 'MEMBER';
+        }
       }
       return token;
     },
@@ -189,6 +203,7 @@ export const authConfig = {
           name: (session.user?.name as string | undefined) ?? (token?.name as string | undefined),
           email: (session.user?.email as string | undefined) ?? (token?.email as string | undefined),
           image: (session.user?.image as string | undefined) ?? (token?.picture as string | undefined),
+          role: user?.role ?? token?.role ?? 'MEMBER',
         },
       };
     },
