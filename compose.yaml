@@ -1,8 +1,21 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-openhr}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    depends_on:
+      - db
     ports:
       - "${PORT:-3000}:${PORT:-3000}"
     environment:
@@ -18,3 +31,6 @@ services:
       AUTH_GOOGLE_SECRET: ${AUTH_GOOGLE_SECRET:-placeholder}
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-placeholder}
       SKIP_ENV_VALIDATION: ${SKIP_ENV_VALIDATION:-1}
+
+volumes:
+  postgres-data:
