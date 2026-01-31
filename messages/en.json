@@ -8,7 +8,9 @@
     "admin": "Admin",
     "createProject": "Create Project",
     "createHackathon": "Create Hackathon",
-    "toggleMenu": "Toggle Menu"
+    "toggleMenu": "Toggle Menu",
+    "profile": "Profile",
+    "signOut": "Sign Out"
   },
   "ProfilePage": {
     "editProfile": "Edit Profile",

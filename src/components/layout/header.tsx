@@ -1,12 +1,19 @@
 "use client";
 
-import { Bell, Menu, PlusCircle } from "lucide-react";
+import { Bell, LogOut, Menu, PlusCircle } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "~/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "~/components/ui/sheet";
-import { useSession } from "next-auth/react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { useSession, signOut } from "next-auth/react";
 import { api } from "~/trpc/react";
 
 export function Header() {
@@ -63,17 +70,31 @@ export function Header() {
             </Button>
           </div>
 
-          <Link href="/profile" data-testid="profile-link">
-            <Avatar className="h-8 w-8">
-              <AvatarImage
-                src={me?.image ?? session?.user?.image ?? undefined}
-                alt={me?.name ?? session?.user?.name ?? "Profile"}
-              />
-              <AvatarFallback>
-                {(me?.name ?? session?.user?.name ?? "??").slice(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full" data-testid="profile-link">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage
+                    src={me?.image ?? session?.user?.image ?? undefined}
+                    alt={me?.name ?? session?.user?.name ?? "Profile"}
+                  />
+                  <AvatarFallback>
+                    {(me?.name ?? session?.user?.name ?? "??").slice(0, 2).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/profile">{t("profile")}</Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+                <LogOut className="mr-2 h-4 w-4" />
+                {t("signOut")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <div className="md:hidden">
             <Sheet>
@@ -102,7 +123,10 @@ export function Header() {
                       {t("admin")}
                     </Link>
                   )}
-                  <div className="border-t pt-4">
+                  <div className="border-t pt-4 space-y-2">
+                    <Link href="/profile" className="block text-muted-foreground transition-colors hover:text-foreground">
+                      {t("profile")}
+                    </Link>
                     {canCreateProject && (
                       <Button size="sm" asChild className="w-full">
                         <Link href="/projects/new">
@@ -111,6 +135,15 @@ export function Header() {
                         </Link>
                       </Button>
                     )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      {t("signOut")}
+                    </Button>
                   </div>
                 </div>
               </SheetContent>

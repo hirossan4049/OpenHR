@@ -8,7 +8,9 @@
     "admin": "管理",
     "createProject": "プロジェクト作成",
     "createHackathon": "ハッカソン作成",
-    "toggleMenu": "メニューを開く"
+    "toggleMenu": "メニューを開く",
+    "profile": "プロフィール",
+    "signOut": "ログアウト"
   },
   "ProfilePage": {
     "editProfile": "プロフィール編集",
