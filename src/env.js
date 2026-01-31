@@ -51,6 +51,10 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    PRISMA_STUDIO_PORT: z
+      .string()
+      .regex(/^\d+$/, "ポートは数字である必要があります")
+      .default("5555"),
   },
 
   /**
@@ -78,6 +82,7 @@ export const env = createEnv({
     DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    PRISMA_STUDIO_PORT: process.env.PRISMA_STUDIO_PORT,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
