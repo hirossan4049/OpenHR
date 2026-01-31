@@ -54,6 +54,13 @@ export const env = createEnv({
     PRISMA_STUDIO_PORT: z
       .string()
       .regex(/^\d+$/, "ポートは数字である必要があります")
+      .refine(
+        (val) => {
+          const port = parseInt(val, 10);
+          return port >= 1 && port <= 65535;
+        },
+        { message: "ポートは1から65535の範囲である必要があります" }
+      )
       .default("5555"),
   },
 

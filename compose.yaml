@@ -34,7 +34,9 @@ services:
       SKIP_ENV_VALIDATION: ${SKIP_ENV_VALIDATION:-1}
 
   prisma-studio:
-    image: oven/bun:1.3.6
+    build:
+      context: .
+      dockerfile: Dockerfile.prisma-studio
     depends_on:
       - db
     ports:
@@ -42,13 +44,8 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@db:5432/openhr}
       PRISMA_STUDIO_PORT: ${PRISMA_STUDIO_PORT:-5555}
-    working_dir: /app
-    volumes:
-      - ./prisma:/app/prisma
-      - ./package.json:/app/package.json
-      - ./bun.lock:/app/bun.lock
-    command: >
-      sh -c "bun install && bunx prisma studio --port $${PRISMA_STUDIO_PORT:-5555} --browser none"
+    # 注意: Prisma Studioには認証機能がないため、本番環境では適切なネットワーク制限を設定してください
+    # 例: networks設定でinternalネットワークのみに制限、またはVPN経由でのアクセスのみ許可
 
 volumes:
   postgres-data:
