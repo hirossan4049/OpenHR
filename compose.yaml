@@ -17,10 +17,9 @@ services:
     depends_on:
       - db
     ports:
-      - "${PORT:-3000}:${PORT:-3000}"
+      - "${PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      PORT: ${PORT:-3000}
       DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@db:5432/openhr}
       AUTH_SECRET: ${AUTH_SECRET:-dev-secret}
       AUTH_DISCORD_ID: ${AUTH_DISCORD_ID:-placeholder}
