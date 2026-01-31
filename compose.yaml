@@ -33,5 +33,19 @@ services:
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-placeholder}
       SKIP_ENV_VALIDATION: ${SKIP_ENV_VALIDATION:-1}
 
+  prisma-studio:
+    build:
+      context: .
+      dockerfile: Dockerfile.prisma-studio
+    depends_on:
+      - db
+    ports:
+      - "${PRISMA_STUDIO_PORT:-5555}:${PRISMA_STUDIO_PORT:-5555}"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://user:password@db:5432/openhr}
+      PRISMA_STUDIO_PORT: ${PRISMA_STUDIO_PORT:-5555}
+    # 注意: Prisma Studioには認証機能がないため、本番環境では適切なネットワーク制限を設定してください
+    # 例: networks設定でinternalネットワークのみに制限、またはVPN経由でのアクセスのみ許可
+
 volumes:
   postgres-data:
