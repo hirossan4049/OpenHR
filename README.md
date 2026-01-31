@@ -13,7 +13,7 @@ OpenHR is a talent management app for hackathon/side-project teams. Members can 
 ## Tech Stack
 - Next.js 15, TypeScript, App Router, next-intl
 - tRPC v11, React Query, SuperJSON
-- Prisma (SQLite default) with NextAuth + @auth/prisma-adapter
+- Prisma (PostgreSQL) with NextAuth + @auth/prisma-adapter
 - Tailwind CSS + shadcn/ui, lucide-react
 - Testing: Jest (unit) and Playwright (e2e)
 
@@ -28,7 +28,7 @@ npm install
 ```bash
 cp .env.example .env
 ```
-Required keys: `AUTH_SECRET` plus provider IDs/secrets for Discord, GitHub, Google. `DATABASE_URL` defaults to SQLite; point it to Postgres/MySQL if needed.
+Required keys: `AUTH_SECRET` plus provider IDs/secrets for Discord, GitHub, Google. `DATABASE_URL` is set to PostgreSQL by default (see `.env.example` for the connection string format).
 
 3) Generate Prisma client and apply schema:
 ```bash
