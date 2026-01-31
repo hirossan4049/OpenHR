@@ -15,6 +15,7 @@ export default function MemberDetailPage() {
   const params = useParams();
   const id = (params as { id?: string })?.id ?? "";
   const t = useTranslations("MemberDetail");
+  const tLevel = useTranslations("SkillLevel");
 
   const { data: member, isLoading, error } = api.user.getMemberById.useQuery(
     { id },
@@ -31,8 +32,15 @@ export default function MemberDetailPage() {
   };
 
   const getLevelLabel = (level: number) => {
-    const labels = ["", "Beginner", "Basic", "Intermediate", "Advanced", "Expert"];
-    return labels[level] || "Unknown";
+    const levelLabels: Record<number, string> = {
+      1: tLevel("level1"),
+      2: tLevel("level2"),
+      3: tLevel("level3"),
+      4: tLevel("level4"),
+      5: tLevel("level5"),
+    };
+    const label = levelLabels[level] ?? tLevel("unknown");
+    return tLevel("levelWithNumber", { level, label });
   };
 
   const getRoleLabel = (role: string) => {

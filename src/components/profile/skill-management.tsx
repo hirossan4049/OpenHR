@@ -51,14 +51,6 @@ interface SkillManagementProps {
   onSkillsChange?: (skills: UserSkill[]) => void;
 }
 
-const levelOptions = [
-  { value: 1, label: "Beginner" },
-  { value: 2, label: "Basic" },
-  { value: 3, label: "Intermediate" },
-  { value: 4, label: "Advanced" },
-  { value: 5, label: "Expert" },
-];
-
 export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillManagementProps) {
   const [skills, setSkills] = useState<UserSkill[]>(initialSkills);
   const [newSkill, setNewSkill] = useState<SkillData>({
@@ -74,6 +66,21 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
   const [removingSkillId, setRemovingSkillId] = useState<string | null>(null);
   const [removeError, setRemoveError] = useState<string | null>(null);
   const t = useTranslations("SkillManagement");
+  const tLevel = useTranslations("SkillLevel");
+
+  // Generate level options with translations
+  const levelOptions = [
+    { value: 1, label: tLevel("level1") },
+    { value: 2, label: tLevel("level2") },
+    { value: 3, label: tLevel("level3") },
+    { value: 4, label: tLevel("level4") },
+    { value: 5, label: tLevel("level5") },
+  ];
+
+  const getLevelDisplay = (level: number) => {
+    const label = levelOptions.find(opt => opt.value === level)?.label ?? tLevel("unknown");
+    return tLevel("levelWithNumber", { level, label });
+  };
 
   // tRPC queries for skill search and suggestions
   const [searchQuery, setSearchQuery] = useState("");
@@ -259,7 +266,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
                         </SelectTrigger>
                         <SelectContent>
                           {levelOptions.map(opt => (
-                            <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                            <SelectItem key={opt.value} value={String(opt.value)}>{getLevelDisplay(opt.value)}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -351,7 +358,7 @@ export function SkillManagement({ initialSkills = [], onSkillsChange }: SkillMan
             </SelectTrigger>
                 <SelectContent>
                   {levelOptions.map(opt => (
-                    <SelectItem key={opt.value} value={String(opt.value)}>{opt.label}</SelectItem>
+                    <SelectItem key={opt.value} value={String(opt.value)}>{getLevelDisplay(opt.value)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

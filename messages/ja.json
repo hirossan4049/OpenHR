@@ -402,6 +402,15 @@
       "removeFailed": "タグの削除に失敗しました"
     }
   },
+  "SkillLevel": {
+    "level1": "初心者",
+    "level2": "基礎",
+    "level3": "中級",
+    "level4": "上級",
+    "level5": "エキスパート",
+    "levelWithNumber": "Lv.{level} {label}",
+    "unknown": "不明"
+  },
   "SkillManagement": {
     "title": "スキル",
     "description": "技術スキル・ソフトスキルを管理します。",

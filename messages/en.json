@@ -402,6 +402,15 @@
       "removeFailed": "Failed to remove tag"
     }
   },
+  "SkillLevel": {
+    "level1": "Beginner",
+    "level2": "Basic",
+    "level3": "Intermediate",
+    "level4": "Advanced",
+    "level5": "Expert",
+    "levelWithNumber": "Lv.{level} {label}",
+    "unknown": "Unknown"
+  },
   "SkillManagement": {
     "title": "Skills",
     "description": "Manage your technical and soft skills.",
