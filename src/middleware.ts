@@ -2,6 +2,16 @@ import createMiddleware from 'next-intl/middleware';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 
+// Get the canonical base URL for redirects
+function getBaseUrl(req: NextRequest): string {
+  // Prefer AUTH_URL if set (for production behind proxies/tunnels)
+  if (process.env.AUTH_URL) {
+    return process.env.AUTH_URL;
+  }
+  // Fallback to request URL (works in most cases)
+  return req.nextUrl.origin;
+}
+
 // Locale middleware from next-intl
 const intlMiddleware = createMiddleware({
   locales: ['en', 'ja'],
@@ -60,7 +70,7 @@ export default function middleware(req: NextRequest) {
     }
 
     // Otherwise redirect unauthenticated users to root (login UI)
-    return NextResponse.redirect(new URL('/', req.nextUrl));
+    return NextResponse.redirect(new URL('/', getBaseUrl(req)));
   }
 
   return res;

@@ -89,7 +89,7 @@ export function Header() {
                 <Link href="/profile">{t("profile")}</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })}>
+              <DropdownMenuItem onClick={() => signOut({ callbackUrl: window.location.origin })}>
                 <LogOut className="mr-2 h-4 w-4" />
                 {t("signOut")}
               </DropdownMenuItem>
@@ -139,7 +139,7 @@ export function Header() {
                       variant="outline"
                       size="sm"
                       className="w-full"
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => signOut({ callbackUrl: window.location.origin })}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       {t("signOut")}
