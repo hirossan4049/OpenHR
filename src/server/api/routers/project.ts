@@ -759,4 +759,34 @@ export const projectRouter = createTRPCRouter({
 
     return projects;
   }),
+
+  // Get projects that the current user is participating in (not as organizer)
+  getMyParticipatingProjects: protectedProcedure.query(async ({ ctx }) => {
+    const memberships = await ctx.db.projectMember.findMany({
+      where: { userId: ctx.session.user.id },
+      include: {
+        project: {
+          include: {
+            organizer: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+            _count: {
+              select: { members: true },
+            },
+          },
+        },
+      },
+      orderBy: { joinedAt: "desc" },
+    });
+
+    return memberships.map((m) => ({
+      ...m.project,
+      role: m.role,
+      joinedAt: m.joinedAt,
+    }));
+  }),
 });

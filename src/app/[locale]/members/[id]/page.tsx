@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, Calendar, ExternalLink, FileText, FolderGit2, Github, Mail, Trophy, User } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, FileText, FolderGit2, Github, Mail, Trophy, User, Users, Briefcase } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -439,6 +439,135 @@ export default function MemberDetailPage() {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Organized Projects */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Briefcase className="h-5 w-5" />
+                {t("organizedProjectsSection")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!member.organizedProjects || member.organizedProjects.length === 0 ? (
+                <p className="text-muted-foreground">{t("noOrganizedProjects")}</p>
+              ) : (
+                <div className="space-y-4">
+                  {member.organizedProjects.map((project: any) => (
+                    <div
+                      key={project.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{project.title}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {project.type === "hackathon" ? t("projectTypeHackathon") :
+                               project.type === "event" ? t("projectTypeEvent") : t("projectTypeProject")}
+                            </Badge>
+                            <Badge
+                              variant={project.recruitmentStatus === "open" ? "default" : "secondary"}
+                              className="text-xs"
+                            >
+                              {project.recruitmentStatus === "open" ? t("recruitmentOpen") : t("recruitmentClosed")}
+                            </Badge>
+                          </div>
+                          {project.description && (
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                              {project.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <Users className="h-3 w-3" />
+                              {t("membersCount", { count: project.memberCount })}
+                            </div>
+                            {(project.startDate || project.endDate) && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(project.startDate)}
+                                {project.endDate && ` - ${formatDate(project.endDate)}`}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Link href={{ pathname: "/projects/[id]", params: { id: project.id } }} className="ml-2">
+                          <Button variant="outline" size="sm">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            {t("viewProjectDetails")}
+                          </Button>
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Participating Projects */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                {t("participatingProjectsSection")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!member.participatingProjects || member.participatingProjects.length === 0 ? (
+                <p className="text-muted-foreground">{t("noParticipatingProjects")}</p>
+              ) : (
+                <div className="space-y-4">
+                  {member.participatingProjects.map((project: any) => (
+                    <div
+                      key={project.id}
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1">
+                          <h4 className="font-semibold">{project.title}</h4>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="outline" className="text-xs">
+                              {project.type === "hackathon" ? t("projectTypeHackathon") :
+                               project.type === "event" ? t("projectTypeEvent") : t("projectTypeProject")}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {project.role}
+                            </Badge>
+                          </div>
+                          {project.description && (
+                            <p className="text-sm text-muted-foreground mt-2 line-clamp-2">
+                              {project.description}
+                            </p>
+                          )}
+                          <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
+                            {project.organizer && (
+                              <div className="flex items-center gap-1">
+                                {t("organizedBy", { name: project.organizer.name || "Unknown" })}
+                              </div>
+                            )}
+                            {project.joinedAt && (
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-3 w-3" />
+                                {formatDate(project.joinedAt)}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <Link href={{ pathname: "/projects/[id]", params: { id: project.id } }} className="ml-2">
+                          <Button variant="outline" size="sm">
+                            <ExternalLink className="h-3 w-3 mr-1" />
+                            {t("viewProjectDetails")}
+                          </Button>
+                        </Link>
                       </div>
                     </div>
                   ))}

@@ -599,7 +599,18 @@
     "projectTypePersonal": "Personal",
     "projectTypeHackathon": "Hackathon",
     "projectTypeTeam": "Team",
-    "projectTypeAssignment": "Assignment"
+    "projectTypeAssignment": "Assignment",
+    "organizedProjectsSection": "Organized Projects",
+    "noOrganizedProjects": "No organized projects yet.",
+    "participatingProjectsSection": "Participating Projects",
+    "noParticipatingProjects": "No participating projects yet.",
+    "projectTypeProject": "Project",
+    "projectTypeEvent": "Event",
+    "recruitmentOpen": "Recruiting",
+    "recruitmentClosed": "Closed",
+    "membersCount": "{count} members",
+    "organizedBy": "Organized by {name}",
+    "viewProjectDetails": "View Details"
   },
   "AdminSkillManagement": {
     "title": "Skill Master Management",

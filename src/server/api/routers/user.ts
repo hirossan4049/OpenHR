@@ -141,6 +141,47 @@ export const userRouter = createTRPCRouter({
               tag: true,
             },
           },
+          organizedProjects: {
+            where: { recruitmentStatus: { not: "deleted" } },
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              title: true,
+              description: true,
+              type: true,
+              recruitmentStatus: true,
+              maxMembers: true,
+              startDate: true,
+              endDate: true,
+              createdAt: true,
+              _count: {
+                select: { members: true },
+              },
+            },
+          },
+          projectMemberships: {
+            orderBy: { joinedAt: "desc" },
+            include: {
+              project: {
+                select: {
+                  id: true,
+                  title: true,
+                  description: true,
+                  type: true,
+                  recruitmentStatus: true,
+                  startDate: true,
+                  endDate: true,
+                  organizer: {
+                    select: {
+                      id: true,
+                      name: true,
+                      image: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
       });
 
@@ -204,6 +245,30 @@ export const userRouter = createTRPCRouter({
           id: ut.tag.id,
           name: ut.tag.name,
           color: ut.tag.color,
+        })),
+        organizedProjects: member.organizedProjects.map((p: any) => ({
+          id: p.id,
+          title: p.title,
+          description: p.description,
+          type: p.type,
+          recruitmentStatus: p.recruitmentStatus,
+          maxMembers: p.maxMembers,
+          memberCount: p._count.members,
+          startDate: p.startDate,
+          endDate: p.endDate,
+          createdAt: p.createdAt,
+        })),
+        participatingProjects: member.projectMemberships.map((pm: any) => ({
+          id: pm.project.id,
+          title: pm.project.title,
+          description: pm.project.description,
+          type: pm.project.type,
+          recruitmentStatus: pm.project.recruitmentStatus,
+          startDate: pm.project.startDate,
+          endDate: pm.project.endDate,
+          role: pm.role,
+          joinedAt: pm.joinedAt,
+          organizer: pm.project.organizer,
         })),
       };
     }),

@@ -599,7 +599,18 @@
     "projectTypePersonal": "個人開発",
     "projectTypeHackathon": "ハッカソン",
     "projectTypeTeam": "チーム開発",
-    "projectTypeAssignment": "課題"
+    "projectTypeAssignment": "課題",
+    "organizedProjectsSection": "主催プロジェクト",
+    "noOrganizedProjects": "主催しているプロジェクトはありません。",
+    "participatingProjectsSection": "参加中のプロジェクト",
+    "noParticipatingProjects": "参加中のプロジェクトはありません。",
+    "projectTypeProject": "プロジェクト",
+    "projectTypeEvent": "イベント",
+    "recruitmentOpen": "募集中",
+    "recruitmentClosed": "募集終了",
+    "membersCount": "{count}人参加",
+    "organizedBy": "主催: {name}",
+    "viewProjectDetails": "詳細を見る"
   },
   "AdminSkillManagement": {
     "title": "スキルマスター管理",
