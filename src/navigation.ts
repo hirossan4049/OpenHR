@@ -54,5 +54,6 @@ export const pathnames = {
  
 export const {Link, redirect, usePathname, useRouter} = createNavigation({
   locales,
-  pathnames
+  pathnames,
+  localePrefix: 'never'
 });
