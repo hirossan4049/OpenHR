@@ -6,10 +6,9 @@ type Props = Readonly<{ params: Promise<{ locale?: string }> }>;
 
 export default async function SignInPage({ params }: Props) {
   const session = await auth();
-  const { locale = "en" } = await params;
 
   if (session) {
-    redirect(`/${locale}/dashboard`);
+    redirect('/dashboard');
   }
 
   return (

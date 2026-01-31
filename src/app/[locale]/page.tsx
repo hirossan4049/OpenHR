@@ -9,10 +9,9 @@ type Props = Readonly<{ params: Promise<{ locale?: string }> }>;
 
 export default async function Home({ params }: Props) {
   const session = await auth();
-  const { locale = "en" } = await params;
 
   if (session) {
-    redirect(`/${locale}/dashboard`);
+    redirect('/dashboard');
   }
 
   const t = await getTranslations('HomePage');

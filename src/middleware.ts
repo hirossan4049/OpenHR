@@ -6,27 +6,20 @@ import { NextResponse } from 'next/server';
 const intlMiddleware = createMiddleware({
   locales: ['en', 'ja'],
   defaultLocale: 'en',
+  localePrefix: 'never',
+  localeDetection: true,
 });
 
-// Public paths (accessible without auth). Keep minimal: only locale root for login UI.
-function isLocaleRoot(pathname: string) {
-  // Matches: "/en" or "/ja" (optionally with trailing slash)
-  return /^\/(?:[a-z]{2})(?:\/)?$/.test(pathname);
-}
-
-function stripLocale(pathname: string) {
-  const segments = pathname.split('/').filter(Boolean);
-  if (segments[0] && /^[a-z]{2}$/.test(segments[0] ?? '')) {
-    segments.shift();
-  }
-  return '/' + segments.join('/');
+// Public paths (accessible without auth). Keep minimal: only root for login UI.
+function isRoot(pathname: string) {
+  // Matches: "/" (optionally with trailing slash)
+  return pathname === '/' || pathname === '';
 }
 
 // Public routes that should be accessible without authentication
 function isPublicPath(pathname: string) {
-  const p = stripLocale(pathname);
   // Normalize trailing slash except for root
-  const norm = p !== '/' ? p.replace(/\/$/, '') : '/';
+  const norm = pathname !== '/' ? pathname.replace(/\/$/, '') : '/';
 
   const publicPrefixes = [
     '/',
@@ -61,16 +54,13 @@ export default function middleware(req: NextRequest) {
   if (!hasAuthCookie(req)) {
     const pathname = req.nextUrl.pathname;
 
-    // Allow locale roots and public paths without auth
-    if (isLocaleRoot(pathname) || isPublicPath(pathname)) {
+    // Allow root and public paths without auth
+    if (isRoot(pathname) || isPublicPath(pathname)) {
       return res;
     }
 
-    // Otherwise redirect unauthenticated users to the locale root (login UI)
-    const segments = pathname.split('/').filter(Boolean);
-    const maybeLocale = segments[0] && /^[a-z]{2}$/.test(segments[0]) ? segments[0] : undefined;
-    const localePrefix = maybeLocale ? `/${maybeLocale}` : '/en';
-    return NextResponse.redirect(new URL(`${localePrefix}`, req.nextUrl));
+    // Otherwise redirect unauthenticated users to root (login UI)
+    return NextResponse.redirect(new URL('/', req.nextUrl));
   }
 
   return res;
