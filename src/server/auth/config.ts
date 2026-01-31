@@ -180,15 +180,16 @@ export const authConfig = {
         if (user.image) token.picture = user.image;
       }
       // ユーザーのロールをトークンに含める（サインイン時またはロールが未設定の場合）
-      if ((user || trigger === 'signIn' || !token.role) && token.sub) {
+      if ((user || !token.role) && token.sub) {
         try {
           const dbUser = await db.user.findUnique({
             where: { id: token.sub },
             select: { role: true },
           });
           token.role = dbUser?.role ?? 'MEMBER';
-        } catch {
-          token.role = 'MEMBER';
+        } catch (error) {
+          console.error('Failed to fetch user role:', error);
+          token.role = token.role ?? 'MEMBER';
         }
       }
       return token;
@@ -203,7 +204,7 @@ export const authConfig = {
           name: (session.user?.name as string | undefined) ?? (token?.name as string | undefined),
           email: (session.user?.email as string | undefined) ?? (token?.email as string | undefined),
           image: (session.user?.image as string | undefined) ?? (token?.picture as string | undefined),
-          role: user?.role ?? token?.role ?? 'MEMBER',
+          role: token?.role ?? 'MEMBER',
         },
       };
     },
