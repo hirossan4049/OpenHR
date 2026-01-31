@@ -7,7 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 This is a **T3 Stack** project using:
 - **Package Manager**: `bun` (NOT npm/yarn) - use `bun install`, `bun add`, `bun run`
 - **Framework**: Next.js 15 with App Router
-- **Database**: SQLite with Prisma ORM
+- **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: NextAuth.js with multiple providers (GitHub, Google, Discord, Credentials)
 - **Styling**: Tailwind CSS with shadcn/ui components
 - **Type Checking**: TypeScript
