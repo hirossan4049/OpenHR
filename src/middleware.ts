@@ -12,8 +12,8 @@ const intlMiddleware = createMiddleware({
 
 // Public paths (accessible without auth). Keep minimal: only root for login UI.
 function isRoot(pathname: string) {
-  // Matches: "/" (optionally with trailing slash)
-  return pathname === '/' || pathname === '';
+  // Matches: "/"
+  return pathname === '/';
 }
 
 // Public routes that should be accessible without authentication
